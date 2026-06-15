@@ -4,8 +4,8 @@
     "port": 8080
   },
   "modules": {
-    "node":    { "enabled": true },
-    "pool":    { "enabled": true,  "stratumPort": 3333 },
+    "node":    { "enabled": false },
+    "pool":    { "enabled": true, "stratumPort": 3333 },
     "console": { "enabled": true },
     "bridge":  { "enabled": false },
     "forge":   { "enabled": false },
@@ -15,22 +15,19 @@
     "ward":    { "enabled": false },
     "sigil":   { "enabled": false }
   },
-  "node": {
-    "autoStart": []
-  },
   "pool": {
-    "coin":               "DGB",
+    "coin":               "dgb",
     "mode":               "party",
     "algo":               "skein",
-    "blockRewardAddress": "YOUR_DGB_ADDRESS_HERE",
+    "blockRewardAddress": "${DGB_REWARD_ADDRESS}",
     "node": {
-      "host":    "127.0.0.1",
+      "host":    "${DGB_RPC_HOST:-127.0.0.1}",
       "port":    14022,
-      "rpcuser": "dgbrpc",
-      "rpcpass": "CHANGE_ME"
+      "rpcuser": "${DGB_RPC_USER:-dgbrpc}",
+      "rpcpass": "${DGB_RPC_PASS}"
     },
     "stratumPort":    3333,
-    "defaultDifficulty": 0.01,
+    "defaultDiff":    0.01,
     "varDiff": {
       "enabled":         true,
       "minDiff":         0.001,

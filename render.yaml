@@ -1,0 +1,35 @@
+# MagoFonte — lancia branch — Render one-click deploy
+# https://render.com/docs/blueprint-spec
+#
+# In Render dashboard: New > Blueprint > connect repo > select lancia branch
+# Fill in env vars marked sync: false when prompted.
+
+services:
+  - type: web
+    name: magofonte
+    runtime: docker
+    branch: lancia
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    numInstances: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: '8080'
+
+      # ── Set these as secrets in Render dashboard (sync: false = not committed) ──
+      - key: API_KEY
+        sync: false
+      - key: DGB_REWARD_ADDRESS
+        sync: false
+      - key: DGB_RPC_HOST
+        sync: false
+      - key: DGB_RPC_USER
+        sync: false
+      - key: DGB_RPC_PASS
+        sync: false
+      - key: WALLET_PASSPHRASE
+        sync: false
