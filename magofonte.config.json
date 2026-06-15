@@ -4,38 +4,43 @@
     "port": 8080
   },
   "modules": {
-    "pool":   { "enabled": true, "stratumPort": 3333 },
-    "bridge": { "enabled": false },
-    "forge":  { "enabled": false },
-    "stream": { "enabled": false },
-    "vault":  { "enabled": false },
-    "mesh":   { "enabled": false },
-    "ward":   { "enabled": false },
-    "sigil":  { "enabled": false }
+    "node":    { "enabled": true },
+    "pool":    { "enabled": true,  "stratumPort": 3333 },
+    "console": { "enabled": true },
+    "bridge":  { "enabled": false },
+    "forge":   { "enabled": false },
+    "stream":  { "enabled": false },
+    "vault":   { "enabled": false },
+    "mesh":    { "enabled": false },
+    "ward":    { "enabled": false },
+    "sigil":   { "enabled": false }
+  },
+  "node": {
+    "autoStart": []
   },
   "pool": {
-    "coin": "DGB",
-    "mode": "party",
-    "algo": "skein",
+    "coin":               "DGB",
+    "mode":               "party",
+    "algo":               "skein",
     "blockRewardAddress": "YOUR_DGB_ADDRESS_HERE",
     "node": {
-      "host": "127.0.0.1",
-      "port": 14022,
+      "host":    "127.0.0.1",
+      "port":    14022,
       "rpcuser": "dgbrpc",
       "rpcpass": "CHANGE_ME"
     },
-    "stratumPort": 3333,
+    "stratumPort":    3333,
     "defaultDifficulty": 0.01,
     "varDiff": {
-      "enabled": true,
-      "minDiff": 0.001,
-      "maxDiff": 1000,
-      "targetTime": 15,
-      "retargetTime": 60,
+      "enabled":         true,
+      "minDiff":         0.001,
+      "maxDiff":         1000,
+      "targetTime":      15,
+      "retargetTime":    60,
       "variancePercent": 30
     },
-    "blockPollMs": 500,
+    "blockPollMs":  500,
     "payoutScheme": "PPLNS",
-    "pplnsWindow": 100
+    "pplnsWindow":  100
   }
 }

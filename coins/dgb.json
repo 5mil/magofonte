@@ -1,0 +1,57 @@
+{
+  "id":     "dgb",
+  "name":   "DigiByte",
+  "ticker": "DGB",
+  "algo":   "skein",
+  "algos":  ["sha256d", "scrypt", "skein", "groestl", "qubit"],
+  "daemon": {
+    "binary":      "digibyted",
+    "cli":         "digibyte-cli",
+    "configDir":   "~/.digibyte",
+    "configFile":  "~/.digibyte/digibyte.conf",
+    "rpcPort":     14022,
+    "p2pPort":     12024,
+    "rpcConfig": {
+      "server":       1,
+      "daemon":       0,
+      "listen":       1,
+      "txindex":      1,
+      "rpcallowip":   "127.0.0.1",
+      "rpcbind":      "127.0.0.1"
+    },
+    "readyString":  "init message: Done loading",
+    "syncPattern":  "UpdateTip.*height=(\\d+)",
+    "docker": {
+      "image":       "retromike/nodes:digibyte",
+      "volumes": [
+        "~/.digibyte:/root/.digibyte"
+      ],
+      "network":     "host",
+      "restartPolicy": "unless-stopped"
+    }
+  },
+  "stratum": {
+    "port":         3333,
+    "defaultDiff":  0.01,
+    "varDiff": {
+      "enabled":       true,
+      "minDiff":       0.001,
+      "maxDiff":       1000,
+      "targetTime":    15,
+      "retargetTime":  60,
+      "variancePercent": 30
+    },
+    "blockTime":    15
+  },
+  "blockReward": {
+    "type":         "fixed",
+    "halving":      true
+  },
+  "payout": {
+    "scheme":       "PPLNS",
+    "window":       100
+  },
+  "explorer":       "https://digiexplorer.info",
+  "addressPrefix":  "D",
+  "addressVersion": 30
+}
