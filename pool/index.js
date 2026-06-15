@@ -21,6 +21,7 @@ import crypto from 'node:crypto';
 import http   from 'node:http';
 import { EventEmitter } from 'node:events';
 import { SettingsManager, MONETIZATION_TYPES } from './settings.js';
+import { addressToScript, validateAddress }    from './address.js';
 
 // ─── Utilities ───────────────────────────────────────────────────────────────
 
@@ -86,6 +87,58 @@ class JobEngine extends EventEmitter {
     this.currentJob = null; this.jobs = {};
     this._prevHash = null; this._pollTimer = null;
     this.running   = false;
+
+    // ── Validate + cache the locking script once at construction time.
+    // If the address is wrong/missing, fail loudly here rather than
+    // silently building 100,000 coinbases that pay nobody.
+    this._rewardScript = this._resolveRewardScript(config);
+  }
+
+  /**
+   * Resolve the coinbase locking script from pool config.
+   *
+   * Priority order:
+   *   1. config.blockRewardScript — raw hex script (escape hatch)
+   *   2. config.blockRewardAddress — Base58Check → P2PKH / P2SH via address.js
+   *   3. fallback: burn address (all-zero pubKeyHash) with loud warning
+   *
+   * Fires an error-level log (not a throw) so the pool still starts and
+   * the operator can fix the address via the dashboard without restarting.
+   */
+  _resolveRewardScript(config) {
+    // 1. Raw script override
+    if (config.blockRewardScript) {
+      console.log(`[pool:jobs] ✓ using raw reward script: ${config.blockRewardScript}`);
+      return config.blockRewardScript;
+    }
+
+    // 2. Address → script
+    if (config.blockRewardAddress) {
+      try {
+        const coinDef = config._coinDef || { id: config.coin };
+        const script  = addressToScript(config.blockRewardAddress, coinDef);
+        // Extra sanity: validate what we got
+        const info    = validateAddress(config.blockRewardAddress, coinDef);
+        console.log(
+          `[pool:jobs] ✓ reward address ${config.blockRewardAddress}` +
+          ` → ${info.type} script ${script}`
+        );
+        return script;
+      } catch (err) {
+        console.error(
+          `[pool:jobs] ⚠ invalid blockRewardAddress "${config.blockRewardAddress}": ${err.message}` +
+          ` — using burn address. FIX THIS.`
+        );
+      }
+    } else {
+      console.warn(
+        '[pool:jobs] ⚠ no blockRewardAddress configured — coinbase pays to burn address. ' +
+        'Set blockRewardAddress in pool settings or via the dashboard.'
+      );
+    }
+
+    // 3. Burn address fallback — still mines, just coins go nowhere
+    return '76a914' + '00'.repeat(20) + '88ac';
   }
 
   start() {
@@ -114,31 +167,87 @@ class JobEngine extends EventEmitter {
   }
 
   _buildJob(tpl, cleanJobs = false) {
-    const jobId            = crypto.randomBytes(4).toString('hex');
-    const coinbaseValue    = tpl.coinbasevalue;
-    const heightHex        = pad(tpl.height, 8);
-    const addrScript       = this._addressToScript(this.config.blockRewardAddress);
-    const coinbase1        = ['01000000','01','00'.repeat(32),'ffffffff','08','03',heightHex.slice(0,6),'00'].join('');
-    const valueLE          = pad(coinbaseValue, 16).match(/.{2}/g).reverse().join('');
-    const coinbase2        = ['ffffffff','01',valueLE,pad(addrScript.length/2,2),addrScript,'00000000'].join('');
-    const txids            = (tpl.transactions || []).map(tx => tx.txid || tx.hash);
-    const merkleBranches   = this._getMerkleBranches(txids);
+    const jobId = crypto.randomBytes(4).toString('hex');
+
+    // ── Coinbase transaction ────────────────────────────────────────────────
+    //
+    //  Input (coinbase):
+    //   version        04 bytes LE   01000000
+    //   vin count      varint        01
+    //   prev txid      32 bytes      00..00 (null)
+    //   prev vout      04 bytes      ffffffff
+    //   script length  varint        split: coinbase1 ends before extranonce,
+    //                                       coinbase2 picks up after extranonce2
+    //   height push    03 + height   BIP34 — required for DGB >= block 1
+    //   extranonce     8 bytes       injected by miner subscribe / submit
+    //   sequence       04 bytes      ffffffff
+    //
+    //  Output (reward):
+    //   value          08 bytes LE   coinbasevalue in satoshis
+    //   script length  varint
+    //   locking script               P2PKH or P2SH from _rewardScript
+    //
+    //  Locktime:       04 bytes      00000000
+    //
+    // Stratum splits the coinbase around the extranonce:
+    //   coinbase1 = everything up to (and including) extranonce1 placeholder
+    //   coinbase2 = everything after extranonce2 placeholder
+    //
+    // The miner contributes extranonce1 (assigned at subscribe) and
+    // extranonce2 (chosen per submit). The pool prepends extranonce1;
+    // the miner appends extranonce2. Together they form the nonce field.
+
+    const heightBuf = _encodeHeight(tpl.height);
+    const scriptLen = 1 + heightBuf.length / 2 + 4 + 4; // height + en1(4) + en2(4)
+    const scriptLenHex = pad(scriptLen, 2);
+
+    // coinbase1: up through the end of extranonce1 (extranonce1 is filled in
+    // per-session; the pool passes this as a template and each MinerSession
+    // splices its own extranonce1 between coinbase1 and coinbase2)
+    const coinbase1 = [
+      '01000000',           // version (LE)
+      '01',                 // 1 input
+      '00'.repeat(32),      // null prev txid
+      'ffffffff',           // null vout
+      scriptLenHex,         // coinbase script length
+      '03',                 // push 3 bytes (height, BIP34)
+      heightBuf,            // block height LE
+    ].join('');
+
+    // coinbase2: after extranonce2 → sequence + outputs + locktime
+    const rewardScript    = this._rewardScript;
+    const rewardScriptLen = pad(rewardScript.length / 2, 2);
+    const valueLE         = pad(tpl.coinbasevalue, 16).match(/.{2}/g).reverse().join('');
+
+    const coinbase2 = [
+      'ffffffff',         // sequence
+      '01',               // 1 output
+      valueLE,            // reward in satoshis (LE 8-byte)
+      rewardScriptLen,    // output script length
+      rewardScript,       // OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+      '00000000',         // locktime
+    ].join('');
+
+    const txids          = (tpl.transactions || []).map(tx => tx.txid || tx.hash);
+    const merkleBranches = this._getMerkleBranches(txids);
 
     const job = {
       jobId, cleanJobs, height: tpl.height, target: tpl.target,
-      prevHash: hexToLE32(tpl.previousblockhash),
+      prevHash:       hexToLE32(tpl.previousblockhash),
       coinbase1, coinbase2, merkleBranches,
-      version:  pad(tpl.version, 8),
-      nbits:    tpl.bits,
-      ntime:    pad(Math.floor(Date.now()/1000), 8),
-      template: tpl, coinbaseValue
+      version:        pad(tpl.version, 8),
+      nbits:          tpl.bits,
+      ntime:          pad(Math.floor(Date.now() / 1000), 8),
+      template:       tpl,
+      coinbaseValue:  tpl.coinbasevalue,
+      rewardScript,
     };
 
     this.jobs[jobId] = job;
     this.currentJob  = job;
     const keys = Object.keys(this.jobs);
     if (keys.length > 8) delete this.jobs[keys[0]];
-    console.log(`[pool:jobs] job ${jobId} h=${tpl.height} clean=${cleanJobs}`);
+    console.log(`[pool:jobs] job ${jobId} h=${tpl.height} clean=${cleanJobs} reward=${tpl.coinbasevalue}sat`);
     this.emit('job', job);
     return job;
   }
@@ -159,14 +268,49 @@ class JobEngine extends EventEmitter {
     return branches;
   }
 
-  _addressToScript(addr) {
-    // TODO: base58check → P2PKH   (placeholder for now)
-    return '76a914' + '00'.repeat(20) + '88ac';
-  }
-
   forceNewJob() {
     if (this.currentJob) this._buildJob(this.currentJob.template, false);
   }
+
+  /**
+   * Hot-update the reward address/script without restarting the engine.
+   * Called when operator changes blockRewardAddress via dashboard.
+   */
+  updateRewardAddress(newAddress, coinDef) {
+    try {
+      this._rewardScript = addressToScript(newAddress, coinDef || { id: this.config.coin });
+      this.config.blockRewardAddress = newAddress;
+      console.log(`[pool:jobs] reward address updated → ${newAddress}`);
+      // Force a new job so the next share uses the new script
+      if (this.currentJob) this._buildJob(this.currentJob.template, false);
+      return true;
+    } catch (err) {
+      console.error(`[pool:jobs] updateRewardAddress failed: ${err.message}`);
+      return false;
+    }
+  }
+}
+
+// ─── Height encoder (BIP34) ───────────────────────────────────────────────────
+/**
+ * Encode block height as minimally-encoded little-endian bytes (BIP34).
+ * Must be exactly 3 bytes for DGB (heights < 16,777,216) which covers us
+ * well into the future. We pad to 3 bytes LE.
+ */
+function _encodeHeight(height) {
+  if (height < 0 || height > 0xffffff)
+    throw new Error(`height ${height} out of 3-byte range`);
+  const b0 = height & 0xff;
+  const b1 = (height >> 8) & 0xff;
+  const b2 = (height >> 16) & 0xff;
+  // Minimally encode: trim trailing zero bytes (from MSB side in LE representation)
+  // but always keep at least 1 byte and ensure high bit clear (not negative)
+  let bytes = [b0, b1, b2];
+  // Remove trailing zero bytes unless needed for sign
+  while (bytes.length > 1 && bytes[bytes.length-1] === 0) bytes.pop();
+  // If high bit is set on last byte, add 0x00 to indicate positive
+  if (bytes[bytes.length-1] & 0x80) bytes.push(0x00);
+  return bytes.map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
 // ─── VarDiff ──────────────────────────────────────────────────────────────────
@@ -213,6 +357,8 @@ class ShareValidator {
       merkle = dblSha256(Buffer.concat([merkle, Buffer.from(branch,'hex').reverse()]));
     const merkleRoot   = merkle.reverse().toString('hex');
 
+    // NOTE: Header is built here but hashed with SHA-256d (placeholder).
+    // Skein-512 will replace the hash step for DGB Skein shares.
     const header = Buffer.from(
       hexToLE32(job.version) + job.prevHash + hexToLE32(merkleRoot) +
       hexToLE32(ntime) + hexToLE32(job.nbits) + hexToLE32(nonce), 'hex');
@@ -220,18 +366,18 @@ class ShareValidator {
     const hashHex    = dblSha256(header).reverse().toString('hex');
     const diffTarget = this._diffToTarget(session.difficulty);
     if (BigInt('0x'+hashHex) > BigInt('0x'+diffTarget))
-      return { valid: false, error: `below difficulty` };
+      return { valid: false, error: 'below difficulty' };
 
     const networkTarget = job.target.padStart(64, '0');
     const isBlock       = BigInt('0x'+hashHex) <= BigInt('0x'+networkTarget);
     if (isBlock) {
       const txCount  = (job.template.transactions||[]).length + 1;
-      const blockHex = header.toString('hex') + pad(txCount,2) +
+      const blockHex = header.toString('hex') + pad(txCount, 2) +
         coinbaseBuf.toString('hex') +
-        (job.template.transactions||[]).map(tx=>tx.data).join('');
+        (job.template.transactions||[]).map(tx => tx.data).join('');
       try {
         const r = await this.rpc.submitBlock(blockHex);
-        console.log(`[pool:BLOCK] 🎉 height=${job.height} result=${r??'accepted'}`);
+        console.log(`[pool:BLOCK] 🎉 height=${job.height} result=${r ?? 'accepted'}`);
       } catch(err) { console.error('[pool:BLOCK] submitblock failed:', err.message); }
     }
     return { valid: true, isBlock, hashHex };
@@ -294,7 +440,11 @@ class MinerSession {
     this.extranonce1 = crypto.randomBytes(4).toString('hex');
     this._shareTimes = []; this._shares = new Set();
     socket.setEncoding('utf8');
-    socket.on('data',  d  => { this.buf += d; this.buf.split('\n').slice(0,-1).forEach(l => { try { this._onMsg(JSON.parse(l)); } catch{} }); this.buf = this.buf.split('\n').pop(); });
+    socket.on('data', d => {
+      this.buf += d;
+      this.buf.split('\n').slice(0,-1).forEach(l => { try { this._onMsg(JSON.parse(l)); } catch{} });
+      this.buf = this.buf.split('\n').pop();
+    });
     socket.on('error', () => this._cleanup());
     socket.on('close', () => this._cleanup());
   }
@@ -372,10 +522,8 @@ const Pool = {
     this.stratumServer= null;
     this.activeConfig = null;
 
-    // ─ Wire: node ready → start pool for that coin
     registry.on('node:ready', ({ coin, node }) => {
       const poolCfg = this.settings.autoRegisterFromNode(coin);
-      // Enable mining by default on first registration
       if (poolCfg && !poolCfg.monetization.mining.enabled) {
         this.settings.setMonetization(coin, 'mining', true);
         this.settings.setActivePool(coin);
@@ -384,26 +532,23 @@ const Pool = {
       if (active?.coin === coin) this._startMining(active, node);
     });
 
-    // ─ Wire: node stopped → pause job engine
     registry.on('node:stopped', ({ coin }) => {
       if (this.activeConfig?.coin === coin) this.jobEngine?.pause();
     });
 
-    // ─ Wire: settings changed → maybe restart
     registry.on('settings:activePool:changed', ({ poolId }) => {
-      const cfg  = this.settings.getPool(poolId);
+      const cfg     = this.settings.getPool(poolId);
       const nodemod = registry.get('node');
-      const node = nodemod?.nodes.get(cfg?.coin);
+      const node    = nodemod?.nodes.get(cfg?.coin);
       if (cfg && node?.status === 'ready') this._startMining(cfg, node);
     });
 
-    // ─ Manual config override (legacy / direct config in magofonte.config.json)
     if (config?.coin && config?.node) {
-      this.rpc       = new NodeRPC(config.node);
-      this.validator = new ShareValidator(this.rpc);
-      this.payout    = new PayoutTracker(config.pplnsWindow || 100);
-      this.varDiff   = config.varDiff?.enabled ? new VarDiff(config.varDiff) : null;
-      this.jobEngine = new JobEngine(this.rpc, config);
+      this.rpc          = new NodeRPC(config.node);
+      this.validator    = new ShareValidator(this.rpc);
+      this.payout       = new PayoutTracker(config.pplnsWindow || 100);
+      this.varDiff      = config.varDiff?.enabled ? new VarDiff(config.varDiff) : null;
+      this.jobEngine    = new JobEngine(this.rpc, config);
       this.activeConfig = config;
       this.jobEngine.on('job', job => this._broadcastJob(job));
       this._openStratum(config.stratumPort || 3333);
@@ -455,37 +600,33 @@ const Pool = {
   get routes() {
     const sm = this.settings;
     return [
-      // ─ Status
       ['GET', '/status', (req,res) => {
-        const miners  = this._minerList();
-        const job     = this.jobEngine?.currentJob;
-        const active  = sm.getActivePool();
+        const miners = this._minerList();
+        const job    = this.jobEngine?.currentJob;
+        const active = sm.getActivePool();
         _json(res, {
-          active: active?.id ?? null,
-          coin:   this.activeConfig?.coin,
-          algo:   this.activeConfig?.algo,
-          height: job?.height ?? null,
+          active: active?.id ?? null, coin: this.activeConfig?.coin,
+          algo:   this.activeConfig?.algo,  height: job?.height ?? null,
           miners: miners.length,
           hashrate: miners.reduce((s,m) => s+m.hashrate, 0),
           blocksFound: this.payout?.getStats().blocksFound ?? 0,
-          miners
+          rewardAddress: this.activeConfig?.blockRewardAddress ?? null,
+          rewardScript:  this.jobEngine?._rewardScript ?? null,
+          miners_list: miners
         });
       }],
 
-      // ─ Miners
       ['GET', '/miners', (req,res) => _json(res, this._minerList())],
-
-      // ─ Payout
       ['GET', '/payout', (req,res) => _json(res, this.payout?.getStats() ?? {})],
 
-      // ─ Current job
       ['GET', '/job', (req,res) => {
         const job = this.jobEngine?.currentJob;
-        res.writeHead(job ? 200 : 503, { 'Content-Type':'application/json' });
-        res.end(JSON.stringify(job ? { jobId:job.jobId, height:job.height, nbits:job.nbits, ntime:job.ntime, target:job.target } : { error:'no job' }));
+        res.writeHead(job ? 200 : 503, {'Content-Type':'application/json'});
+        res.end(JSON.stringify(job
+          ? { jobId:job.jobId, height:job.height, nbits:job.nbits, ntime:job.ntime, target:job.target }
+          : { error:'no job' }));
       }],
 
-      // ─ Node passthrough
       ['GET', '/node', async (req,res) => {
         try {
           const [net, mine] = await Promise.all([this.rpc.getNetworkInfo(), this.rpc.getMiningInfo()]);
@@ -493,82 +634,44 @@ const Pool = {
         } catch(err) { res.writeHead(503); res.end(JSON.stringify({ error:err.message })); }
       }],
 
-      // ─ Force job
       ['POST', '/job/new', (req,res) => { this.jobEngine?.forceNewJob(); _json(res, { ok:true }); }],
 
-      // ── SETTINGS ──────────────────────────────────────────────────
-
-      // List all pool configurations
-      ['GET', '/settings/pools', (req,res) => _json(res, sm.listPools())],
-
-      // Get one pool config
-      ['GET', '/settings/pools/:id', (req,res) => {
-        const p = sm.getPool(req.params.id);
-        p ? _json(res, p) : _404(res);
-      }],
-
-      // Create pool from coin def
-      ['POST', '/settings/pools', async (req,res) => {
+      // ── Reward address hot-update ───────────────────────────────────────
+      ['POST', '/reward-address', async (req,res) => {
         const body = await _body(req);
         try {
-          const pool = sm.registerPool(JSON.parse(body));
-          res.writeHead(201, {'Content-Type':'application/json'});
-          res.end(JSON.stringify(pool));
+          const { address } = JSON.parse(body);
+          if (!address) return _400(res, 'address required');
+          const coinDef = this.activeConfig?._coinDef || { id: this.activeConfig?.coin };
+          if (!this.jobEngine) return _400(res, 'job engine not running');
+          const ok = this.jobEngine.updateRewardAddress(address, coinDef);
+          if (!ok) return _400(res, 'invalid address — check logs');
+          // Persist to settings
+          if (this.activeConfig) this.activeConfig.blockRewardAddress = address;
+          _json(res, { ok: true, address, script: this.jobEngine._rewardScript });
         } catch(e) { _400(res, e.message); }
       }],
 
-      // Update pool config
-      ['PATCH', '/settings/pools/:id', async (req,res) => {
+      // ── Address validation utility ──────────────────────────────────────
+      ['POST', '/validate-address', async (req,res) => {
         const body = await _body(req);
         try {
-          const pool = sm.updatePool(req.params.id, JSON.parse(body));
-          _json(res, pool);
-        } catch(e) { _400(res, e.message); }
-      }],
-
-      // Delete pool config
-      ['DELETE', '/settings/pools/:id', (req,res) => {
-        try { sm.deletePool(req.params.id); _json(res, { ok:true }); }
-        catch(e) { _400(res, e.message); }
-      }],
-
-      // Set active pool + hot-swap
-      ['POST', '/settings/active', async (req,res) => {
-        const body = await _body(req);
-        try {
-          const { poolId } = JSON.parse(body);
-          sm.setActivePool(poolId);
-          _json(res, { ok:true, activePool: poolId });
-        } catch(e) { _400(res, e.message); }
-      }],
-
-      // ── MONETIZATION ──────────────────────────────────────────────
-
-      // Get all monetization options for a pool (what\'s available + what\'s enabled)
-      ['GET', '/settings/pools/:id/monetization', (req,res) => {
-        try { _json(res, sm.getMonetizationOptions(req.params.id)); }
-        catch(e) { _400(res, e.message); }
-      }],
-
-      // Enable/disable/configure a monetization type
-      ['POST', '/settings/pools/:id/monetization/:type', async (req,res) => {
-        const body = await _body(req);
-        try {
-          const { enabled, config } = JSON.parse(body);
-          const result = sm.setMonetization(req.params.id, req.params.type, enabled, config||{});
+          const { address, coin } = JSON.parse(body);
+          const result = validateAddress(address, { id: coin || this.activeConfig?.coin || 'dgb' });
           _json(res, result);
         } catch(e) { _400(res, e.message); }
       }],
 
-      // List all monetization type definitions (schema)
-      ['GET', '/settings/monetization-types', (req,res) => {
-        _json(res, Object.values(MONETIZATION_TYPES).map(t => ({
-          id: t.id, label: t.label, description: t.description,
-          settings: Object.fromEntries(
-            Object.entries(t.settings).map(([k,s]) => [k, { ...s, options: typeof s.options==='function' ? [] : s.options }])
-          )
-        })));
-      }]
+      // ── Settings ───────────────────────────────────────────────────────
+      ['GET',    '/settings/pools',              (req,res) => _json(res, sm.listPools())],
+      ['GET',    '/settings/pools/:id',          (req,res) => { const p=sm.getPool(req.params.id); p?_json(res,p):_404(res); }],
+      ['POST',   '/settings/pools',              async(req,res) => { const b=await _body(req); try{const p=sm.registerPool(JSON.parse(b));res.writeHead(201,{'Content-Type':'application/json'});res.end(JSON.stringify(p));}catch(e){_400(res,e.message);} }],
+      ['PATCH',  '/settings/pools/:id',          async(req,res) => { const b=await _body(req); try{_json(res,sm.updatePool(req.params.id,JSON.parse(b)));}catch(e){_400(res,e.message);} }],
+      ['DELETE', '/settings/pools/:id',          (req,res) => { try{sm.deletePool(req.params.id);_json(res,{ok:true});}catch(e){_400(res,e.message);} }],
+      ['POST',   '/settings/active',             async(req,res) => { const b=await _body(req); try{const{poolId}=JSON.parse(b);sm.setActivePool(poolId);_json(res,{ok:true,activePool:poolId});}catch(e){_400(res,e.message);} }],
+      ['GET',    '/settings/pools/:id/monetization', (req,res) => { try{_json(res,sm.getMonetizationOptions(req.params.id));}catch(e){_400(res,e.message);} }],
+      ['POST',   '/settings/pools/:id/monetization/:type', async(req,res) => { const b=await _body(req); try{const{enabled,config}=JSON.parse(b);_json(res,sm.setMonetization(req.params.id,req.params.type,enabled,config||{}));}catch(e){_400(res,e.message);} }],
+      ['GET',    '/settings/monetization-types', (req,res) => _json(res, Object.values(MONETIZATION_TYPES).map(t=>({id:t.id,label:t.label,description:t.description,settings:Object.fromEntries(Object.entries(t.settings).map(([k,s])=>[k,{...s,options:typeof s.options==='function'?[]:s.options}]))})))]
     ];
   },
 
@@ -581,14 +684,9 @@ const Pool = {
   }
 };
 
-function _json(res, data, status=200) {
-  res.writeHead(status, {'Content-Type':'application/json'});
-  res.end(JSON.stringify(data));
-}
-function _404(res) { res.writeHead(404); res.end(JSON.stringify({error:'not found'})); }
-function _400(res, msg) { res.writeHead(400); res.end(JSON.stringify({error:msg})); }
-function _body(req) {
-  return new Promise(r => { let b=''; req.on('data',d=>b+=d); req.on('end',()=>r(b)); });
-}
+function _json(res, data, status=200) { res.writeHead(status,{'Content-Type':'application/json'}); res.end(JSON.stringify(data)); }
+function _404(res)     { res.writeHead(404); res.end(JSON.stringify({error:'not found'})); }
+function _400(res, msg){ res.writeHead(400); res.end(JSON.stringify({error:msg})); }
+function _body(req)    { return new Promise(r => { let b=''; req.on('data',d=>b+=d); req.on('end',()=>r(b)); }); }
 
 export default Pool;
