@@ -6,18 +6,13 @@
   <title>MagoFonte</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700&display=swap');
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
       --gold: #c9a84c;
       --gold-light: #e8d08a;
       --ink: #0d0b0e;
-      --parchment: #1a1520;
-      --mist: #2e2740;
       --glow: rgba(201,168,76,0.18);
     }
-
     html, body {
       height: 100%;
       background-color: var(--ink);
@@ -25,7 +20,6 @@
       font-family: 'Cinzel', serif;
       overflow-x: hidden;
     }
-
     body {
       display: flex;
       flex-direction: column;
@@ -39,194 +33,87 @@
         radial-gradient(ellipse at 50% 100%, rgba(80,50,140,0.15) 0%, transparent 70%),
         var(--ink);
     }
-
-    .stars {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
+    .stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
     .star {
-      position: absolute;
-      border-radius: 50%;
-      background: white;
-      opacity: 0;
+      position: absolute; border-radius: 50%; background: white; opacity: 0;
       animation: twinkle var(--d, 4s) var(--delay, 0s) infinite ease-in-out;
     }
-    @keyframes twinkle {
-      0%, 100% { opacity: 0; }
-      50% { opacity: var(--bright, 0.6); }
-    }
-
+    @keyframes twinkle { 0%, 100% { opacity: 0; } 50% { opacity: var(--bright, 0.6); } }
     .container {
-      position: relative;
-      z-index: 1;
-      max-width: 760px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2rem;
+      position: relative; z-index: 1; max-width: 760px; width: 100%;
+      display: flex; flex-direction: column; align-items: center; gap: 2rem;
     }
-
-    .wizard-wrap {
-      position: relative;
-      width: 220px;
-      height: 220px;
-      margin-bottom: 0.5rem;
-    }
+    .wizard-wrap { position: relative; width: 200px; height: 200px; margin-bottom: 0.5rem; }
     .wizard-glow {
-      position: absolute;
-      inset: -20px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(201,168,76,0.22) 0%, transparent 70%);
+      position: absolute; inset: -24px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,168,76,0.28) 0%, transparent 70%);
       animation: pulse 4s ease-in-out infinite;
     }
     @keyframes pulse {
       0%, 100% { transform: scale(1); opacity: 0.7; }
-      50% { transform: scale(1.08); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 1; }
     }
-    .wizard-img {
-      position: relative;
-      width: 220px;
-      height: 220px;
-      object-fit: contain;
-      filter: sepia(0.3) contrast(1.1) brightness(0.92) drop-shadow(0 0 18px rgba(201,168,76,0.45));
-      border-radius: 50%;
-      border: 2px solid rgba(201,168,76,0.3);
+    .wizard-svg {
+      position: relative; width: 200px; height: 200px;
+      border-radius: 50%; border: 1.5px solid rgba(201,168,76,0.35);
+      background: radial-gradient(circle at 50% 40%, #1e1730 0%, #0d0b0e 100%);
+      overflow: hidden;
+      filter: drop-shadow(0 0 20px rgba(201,168,76,0.4));
     }
-
-    .logo {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-    }
+    .logo { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
     .logo-name {
       font-family: 'Cinzel Decorative', serif;
       font-size: clamp(2.4rem, 7vw, 4.2rem);
-      font-weight: 700;
-      letter-spacing: 0.08em;
+      font-weight: 700; letter-spacing: 0.08em;
       background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, #a07830 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
       line-height: 1.1;
     }
     .logo-sub {
-      font-size: clamp(0.75rem, 2vw, 0.95rem);
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: rgba(201,168,76,0.55);
-      font-weight: 400;
+      font-size: clamp(0.75rem, 2vw, 0.95rem); letter-spacing: 0.35em;
+      text-transform: uppercase; color: rgba(201,168,76,0.55); font-weight: 400;
     }
-
     .divider {
-      width: 260px;
-      height: 1px;
+      width: 260px; height: 1px;
       background: linear-gradient(90deg, transparent, var(--gold), transparent);
       opacity: 0.5;
     }
-
-    .spell-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.6rem;
-    }
+    .spell-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
     .spell-rune {
-      font-size: 1.5rem;
-      opacity: 0.5;
-      letter-spacing: 0.5em;
+      font-size: 1.5rem; opacity: 0.5; letter-spacing: 0.5em;
       animation: flicker 6s ease-in-out infinite;
     }
-    @keyframes flicker {
-      0%, 90%, 100% { opacity: 0.5; }
-      95% { opacity: 0.15; }
-    }
+    @keyframes flicker { 0%, 90%, 100% { opacity: 0.5; } 95% { opacity: 0.15; } }
     .spell-main {
       font-family: 'Cinzel Decorative', serif;
-      font-size: clamp(1.4rem, 4.5vw, 2.2rem);
-      font-weight: 700;
-      color: var(--gold-light);
-      letter-spacing: 0.05em;
-      line-height: 1.2;
+      font-size: clamp(1.4rem, 4.5vw, 2.2rem); font-weight: 700;
+      color: var(--gold-light); letter-spacing: 0.05em; line-height: 1.2;
     }
     .spell-sub {
-      font-size: clamp(0.8rem, 2vw, 1rem);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: rgba(201,168,76,0.5);
-      margin-top: 0.25rem;
+      font-size: clamp(0.8rem, 2vw, 1rem); letter-spacing: 0.2em;
+      text-transform: uppercase; color: rgba(201,168,76,0.5); margin-top: 0.25rem;
     }
-
     .tagline {
-      font-size: clamp(0.85rem, 2vw, 1.05rem);
-      color: rgba(232,208,138,0.65);
-      letter-spacing: 0.12em;
-      line-height: 1.7;
-      max-width: 480px;
-      font-style: italic;
+      font-size: clamp(0.85rem, 2vw, 1.05rem); color: rgba(232,208,138,0.65);
+      letter-spacing: 0.12em; line-height: 1.7; max-width: 480px; font-style: italic;
     }
-
-    .modules {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.5rem;
-      max-width: 580px;
-    }
+    .modules { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 580px; }
     .module {
-      border: 1px solid rgba(201,168,76,0.25);
-      border-radius: 999px;
-      padding: 0.3rem 0.9rem;
-      font-size: 0.72rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: rgba(201,168,76,0.5);
-      background: rgba(201,168,76,0.04);
-      transition: all 0.3s ease;
+      border: 1px solid rgba(201,168,76,0.25); border-radius: 999px;
+      padding: 0.3rem 0.9rem; font-size: 0.72rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: rgba(201,168,76,0.5);
+      background: rgba(201,168,76,0.04); transition: all 0.3s ease;
     }
-    .module:hover {
-      border-color: rgba(201,168,76,0.6);
-      color: var(--gold-light);
-      background: rgba(201,168,76,0.08);
-    }
-
+    .module:hover { border-color: rgba(201,168,76,0.6); color: var(--gold-light); background: rgba(201,168,76,0.08); }
     .gh-link {
-      margin-top: 0.5rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.55rem 1.4rem;
-      border: 1px solid rgba(201,168,76,0.35);
-      border-radius: 999px;
-      text-decoration: none;
-      font-size: 0.78rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: rgba(201,168,76,0.6);
-      background: transparent;
-      transition: all 0.3s ease;
+      margin-top: 0.5rem; display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.55rem 1.4rem; border: 1px solid rgba(201,168,76,0.35); border-radius: 999px;
+      text-decoration: none; font-size: 0.78rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(201,168,76,0.6); background: transparent; transition: all 0.3s ease;
     }
-    .gh-link:hover {
-      border-color: var(--gold);
-      color: var(--gold-light);
-      background: rgba(201,168,76,0.07);
-    }
-
-    .footer {
-      margin-top: 2rem;
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      color: rgba(201,168,76,0.22);
-      text-transform: uppercase;
-    }
-    .footer a {
-      color: inherit;
-      text-decoration: none;
-    }
+    .gh-link:hover { border-color: var(--gold); color: var(--gold-light); background: rgba(201,168,76,0.07); }
+    .footer { margin-top: 2rem; font-size: 0.65rem; letter-spacing: 0.15em; color: rgba(201,168,76,0.22); text-transform: uppercase; }
+    .footer a { color: inherit; text-decoration: none; }
     .footer a:hover { color: rgba(201,168,76,0.45); }
   </style>
 </head>
@@ -236,13 +123,97 @@
 
 <div class="container">
 
+  <!-- Inline SVG wizard — no external dependency -->
   <div class="wizard-wrap">
     <div class="wizard-glow"></div>
-    <img
-      class="wizard-img"
-      src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Merlin_and_Viviane.jpg/440px-Merlin_and_Viviane.jpg"
-      alt="Merlin the wizard — public domain illustration by Gustave Dore, circa 1868"
-    />
+    <svg class="wizard-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Wizard illustration">
+      <!-- Background glow -->
+      <radialGradient id="bgGlow" cx="50%" cy="40%" r="60%">
+        <stop offset="0%" stop-color="#2a1f4a"/>
+        <stop offset="100%" stop-color="#0d0b0e"/>
+      </radialGradient>
+      <circle cx="100" cy="100" r="100" fill="url(#bgGlow)"/>
+
+      <!-- Staff glow -->
+      <radialGradient id="staffGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#e8d08a" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#c9a84c" stop-opacity="0"/>
+      </radialGradient>
+
+      <!-- Robe / body -->
+      <path d="M72 195 Q68 160 65 140 Q60 115 58 105 Q55 90 70 82 L100 78 L130 82 Q145 90 142 105 Q140 115 135 140 Q132 160 128 195 Z" fill="#1a1040" stroke="#c9a84c" stroke-width="0.8" stroke-opacity="0.4"/>
+
+      <!-- Robe folds -->
+      <path d="M80 110 Q85 130 82 155 Q84 170 83 190" fill="none" stroke="#c9a84c" stroke-width="0.4" stroke-opacity="0.25"/>
+      <path d="M120 110 Q115 130 118 155 Q116 170 117 190" fill="none" stroke="#c9a84c" stroke-width="0.4" stroke-opacity="0.25"/>
+
+      <!-- Cloak / shoulders -->
+      <path d="M58 105 Q45 110 40 130 Q38 145 42 165 Q55 175 72 195" fill="#110d30" stroke="#c9a84c" stroke-width="0.6" stroke-opacity="0.3"/>
+      <path d="M142 105 Q155 110 160 130 Q162 145 158 165 Q145 175 128 195" fill="#110d30" stroke="#c9a84c" stroke-width="0.6" stroke-opacity="0.3"/>
+
+      <!-- Star emblem on chest -->
+      <polygon points="100,88 102,94 108,94 103,98 105,104 100,100 95,104 97,98 92,94 98,94" fill="#c9a84c" opacity="0.7"/>
+
+      <!-- Neck -->
+      <rect x="93" y="68" width="14" height="14" rx="4" fill="#c4956a"/>
+
+      <!-- Head -->
+      <ellipse cx="100" cy="58" rx="18" ry="20" fill="#c4956a"/>
+
+      <!-- Eyes -->
+      <ellipse cx="93" cy="55" rx="3" ry="3.5" fill="#1a1040"/>
+      <ellipse cx="107" cy="55" rx="3" ry="3.5" fill="#1a1040"/>
+      <!-- Eye glow -->
+      <circle cx="94" cy="54" r="1" fill="#e8d08a" opacity="0.8"/>
+      <circle cx="108" cy="54" r="1" fill="#e8d08a" opacity="0.8"/>
+
+      <!-- Beard -->
+      <path d="M84 65 Q88 72 90 80 Q95 88 100 90 Q105 88 110 80 Q112 72 116 65" fill="#d4c8a0" opacity="0.85"/>
+      <path d="M90 80 Q93 92 95 98" fill="none" stroke="#b8aa80" stroke-width="0.8" opacity="0.6"/>
+      <path d="M110 80 Q107 92 105 98" fill="none" stroke="#b8aa80" stroke-width="0.8" opacity="0.6"/>
+
+      <!-- Eyebrows -->
+      <path d="M89 50 Q93 47 97 49" fill="none" stroke="#8a7a50" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M103 49 Q107 47 111 50" fill="none" stroke="#8a7a50" stroke-width="1.2" stroke-linecap="round"/>
+
+      <!-- Hat brim -->
+      <ellipse cx="100" cy="40" rx="26" ry="6" fill="#1a1040" stroke="#c9a84c" stroke-width="0.8" stroke-opacity="0.6"/>
+
+      <!-- Hat cone -->
+      <path d="M74 40 Q88 20 100 2 Q112 20 126 40 Z" fill="#1a1040" stroke="#c9a84c" stroke-width="0.8" stroke-opacity="0.5"/>
+
+      <!-- Hat star -->
+      <polygon points="100,8 101.5,13 107,13 102.5,16 104,21 100,18 96,21 97.5,16 93,13 98.5,13" fill="#c9a84c" opacity="0.9"/>
+
+      <!-- Hat band -->
+      <path d="M76 40 Q100 44 124 40" fill="none" stroke="#c9a84c" stroke-width="1" stroke-opacity="0.5"/>
+
+      <!-- Staff -->
+      <line x1="148" y1="195" x2="130" y2="85" stroke="#8a6a30" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="148" y1="195" x2="130" y2="85" stroke="#c9a84c" stroke-width="1" stroke-opacity="0.5" stroke-linecap="round"/>
+
+      <!-- Staff orb -->
+      <circle cx="128" cy="80" r="8" fill="#1a1040" stroke="#c9a84c" stroke-width="1"/>
+      <circle cx="128" cy="80" r="5" fill="url(#staffGlow)" opacity="0.9">
+        <animate attributeName="r" values="4;6;4" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="127" cy="78" r="2" fill="white" opacity="0.6"/>
+
+      <!-- Floating sparkles -->
+      <circle cx="45" cy="50" r="1.5" fill="#e8d08a" opacity="0.7">
+        <animate attributeName="opacity" values="0.2;0.9;0.2" dur="2.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="160" cy="70" r="1" fill="#e8d08a" opacity="0.6">
+        <animate attributeName="opacity" values="0.1;0.8;0.1" dur="3.2s" begin="1s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="50" cy="130" r="1" fill="#c9a84c" opacity="0.5">
+        <animate attributeName="opacity" values="0.1;0.7;0.1" dur="4s" begin="0.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="155" cy="140" r="1.5" fill="#e8d08a" opacity="0.6">
+        <animate attributeName="opacity" values="0.2;0.8;0.2" dur="2.8s" begin="1.5s" repeatCount="indefinite"/>
+      </circle>
+    </svg>
   </div>
 
   <div class="logo">
@@ -281,8 +252,7 @@
   </a>
 
   <div class="footer">
-    Apache 2.0 &nbsp;&middot;&nbsp; Wizard illustration: Gustave Dor&eacute;, c.1868 &mdash;
-    <a href="https://commons.wikimedia.org/wiki/File:Merlin_and_Viviane.jpg" target="_blank" rel="noopener">Wikimedia Commons, public domain</a>
+    Apache 2.0 &nbsp;&middot;&nbsp; Original concept inspired by Gustave Dor&eacute;, c.1868
   </div>
 
 </div>
