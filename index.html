@@ -128,7 +128,7 @@
       position: relative;
     }
     .grimoire::before {
-      content: '⟡  The Wizard's Grimoire  ⟡';
+      content: '⟡  The Wizard\'s Grimoire  ⟡';
       position: absolute;
       top: -0.7rem; left: 50%; transform: translateX(-50%);
       font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
@@ -191,6 +191,155 @@
     .footer { margin-top: 2rem; font-size: 0.65rem; letter-spacing: 0.15em; color: rgba(201,168,76,0.22); text-transform: uppercase; }
     .footer a { color: inherit; text-decoration: none; }
     .footer a:hover { color: rgba(201,168,76,0.45); }
+
+    /* ─── Wallet Panel ───────────────────────────────────────────────────── */
+    .wallet-panel {
+      width: 100%; max-width: 680px;
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 12px;
+      background: rgba(201,168,76,0.03);
+      padding: 2rem 2rem 1.5rem;
+      text-align: left;
+      position: relative;
+    }
+    .wallet-panel::before {
+      content: '⟡  Pool Wallet · DGB  ⟡';
+      position: absolute;
+      top: -0.7rem; left: 50%; transform: translateX(-50%);
+      font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--gold); background: var(--ink);
+      padding: 0 0.8rem; white-space: nowrap;
+    }
+    .wallet-active {
+      margin-bottom: 1.2rem;
+    }
+    .wallet-active-label {
+      font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: rgba(201,168,76,0.4); margin-bottom: 0.35rem;
+    }
+    .wallet-address {
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem; color: var(--gold-light);
+      word-break: break-all; line-height: 1.6;
+      background: rgba(201,168,76,0.05);
+      border: 1px solid rgba(201,168,76,0.12);
+      border-radius: 6px; padding: 0.5rem 0.75rem;
+    }
+    .wallet-address.empty {
+      color: rgba(201,168,76,0.25); font-style: italic; font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+    }
+    .wallet-list {
+      list-style: none;
+      margin-bottom: 1.2rem;
+      display: flex; flex-direction: column; gap: 0.4rem;
+    }
+    .wallet-item {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 0.4rem;
+      align-items: center;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid rgba(201,168,76,0.1);
+      border-radius: 6px;
+      background: rgba(201,168,76,0.02);
+      font-size: 0.7rem;
+    }
+    .wallet-item.is-active {
+      border-color: rgba(201,168,76,0.35);
+      background: rgba(201,168,76,0.06);
+    }
+    .wallet-item-label {
+      color: var(--gold-light); letter-spacing: 0.1em; font-weight: 700;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .wallet-item-addr {
+      font-family: 'Courier New', monospace;
+      font-size: 0.62rem; color: rgba(201,168,76,0.45);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 160px;
+    }
+    .wallet-btn {
+      border: 1px solid rgba(201,168,76,0.25); border-radius: 4px;
+      background: transparent; color: rgba(201,168,76,0.55);
+      font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.15em;
+      text-transform: uppercase; padding: 0.2rem 0.5rem;
+      cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
+    }
+    .wallet-btn:hover { border-color: var(--gold); color: var(--gold-light); background: rgba(201,168,76,0.08); }
+    .wallet-btn.danger { border-color: rgba(220,80,80,0.3); color: rgba(220,100,100,0.6); }
+    .wallet-btn.danger:hover { border-color: rgba(220,80,80,0.7); color: rgba(240,120,120,0.9); background: rgba(220,80,80,0.06); }
+    .wallet-actions {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .wallet-action-btn {
+      flex: 1 1 auto;
+      border: 1px solid rgba(201,168,76,0.25); border-radius: 6px;
+      background: transparent; color: rgba(201,168,76,0.6);
+      font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 0.2em;
+      text-transform: uppercase; padding: 0.55rem 0.9rem;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .wallet-action-btn:hover { border-color: var(--gold); color: var(--gold-light); background: rgba(201,168,76,0.07); }
+    /* Modal */
+    .wmodal-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(13,11,14,0.85);
+      backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+    }
+    .wmodal-backdrop.open { display: flex; }
+    .wmodal {
+      background: #100e18;
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 12px;
+      padding: 1.8rem;
+      width: min(480px, 92vw);
+      text-align: left;
+      position: relative;
+    }
+    .wmodal-title {
+      font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--gold-light); margin-bottom: 1.2rem; font-weight: 700;
+    }
+    .wmodal-field { margin-bottom: 0.9rem; }
+    .wmodal-field label {
+      display: block; font-size: 0.6rem; letter-spacing: 0.22em;
+      text-transform: uppercase; color: rgba(201,168,76,0.45); margin-bottom: 0.35rem;
+    }
+    .wmodal-field input, .wmodal-field textarea {
+      width: 100%;
+      background: rgba(201,168,76,0.04);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 6px;
+      color: var(--gold-light);
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      padding: 0.5rem 0.7rem;
+      outline: none;
+      resize: vertical;
+    }
+    .wmodal-field input:focus, .wmodal-field textarea:focus {
+      border-color: rgba(201,168,76,0.5);
+    }
+    .wmodal-field .wmodal-copy-wrap {
+      display: flex; gap: 0.4rem;
+    }
+    .wmodal-field .wmodal-copy-wrap input { flex: 1; }
+    .wmodal-msg {
+      font-size: 0.68rem; letter-spacing: 0.1em; min-height: 1.2em;
+      margin-bottom: 0.8rem; font-style: italic;
+    }
+    .wmodal-msg.ok  { color: rgba(140,220,150,0.8); }
+    .wmodal-msg.err { color: rgba(240,120,120,0.8); }
+    .wmodal-buttons { display: flex; gap: 0.6rem; justify-content: flex-end; margin-top: 0.4rem; }
+    .wmodal-close {
+      position: absolute; top: 0.8rem; right: 1rem;
+      background: none; border: none; color: rgba(201,168,76,0.35);
+      font-size: 1.1rem; cursor: pointer; line-height: 1;
+    }
+    .wmodal-close:hover { color: var(--gold); }
   </style>
 </head>
 <body>
@@ -199,7 +348,7 @@
 
 <div class="container">
 
-  <!-- Inline SVG wizard — no external dependency -->
+  <!-- Inline SVG wizard -->
   <div class="wizard-wrap">
     <div class="wizard-glow"></div>
     <svg class="wizard-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Wizard illustration">
@@ -293,6 +442,22 @@
 
   <div class="divider-wide"></div>
 
+  <!-- ─── Pool Wallet Panel ────────────────────────────────────────────── -->
+  <div class="wallet-panel" id="walletPanel">
+
+    <div class="wallet-active">
+      <div class="wallet-active-label">Active Reward Address</div>
+      <div class="wallet-address empty" id="walletActiveAddr">No wallet configured</div>
+    </div>
+
+    <ul class="wallet-list" id="walletList"></ul>
+
+    <div class="wallet-actions">
+      <button class="wallet-action-btn" onclick="walletUI.openGenerate()">⚗ Generate</button>
+      <button class="wallet-action-btn" onclick="walletUI.openImport()">↓ Import WIF</button>
+    </div>
+  </div>
+
   <!-- ─── Grimoire ─────────────────────────────────────────────────────── -->
   <div class="grimoire">
 
@@ -360,6 +525,32 @@
     </div>
 
     <div class="log-entry">
+      <div class="log-sigil">🔑</div>
+      <div class="log-body">
+        <div class="log-title">Modular Wallets <span class="log-date">June 2026</span></div>
+        <div class="log-text">
+          The pool's reward address is no longer a hardcoded string buried in config.
+          <code>pool/wallet.js</code> is a coin-agnostic key primitive library: WIF import/export,
+          secp256k1 key generation, and P2PKH address derivation driven entirely by the coin
+          definition's version bytes — no native addons, no external dependencies.
+          <code>pool/walletManager.js</code> wraps it in a per-coin registry with AES-256-GCM
+          vault persistence, an EventEmitter for hot address swaps, and a clean generate /
+          import / export / delete / setActive API. The admin panel gains a live Wallet module
+          where you can spin up a fresh keypair, paste in an existing WIF, export the raw key
+          for backup, and promote any stored wallet as the active coinbase target — all without
+          touching a config file or restarting the pool.
+        </div>
+        <div class="log-pills">
+          <span class="pill done">Key primitives</span>
+          <span class="pill done">WIF import/export</span>
+          <span class="pill done">AES-256-GCM vault</span>
+          <span class="pill done">Admin wallet UI</span>
+          <span class="pill done">Hot address swap</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="log-entry">
       <div class="log-sigil">🔮</div>
       <div class="log-body">
         <div class="log-title">What the Orb Shows Next <span class="log-date">on the horizon</span></div>
@@ -391,7 +582,68 @@
 
 </div>
 
+<!-- ─── Generate Modal ─────────────────────────────────────────────────── -->
+<div class="wmodal-backdrop" id="modalGenerate">
+  <div class="wmodal">
+    <button class="wmodal-close" onclick="walletUI.close('modalGenerate')">&#10005;</button>
+    <div class="wmodal-title">⚗ Generate New DGB Wallet</div>
+    <div class="wmodal-field">
+      <label>Label (optional)</label>
+      <input type="text" id="genLabel" placeholder="e.g. pool-main" />
+    </div>
+    <div class="wmodal-msg" id="genMsg"></div>
+    <div class="wmodal-buttons">
+      <button class="wallet-action-btn" onclick="walletUI.close('modalGenerate')">Cancel</button>
+      <button class="wallet-action-btn" onclick="walletUI.generate()">Generate</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Import Modal ──────────────────────────────────────────────────── -->
+<div class="wmodal-backdrop" id="modalImport">
+  <div class="wmodal">
+    <button class="wmodal-close" onclick="walletUI.close('modalImport')">&#10005;</button>
+    <div class="wmodal-title">↓ Import WIF Private Key</div>
+    <div class="wmodal-field">
+      <label>WIF Private Key</label>
+      <textarea id="importWif" rows="3" placeholder="Paste your WIF key here…"></textarea>
+    </div>
+    <div class="wmodal-field">
+      <label>Label (optional)</label>
+      <input type="text" id="importLabel" placeholder="e.g. backup-key" />
+    </div>
+    <div class="wmodal-msg" id="importMsg"></div>
+    <div class="wmodal-buttons">
+      <button class="wallet-action-btn" onclick="walletUI.close('modalImport')">Cancel</button>
+      <button class="wallet-action-btn" onclick="walletUI.importWif()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Export Modal ──────────────────────────────────────────────────── -->
+<div class="wmodal-backdrop" id="modalExport">
+  <div class="wmodal">
+    <button class="wmodal-close" onclick="walletUI.close('modalExport')">&#10005;</button>
+    <div class="wmodal-title">↑ Export WIF Private Key</div>
+    <p style="font-size:0.68rem;color:rgba(240,120,120,0.75);letter-spacing:0.1em;margin-bottom:1rem;font-style:italic;">
+      ⚠ Keep this secret. Anyone with this key controls the wallet.
+    </p>
+    <div class="wmodal-field">
+      <label>WIF Key for <span id="exportLabelName" style="color:var(--gold)"></span></label>
+      <div class="wmodal-copy-wrap">
+        <input type="text" id="exportWifValue" readonly />
+        <button class="wallet-btn" onclick="walletUI.copyExport()">Copy</button>
+      </div>
+    </div>
+    <div class="wmodal-msg" id="exportMsg"></div>
+    <div class="wmodal-buttons">
+      <button class="wallet-action-btn" onclick="walletUI.close('modalExport')">Done</button>
+    </div>
+  </div>
+</div>
+
 <script>
+  // ─── Stars ────────────────────────────────────────────────────────────────
   const starsEl = document.getElementById('stars');
   for (let i = 0; i < 160; i++) {
     const s = document.createElement('div');
@@ -407,6 +659,139 @@
     `;
     starsEl.appendChild(s);
   }
+
+  // ─── Wallet UI Module ─────────────────────────────────────────────────────
+  const walletUI = (() => {
+    const COIN = 'dgb';
+    const API  = '/api/wallet';
+
+    async function api(method, path, body) {
+      const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+      };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(`${API}${path}`, opts);
+      return res.json();
+    }
+
+    function setMsg(id, text, type) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = 'wmodal-msg ' + (type || '');
+    }
+
+    function renderList(wallets, activeLabel) {
+      const list = document.getElementById('walletList');
+      const addrEl = document.getElementById('walletActiveAddr');
+      list.innerHTML = '';
+
+      const active = wallets.find(w => w.isActive);
+      if (active) {
+        addrEl.textContent = active.address;
+        addrEl.classList.remove('empty');
+      } else {
+        addrEl.textContent = 'No wallet configured';
+        addrEl.classList.add('empty');
+      }
+
+      wallets.forEach(w => {
+        const li = document.createElement('li');
+        li.className = 'wallet-item' + (w.isActive ? ' is-active' : '');
+        li.innerHTML = `
+          <span class="wallet-item-label">${w.isActive ? '✦ ' : ''}${w.label}</span>
+          <span class="wallet-item-addr" title="${w.address}">${w.address}</span>
+          ${!w.isActive ? `<button class="wallet-btn" onclick="walletUI.setActive('${w.label}')">Set Active</button>` : '<span></span>'}
+          <button class="wallet-btn" onclick="walletUI.openExport('${w.label}')">Export</button>
+          <button class="wallet-btn danger" onclick="walletUI.remove('${w.label}')">✕</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    async function refresh() {
+      const data = await api('GET', `/${COIN}`);
+      if (data.wallets) renderList(data.wallets);
+    }
+
+    function open(id) {
+      document.getElementById(id).classList.add('open');
+    }
+    function close(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    function openGenerate() {
+      document.getElementById('genLabel').value = '';
+      setMsg('genMsg', '');
+      open('modalGenerate');
+    }
+
+    async function generate() {
+      const label = document.getElementById('genLabel').value.trim() || undefined;
+      setMsg('genMsg', 'Casting keys…', '');
+      const res = await api('POST', `/${COIN}/generate`, { label });
+      if (res.error) { setMsg('genMsg', res.error, 'err'); return; }
+      setMsg('genMsg', `Created: ${res.address}`, 'ok');
+      await refresh();
+      setTimeout(() => close('modalGenerate'), 1200);
+    }
+
+    function openImport() {
+      document.getElementById('importWif').value = '';
+      document.getElementById('importLabel').value = '';
+      setMsg('importMsg', '');
+      open('modalImport');
+    }
+
+    async function importWif() {
+      const wif   = document.getElementById('importWif').value.trim();
+      const label = document.getElementById('importLabel').value.trim() || undefined;
+      if (!wif) { setMsg('importMsg', 'Paste a WIF key first', 'err'); return; }
+      setMsg('importMsg', 'Validating…', '');
+      const res = await api('POST', `/${COIN}/import`, { wif, label });
+      if (res.error) { setMsg('importMsg', res.error, 'err'); return; }
+      setMsg('importMsg', `Imported: ${res.address}`, 'ok');
+      await refresh();
+      setTimeout(() => close('modalImport'), 1200);
+    }
+
+    async function openExport(label) {
+      document.getElementById('exportLabelName').textContent = label;
+      document.getElementById('exportWifValue').value = '…loading';
+      setMsg('exportMsg', '');
+      open('modalExport');
+      const res = await api('GET', `/${COIN}/${encodeURIComponent(label)}/export`);
+      if (res.error) { setMsg('exportMsg', res.error, 'err'); return; }
+      document.getElementById('exportWifValue').value = res.wif;
+    }
+
+    async function copyExport() {
+      const val = document.getElementById('exportWifValue').value;
+      try {
+        await navigator.clipboard.writeText(val);
+        setMsg('exportMsg', 'Copied to clipboard', 'ok');
+      } catch { setMsg('exportMsg', 'Copy failed — select manually', 'err'); }
+    }
+
+    async function setActive(label) {
+      const res = await api('POST', `/${COIN}/${encodeURIComponent(label)}/setActive`);
+      if (res.error) { alert(res.error); return; }
+      await refresh();
+    }
+
+    async function remove(label) {
+      if (!confirm(`Remove wallet "${label}"? This cannot be undone.`)) return;
+      const res = await api('DELETE', `/${COIN}/${encodeURIComponent(label)}`);
+      if (res.error) { alert(res.error); return; }
+      await refresh();
+    }
+
+    // Init
+    refresh().catch(() => {});
+
+    return { openGenerate, generate, openImport, importWif, openExport, copyExport, setActive, remove, close };
+  })();
 </script>
 
 </body>
