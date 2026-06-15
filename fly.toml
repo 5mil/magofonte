@@ -1,0 +1,40 @@
+app = 'magofonte'
+primary_region = 'iad'
+
+[build]
+
+[env]
+  NODE_ENV = 'production'
+  PORT = '8080'
+
+[[services]]
+  protocol = 'tcp'
+  internal_port = 8080
+
+  [[services.ports]]
+    port = 80
+    handlers = ['http']
+
+  [[services.ports]]
+    port = 443
+    handlers = ['tls', 'http']
+
+  [services.concurrency]
+    type = 'connections'
+    hard_limit = 500
+    soft_limit = 400
+
+# Stratum port — raw TCP, no HTTP handler
+[[services]]
+  protocol = 'tcp'
+  internal_port = 3333
+
+  [[services.ports]]
+    port = 3333
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1

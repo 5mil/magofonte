@@ -1,0 +1,16 @@
+{
+  "name": "magofonte",
+  "version": "0.1.0",
+  "description": "Offline-first modular platform — local AI, wallet, distributed node operation",
+  "main": "core/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node core/index.js",
+    "dev": "node --watch core/index.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {}
+}

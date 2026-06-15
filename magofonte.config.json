@@ -1,0 +1,29 @@
+{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8080
+  },
+  "modules": {
+    "pool":   { "enabled": true,  "stratumPort": 3333 },
+    "bridge": { "enabled": true  },
+    "forge":  { "enabled": true  },
+    "stream": { "enabled": true  },
+    "vault":  { "enabled": false },
+    "mesh":   { "enabled": false },
+    "ward":   { "enabled": false },
+    "sigil":  { "enabled": false }
+  },
+  "pool": {
+    "upstreams": [
+      {
+        "id": "dutch-americas",
+        "name": "Mining Dutch (Americas)",
+        "url": "stratum+tcp://americas.mining-dutch.nl:9983",
+        "priority": 1,
+        "enabled": true
+      }
+    ],
+    "defaultDifficulty": 0.001,
+    "shareTarget": "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  }
+}
