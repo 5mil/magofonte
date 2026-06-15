@@ -24,7 +24,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       min-height: 100vh;
       text-align: center;
       padding: 2rem;
@@ -78,6 +77,11 @@
       background: linear-gradient(90deg, transparent, var(--gold), transparent);
       opacity: 0.5;
     }
+    .divider-wide {
+      width: 100%; max-width: 660px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.3;
+    }
     .spell-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
     .spell-rune {
       font-size: 1.5rem; opacity: 0.5; letter-spacing: 0.5em;
@@ -112,6 +116,78 @@
       color: rgba(201,168,76,0.6); background: transparent; transition: all 0.3s ease;
     }
     .gh-link:hover { border-color: var(--gold); color: var(--gold-light); background: rgba(201,168,76,0.07); }
+
+    /* ─── Grimoire / Dev Log ─────────────────────────────────────────────── */
+    .grimoire {
+      width: 100%; max-width: 680px;
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 12px;
+      background: rgba(201,168,76,0.03);
+      padding: 2rem 2rem 1.5rem;
+      text-align: left;
+      position: relative;
+    }
+    .grimoire::before {
+      content: '⟡  The Wizard's Grimoire  ⟡';
+      position: absolute;
+      top: -0.7rem; left: 50%; transform: translateX(-50%);
+      font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--gold); background: var(--ink);
+      padding: 0 0.8rem; white-space: nowrap;
+    }
+    .log-entry {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.4rem 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(201,168,76,0.08);
+      align-items: start;
+    }
+    .log-entry:last-child { border-bottom: none; padding-bottom: 0; }
+    .log-sigil {
+      font-size: 1.4rem; line-height: 1;
+      margin-top: 0.15rem;
+    }
+    .log-body {}
+    .log-title {
+      font-size: 0.82rem; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--gold-light);
+      margin-bottom: 0.35rem;
+    }
+    .log-date {
+      font-size: 0.6rem; letter-spacing: 0.2em; color: rgba(201,168,76,0.35);
+      text-transform: uppercase; margin-left: 0.6rem;
+    }
+    .log-text {
+      font-size: 0.78rem; color: rgba(232,208,138,0.6); line-height: 1.75;
+      letter-spacing: 0.04em; font-style: italic;
+    }
+    .log-text code {
+      font-style: normal; font-size: 0.72rem;
+      color: rgba(201,168,76,0.85);
+      background: rgba(201,168,76,0.07);
+      padding: 0.1rem 0.35rem; border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+    .log-pills {
+      display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.55rem;
+    }
+    .pill {
+      font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+      padding: 0.15rem 0.55rem; border-radius: 999px;
+      border: 1px solid rgba(201,168,76,0.2);
+      color: rgba(201,168,76,0.45);
+    }
+    .pill.done  { border-color: rgba(100,200,120,0.35); color: rgba(140,220,150,0.7); }
+    .pill.wip   { border-color: rgba(201,168,76,0.4);   color: rgba(201,168,76,0.8); }
+    .pill.next  { border-color: rgba(150,130,200,0.35); color: rgba(180,160,220,0.6); }
+
+    .grimoire-footer {
+      margin-top: 1.2rem;
+      font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(201,168,76,0.2); text-align: center;
+    }
+
     .footer { margin-top: 2rem; font-size: 0.65rem; letter-spacing: 0.15em; color: rgba(201,168,76,0.22); text-transform: uppercase; }
     .footer a { color: inherit; text-decoration: none; }
     .footer a:hover { color: rgba(201,168,76,0.45); }
@@ -127,80 +203,44 @@
   <div class="wizard-wrap">
     <div class="wizard-glow"></div>
     <svg class="wizard-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Wizard illustration">
-      <!-- Background glow -->
       <radialGradient id="bgGlow" cx="50%" cy="40%" r="60%">
         <stop offset="0%" stop-color="#2a1f4a"/>
         <stop offset="100%" stop-color="#0d0b0e"/>
       </radialGradient>
       <circle cx="100" cy="100" r="100" fill="url(#bgGlow)"/>
-
-      <!-- Staff glow -->
       <radialGradient id="staffGlow" cx="50%" cy="50%" r="50%">
         <stop offset="0%" stop-color="#e8d08a" stop-opacity="0.9"/>
         <stop offset="100%" stop-color="#c9a84c" stop-opacity="0"/>
       </radialGradient>
-
-      <!-- Robe / body -->
       <path d="M72 195 Q68 160 65 140 Q60 115 58 105 Q55 90 70 82 L100 78 L130 82 Q145 90 142 105 Q140 115 135 140 Q132 160 128 195 Z" fill="#1a1040" stroke="#c9a84c" stroke-width="0.8" stroke-opacity="0.4"/>
-
-      <!-- Robe folds -->
       <path d="M80 110 Q85 130 82 155 Q84 170 83 190" fill="none" stroke="#c9a84c" stroke-width="0.4" stroke-opacity="0.25"/>
       <path d="M120 110 Q115 130 118 155 Q116 170 117 190" fill="none" stroke="#c9a84c" stroke-width="0.4" stroke-opacity="0.25"/>
-
-      <!-- Cloak / shoulders -->
       <path d="M58 105 Q45 110 40 130 Q38 145 42 165 Q55 175 72 195" fill="#110d30" stroke="#c9a84c" stroke-width="0.6" stroke-opacity="0.3"/>
       <path d="M142 105 Q155 110 160 130 Q162 145 158 165 Q145 175 128 195" fill="#110d30" stroke="#c9a84c" stroke-width="0.6" stroke-opacity="0.3"/>
-
-      <!-- Star emblem on chest -->
       <polygon points="100,88 102,94 108,94 103,98 105,104 100,100 95,104 97,98 92,94 98,94" fill="#c9a84c" opacity="0.7"/>
-
-      <!-- Neck -->
       <rect x="93" y="68" width="14" height="14" rx="4" fill="#c4956a"/>
-
-      <!-- Head -->
       <ellipse cx="100" cy="58" rx="18" ry="20" fill="#c4956a"/>
-
-      <!-- Eyes -->
       <ellipse cx="93" cy="55" rx="3" ry="3.5" fill="#1a1040"/>
       <ellipse cx="107" cy="55" rx="3" ry="3.5" fill="#1a1040"/>
-      <!-- Eye glow -->
       <circle cx="94" cy="54" r="1" fill="#e8d08a" opacity="0.8"/>
       <circle cx="108" cy="54" r="1" fill="#e8d08a" opacity="0.8"/>
-
-      <!-- Beard -->
       <path d="M84 65 Q88 72 90 80 Q95 88 100 90 Q105 88 110 80 Q112 72 116 65" fill="#d4c8a0" opacity="0.85"/>
       <path d="M90 80 Q93 92 95 98" fill="none" stroke="#b8aa80" stroke-width="0.8" opacity="0.6"/>
       <path d="M110 80 Q107 92 105 98" fill="none" stroke="#b8aa80" stroke-width="0.8" opacity="0.6"/>
-
-      <!-- Eyebrows -->
       <path d="M89 50 Q93 47 97 49" fill="none" stroke="#8a7a50" stroke-width="1.2" stroke-linecap="round"/>
       <path d="M103 49 Q107 47 111 50" fill="none" stroke="#8a7a50" stroke-width="1.2" stroke-linecap="round"/>
-
-      <!-- Hat brim -->
       <ellipse cx="100" cy="40" rx="26" ry="6" fill="#1a1040" stroke="#c9a84c" stroke-width="0.8" stroke-opacity="0.6"/>
-
-      <!-- Hat cone -->
       <path d="M74 40 Q88 20 100 2 Q112 20 126 40 Z" fill="#1a1040" stroke="#c9a84c" stroke-width="0.8" stroke-opacity="0.5"/>
-
-      <!-- Hat star -->
       <polygon points="100,8 101.5,13 107,13 102.5,16 104,21 100,18 96,21 97.5,16 93,13 98.5,13" fill="#c9a84c" opacity="0.9"/>
-
-      <!-- Hat band -->
       <path d="M76 40 Q100 44 124 40" fill="none" stroke="#c9a84c" stroke-width="1" stroke-opacity="0.5"/>
-
-      <!-- Staff -->
       <line x1="148" y1="195" x2="130" y2="85" stroke="#8a6a30" stroke-width="2.5" stroke-linecap="round"/>
       <line x1="148" y1="195" x2="130" y2="85" stroke="#c9a84c" stroke-width="1" stroke-opacity="0.5" stroke-linecap="round"/>
-
-      <!-- Staff orb -->
       <circle cx="128" cy="80" r="8" fill="#1a1040" stroke="#c9a84c" stroke-width="1"/>
       <circle cx="128" cy="80" r="5" fill="url(#staffGlow)" opacity="0.9">
         <animate attributeName="r" values="4;6;4" dur="3s" repeatCount="indefinite"/>
         <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
       </circle>
       <circle cx="127" cy="78" r="2" fill="white" opacity="0.6"/>
-
-      <!-- Floating sparkles -->
       <circle cx="45" cy="50" r="1.5" fill="#e8d08a" opacity="0.7">
         <animate attributeName="opacity" values="0.2;0.9;0.2" dur="2.5s" repeatCount="indefinite"/>
       </circle>
@@ -226,7 +266,7 @@
   <div class="spell-wrap">
     <div class="spell-rune">&#10022; &#10023; &#10022;</div>
     <div class="spell-main">The Spell is Being Cast</div>
-    <div class="spell-sub">The source awakens &mdash; conjuring soon</div>
+    <div class="spell-sub">The ore is struck &mdash; the first block nears</div>
   </div>
 
   <p class="tagline">
@@ -250,6 +290,100 @@
   <a class="gh-link" href="https://github.com/5mil/magofonte" target="_blank" rel="noopener">
     &#11041; &nbsp;github.com/5mil/magofonte
   </a>
+
+  <div class="divider-wide"></div>
+
+  <!-- ─── Grimoire ─────────────────────────────────────────────────────── -->
+  <div class="grimoire">
+
+    <div class="log-entry">
+      <div class="log-sigil">⛏</div>
+      <div class="log-body">
+        <div class="log-title">The Mine Awakens <span class="log-date">June 2026</span></div>
+        <div class="log-text">
+          The pool module now speaks fluent Stratum. Miners connect, subscribe, receive jobs,
+          and submit shares — the full <code>mining.subscribe → authorize → notify → submit</code>
+          handshake works end to end. VarDiff adjusts difficulty in real time so a phone CPU
+          and a GPU can mine side by side without either drowning the other.
+        </div>
+        <div class="log-pills">
+          <span class="pill done">Stratum V1</span>
+          <span class="pill done">VarDiff</span>
+          <span class="pill done">PPLNS Payout</span>
+          <span class="pill done">JobEngine</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="log-entry">
+      <div class="log-sigil">🪙</div>
+      <div class="log-body">
+        <div class="log-title">Coins Go Somewhere Now <span class="log-date">June 2026</span></div>
+        <div class="log-text">
+          The coinbase output previously paid to the all-zeros burn address — a technically valid
+          script that leads exactly nowhere. <code>pool/address.js</code> now decodes real
+          Base58Check addresses with full checksum verification. Every block found forwards
+          its reward to the operator's actual DGB wallet. The module knows the version bytes
+          for BTC, LTC, DGB, DOGE, DASH, and friends, and a self-test vector fires on boot
+          so a misconfigured build fails loudly before the first share arrives.
+        </div>
+        <div class="log-pills">
+          <span class="pill done">Base58Check decode</span>
+          <span class="pill done">P2PKH script</span>
+          <span class="pill done">P2SH script</span>
+          <span class="pill done">Hot address update</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="log-entry">
+      <div class="log-sigil">🌀</div>
+      <div class="log-body">
+        <div class="log-title">Skein Woven In <span class="log-date">June 2026</span></div>
+        <div class="log-text">
+          DigiByte's Skein algorithm hashes the 80-byte block header with
+          <code>Skein512(Skein512(header))</code>. The old code used double-SHA256 — correct for
+          Bitcoin, wrong for DGB. <code>pool/skein.js</code> is a full pure-JavaScript Threefish-512
+          implementation: 72 rounds, 8 MIX pairs per round, key injection every 4 rounds, UBI chaining,
+          zero native addons. A NIST known-answer test vector (<code>Skein512(0xFF)</code>) validates
+          the implementation on every startup. The block submitted to the node will now actually match
+          the header hash the Skein miners computed.
+        </div>
+        <div class="log-pills">
+          <span class="pill done">Threefish-512</span>
+          <span class="pill done">UBI chaining</span>
+          <span class="pill done">Double-Skein</span>
+          <span class="pill done">NIST self-test</span>
+          <span class="pill done">Algo dispatcher</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="log-entry">
+      <div class="log-sigil">🔮</div>
+      <div class="log-body">
+        <div class="log-title">What the Orb Shows Next <span class="log-date">on the horizon</span></div>
+        <div class="log-text">
+          The incantation is nearly complete. The remaining runes to inscribe before
+          the first block emerges from the stone: connect a real miner, watch the
+          share validator accept a genuine Skein hash, and let <code>submitblock</code>
+          carry it to the DGB network. Beyond that — the other four DGB algorithms
+          (Scrypt, Qubit, Odo, SHA256d) await their own scroll entries.
+        </div>
+        <div class="log-pills">
+          <span class="pill wip">First real block</span>
+          <span class="pill next">Scrypt algo</span>
+          <span class="pill next">Qubit algo</span>
+          <span class="pill next">OdoCrypt algo</span>
+          <span class="pill next">Dashboard UI</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grimoire-footer">
+      Inscribed by the wizard's hand &nbsp;·&nbsp; entries added as spells complete
+    </div>
+  </div>
 
   <div class="footer">
     Apache 2.0 &nbsp;&middot;&nbsp; Original concept inspired by Gustave Dor&eacute;, c.1868
