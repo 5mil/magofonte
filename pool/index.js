@@ -36,6 +36,14 @@
  *     operatorFeePct: 0,          // operator cut of CPU blocks (default 0)
  *     dustThreshold:  1000,       // min satoshis to pay out (default)
  *   }
+ *
+ * Wallet routes (mounted under /api/wallet):
+ *   GET    /api/wallet/:coin                   list wallets
+ *   POST   /api/wallet/:coin/generate          generate keypair
+ *   POST   /api/wallet/:coin/import            import WIF
+ *   GET    /api/wallet/:coin/:label/export     export WIF
+ *   POST   /api/wallet/:coin/:label/setActive  set active + hot-swap reward address
+ *   DELETE /api/wallet/:coin/:label            remove wallet
  */
 
 import net    from 'node:net';
@@ -48,6 +56,8 @@ import { addressToScript, validateAddress }    from './address.js';
 import { hashHeader }                          from './hash.js';
 import { CpuMiner }                            from './miner.js';
 import { BonusLedger }                         from './bonus.js';
+import walletManager                           from './walletManager.js';
+import { walletRoutes }                        from './walletRoutes.js';
 
 // ─── Utilities ───────────────────────────────────────────────────────────────
 
@@ -301,7 +311,6 @@ class MinerSession {
     this.hashrate=this._shareTimes.length*this.difficulty*4_294_967_296/60;
     if(result.valid){
       this.accepted++;this.pool.payout.addShare(this.user,this.difficulty);
-      // ── feed into cross-pool bonus ledger ──
       this.pool.registry.bonusLedger?.recordShare(this.pool.poolId, this.user, this.difficulty);
       this.send({id:msg.id,result:true,error:null});
       this.pool.registry.emit('share:accepted',{minerId:this.id,user:this.user,jobId,isBlock:result.isBlock,hashrate:this.hashrate});
@@ -323,7 +332,7 @@ class CpuMinerSession {
   constructor(pool) {
     this.pool        = pool;
     this.id          = 'cpu-miner';
-    this.user        = 'server';          // excluded from bonus by BonusLedger
+    this.user        = 'server';
     this.difficulty  = 1.0;
     this.extranonce1 = crypto.randomBytes(4).toString('hex');
     this._shares     = new Set();
@@ -340,8 +349,6 @@ class CpuMinerSession {
 
     if (result.valid) {
       this.accepted++;
-      // CPU miner's own valid work does NOT feed into bonus ledger share window —
-      // it is the *source* of the bonus pot, not a recipient.
       this.pool.registry.emit('share:accepted', { minerId:this.id, user:this.user, jobId, isBlock:result.isBlock });
 
       if (result.isBlock) {
@@ -349,7 +356,6 @@ class CpuMinerSession {
         this.pool.registry.emit('block:found', { user:this.user, height:job.height, reward:job.coinbaseValue });
         this.pool.payout.recordBlock(job.height, job.coinbaseValue);
 
-        // ── Distribute the entire coinbase reward as bonus to real workers ──
         const ledger = this.pool.registry.bonusLedger;
         if (ledger) {
           ledger.cpuBlockFound(job.coinbaseValue, {
@@ -388,6 +394,18 @@ const Pool = {
       registry.bonusLedger = new BonusLedger(registry, config?.bonus || {});
     }
 
+    // ── Wire walletManager → jobEngine hot-swap ──────────────────────────────
+    // When the active wallet changes for any coin, if the pool is currently
+    // running for that coin, immediately swap the reward address so the very
+    // next block template uses the new address — no restart required.
+    walletManager.on('activeChanged', ({ coinId, address }) => {
+      if (!this.jobEngine) return;
+      if (this.activeConfig?.coin !== coinId) return;
+      const coinDef = this.activeConfig._coinDef || { id: coinId };
+      const ok = this.jobEngine.updateRewardAddress(address, coinDef);
+      console.log(`[pool:wallet] activeChanged → ${coinId} ${address} (applied=${ok})`);
+    });
+
     registry.on('node:ready',({coin,node})=>{
       const poolCfg=this.settings.autoRegisterFromNode(coin);
       if(poolCfg&&!poolCfg.monetization.mining.enabled){this.settings.setMonetization(coin,'mining',true);this.settings.setActivePool(coin);}
@@ -415,7 +433,6 @@ const Pool = {
         this.cpuMiner?.newJob(job, this.cpuSession?.extranonce1);
       });
       this._openStratum(config.stratumPort||3333);
-      // Register this pool with the BonusLedger
       registry.bonusLedger.registerPool(this.poolId, this.payout);
       if (config.cpuMining?.enabled) this._startCpuMiner(config);
     }
@@ -438,7 +455,6 @@ const Pool = {
     });
     this.jobEngine.start();
     this._openStratum(poolCfg.stratumPort||3333);
-    // Register with BonusLedger (creates if absent)
     if (!this.registry.bonusLedger)
       this.registry.bonusLedger = new BonusLedger(this.registry, poolCfg.bonus || {});
     this.registry.bonusLedger.registerPool(this.poolId, this.payout);
@@ -562,7 +578,10 @@ const Pool = {
       ['POST',   '/settings/active',                       async(req,res)=>{const b=await _body(req);try{const{poolId}=JSON.parse(b);sm.setActivePool(poolId);_json(res,{ok:true,activePool:poolId});}catch(e){_400(res,e.message);}}],
       ['GET',    '/settings/pools/:id/monetization',       (req,res)=>{try{_json(res,sm.getMonetizationOptions(req.params.id));}catch(e){_400(res,e.message);}}],
       ['POST',   '/settings/pools/:id/monetization/:type', async(req,res)=>{const b=await _body(req);try{const{enabled,config}=JSON.parse(b);_json(res,sm.setMonetization(req.params.id,req.params.type,enabled,config||{}));}catch(e){_400(res,e.message);}}],
-      ['GET',    '/settings/monetization-types',           (req,res)=>_json(res,Object.values(MONETIZATION_TYPES).map(t=>({id:t.id,label:t.label,description:t.description,settings:Object.fromEntries(Object.entries(t.settings).map(([k,s])=>[k,{...s,options:typeof s.options==='function'?[]:s.options}]))})))]
+      ['GET',    '/settings/monetization-types',           (req,res)=>_json(res,Object.values(MONETIZATION_TYPES).map(t=>({id:t.id,label:t.label,description:t.description,settings:Object.fromEntries(Object.entries(t.settings).map(([k,s])=>[k,{...s,options:typeof s.options==='function'?[]:s.options}]))})))],
+
+      // ── Wallet routes (generate, import, export, setActive, delete) ────────
+      ...walletRoutes(walletManager),
     ];
   },
 
