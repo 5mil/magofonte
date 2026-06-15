@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MagoFonte</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8d08a;
+      --ink: #0d0b0e;
+      --parchment: #1a1520;
+      --mist: #2e2740;
+      --glow: rgba(201,168,76,0.18);
+    }
+
+    html, body {
+      height: 100%;
+      background-color: var(--ink);
+      color: var(--gold-light);
+      font-family: 'Cinzel', serif;
+      overflow-x: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 2rem;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse at 50% 100%, rgba(80,50,140,0.15) 0%, transparent 70%),
+        var(--ink);
+    }
+
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: white;
+      opacity: 0;
+      animation: twinkle var(--d, 4s) var(--delay, 0s) infinite ease-in-out;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; }
+      50% { opacity: var(--bright, 0.6); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 760px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .wizard-wrap {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      margin-bottom: 0.5rem;
+    }
+    .wizard-glow {
+      position: absolute;
+      inset: -20px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,168,76,0.22) 0%, transparent 70%);
+      animation: pulse 4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+    .wizard-img {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      object-fit: contain;
+      filter: sepia(0.3) contrast(1.1) brightness(0.92) drop-shadow(0 0 18px rgba(201,168,76,0.45));
+      border-radius: 50%;
+      border: 2px solid rgba(201,168,76,0.3);
+    }
+
+    .logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .logo-name {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(2.4rem, 7vw, 4.2rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, #a07830 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+    .logo-sub {
+      font-size: clamp(0.75rem, 2vw, 0.95rem);
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: rgba(201,168,76,0.55);
+      font-weight: 400;
+    }
+
+    .divider {
+      width: 260px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.5;
+    }
+
+    .spell-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .spell-rune {
+      font-size: 1.5rem;
+      opacity: 0.5;
+      letter-spacing: 0.5em;
+      animation: flicker 6s ease-in-out infinite;
+    }
+    @keyframes flicker {
+      0%, 90%, 100% { opacity: 0.5; }
+      95% { opacity: 0.15; }
+    }
+    .spell-main {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(1.4rem, 4.5vw, 2.2rem);
+      font-weight: 700;
+      color: var(--gold-light);
+      letter-spacing: 0.05em;
+      line-height: 1.2;
+    }
+    .spell-sub {
+      font-size: clamp(0.8rem, 2vw, 1rem);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(201,168,76,0.5);
+      margin-top: 0.25rem;
+    }
+
+    .tagline {
+      font-size: clamp(0.85rem, 2vw, 1.05rem);
+      color: rgba(232,208,138,0.65);
+      letter-spacing: 0.12em;
+      line-height: 1.7;
+      max-width: 480px;
+      font-style: italic;
+    }
+
+    .modules {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      max-width: 580px;
+    }
+    .module {
+      border: 1px solid rgba(201,168,76,0.25);
+      border-radius: 999px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(201,168,76,0.5);
+      background: rgba(201,168,76,0.04);
+      transition: all 0.3s ease;
+    }
+    .module:hover {
+      border-color: rgba(201,168,76,0.6);
+      color: var(--gold-light);
+      background: rgba(201,168,76,0.08);
+    }
+
+    .gh-link {
+      margin-top: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1.4rem;
+      border: 1px solid rgba(201,168,76,0.35);
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 0.78rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(201,168,76,0.6);
+      background: transparent;
+      transition: all 0.3s ease;
+    }
+    .gh-link:hover {
+      border-color: var(--gold);
+      color: var(--gold-light);
+      background: rgba(201,168,76,0.07);
+    }
+
+    .footer {
+      margin-top: 2rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: rgba(201,168,76,0.22);
+      text-transform: uppercase;
+    }
+    .footer a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .footer a:hover { color: rgba(201,168,76,0.45); }
+  </style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="container">
+
+  <div class="wizard-wrap">
+    <div class="wizard-glow"></div>
+    <img
+      class="wizard-img"
+      src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Merlin_and_Viviane.jpg/440px-Merlin_and_Viviane.jpg"
+      alt="Merlin the wizard — public domain illustration by Gustave Dore, circa 1868"
+    />
+  </div>
+
+  <div class="logo">
+    <div class="logo-name">MagoFonte</div>
+    <div class="logo-sub">Italian &middot; Mago (Wizard) &middot; Fonte (Source)</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="spell-wrap">
+    <div class="spell-rune">&#10022; &#10023; &#10022;</div>
+    <div class="spell-main">The Spell is Being Cast</div>
+    <div class="spell-sub">The source awakens &mdash; conjuring soon</div>
+  </div>
+
+  <p class="tagline">
+    An offline-first, modular platform for local AI, wallet management,<br />
+    and distributed node operation. Built for those who own their intelligence stack.
+  </p>
+
+  <div class="divider"></div>
+
+  <div class="modules">
+    <span class="module">Core</span>
+    <span class="module">Forge</span>
+    <span class="module">Vault</span>
+    <span class="module">Mesh</span>
+    <span class="module">Ward</span>
+    <span class="module">Stream</span>
+    <span class="module">Bridge</span>
+    <span class="module">Sigil</span>
+  </div>
+
+  <a class="gh-link" href="https://github.com/5mil/magofonte" target="_blank" rel="noopener">
+    &#11041; &nbsp;github.com/5mil/magofonte
+  </a>
+
+  <div class="footer">
+    Apache 2.0 &nbsp;&middot;&nbsp; Wizard illustration: Gustave Dor&eacute;, c.1868 &mdash;
+    <a href="https://commons.wikimedia.org/wiki/File:Merlin_and_Viviane.jpg" target="_blank" rel="noopener">Wikimedia Commons, public domain</a>
+  </div>
+
+</div>
+
+<script>
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 160; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.2 + 0.4;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      top:${Math.random()*100}%;
+      left:${Math.random()*100}%;
+      --d:${(Math.random()*5+3).toFixed(1)}s;
+      --delay:${(Math.random()*6).toFixed(1)}s;
+      --bright:${(Math.random()*0.5+0.3).toFixed(2)};
+    `;
+    starsEl.appendChild(s);
+  }
+</script>
+
+</body>
+</html>
