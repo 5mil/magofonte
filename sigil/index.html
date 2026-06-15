@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MagoFonte</title>
+<style>
+  :root {
+    --bg:       #0a0c10;
+    --surface:  #111520;
+    --border:   #1e2535;
+    --gold:     #c9a84c;
+    --gold2:    #e8c96a;
+    --cyan:     #4ecdc4;
+    --green:    #2ecc71;
+    --red:      #e74c3c;
+    --orange:   #f39c12;
+    --dim:      #4a5568;
+    --text:     #d1d5db;
+    --text2:    #9ca3af;
+    --radius:   8px;
+    --font:     'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:13px; min-height:100vh; }
+
+  /* ── Layout ── */
+  #app { display:grid; grid-template-rows:48px 1fr; height:100vh; }
+  #topbar { display:flex; align-items:center; padding:0 20px; gap:16px;
+    background:var(--surface); border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:100; }
+  #topbar .logo { color:var(--gold); font-size:16px; font-weight:700; letter-spacing:2px; }
+  #topbar .logo span { color:var(--text2); font-weight:400; font-size:11px; margin-left:8px; }
+  #topbar .spacer { flex:1; }
+  .topbar-pill { background:var(--border); border-radius:20px; padding:4px 12px;
+    font-size:11px; color:var(--text2); cursor:pointer; transition:.15s; }
+  .topbar-pill:hover { background:var(--gold); color:var(--bg); }
+  .topbar-pill.active { background:var(--gold); color:var(--bg); }
+  #user-badge { display:flex; align-items:center; gap:8px; }
+  .role-badge { padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+  .role-owner    { background:#7c3aed22; color:#a78bfa; border:1px solid #7c3aed55; }
+  .role-admin    { background:#dc262622; color:#f87171; border:1px solid #dc262655; }
+  .role-operator { background:#d9770622; color:#fb923c; border:1px solid #d9770655; }
+  .role-member   { background:#16a34a22; color:#4ade80; border:1px solid #16a34a55; }
+
+  #body { display:grid; grid-template-columns:200px 1fr; overflow:hidden; }
+
+  /* ── Sidebar ── */
+  #sidebar { background:var(--surface); border-right:1px solid var(--border);
+    padding:16px 0; display:flex; flex-direction:column; overflow-y:auto; }
+  .nav-section { padding:8px 16px 4px; font-size:10px; color:var(--dim);
+    letter-spacing:1.5px; text-transform:uppercase; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:9px 20px;
+    cursor:pointer; color:var(--text2); transition:.12s; border-left:3px solid transparent; }
+  .nav-item:hover  { color:var(--text); background:#ffffff05; }
+  .nav-item.active { color:var(--gold); border-left-color:var(--gold); background:#c9a84c0d; }
+  .nav-item .icon  { font-size:14px; width:18px; text-align:center; }
+  .nav-item .label { font-size:12px; }
+  .nav-item.locked { opacity:.35; cursor:not-allowed; }
+
+  /* ── Main content ── */
+  #main { overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:20px; }
+
+  /* ── Cards ── */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+  .card-title { color:var(--gold); font-size:12px; font-weight:700; letter-spacing:1.5px;
+    text-transform:uppercase; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+  .card-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:12px; }
+
+  /* ── Stat tiles ── */
+  .stat { background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px 16px; }
+  .stat .label  { font-size:10px; color:var(--dim); letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
+  .stat .value  { font-size:22px; font-weight:700; color:var(--text); }
+  .stat .sub    { font-size:10px; color:var(--text2); margin-top:4px; }
+  .stat.green .value { color:var(--green); }
+  .stat.gold  .value { color:var(--gold); }
+  .stat.cyan  .value { color:var(--cyan); }
+
+  /* ── Tables ── */
+  table { width:100%; border-collapse:collapse; }
+  th { font-size:10px; color:var(--dim); letter-spacing:1px; text-transform:uppercase;
+    padding:8px 12px; text-align:left; border-bottom:1px solid var(--border); }
+  td { padding:10px 12px; border-bottom:1px solid #1e253533; font-size:12px; }
+  tr:hover td { background:#ffffff04; }
+  .tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:600; }
+  .tag-on  { background:#2ecc7122; color:#2ecc71; }
+  .tag-off { background:#4a556822; color:#6b7280; }
+  .tag-ready { background:#4ecdc422; color:#4ecdc4; }
+  .tag-sync  { background:#f39c1222; color:#f39c12; }
+  .tag-error { background:#e74c3c22; color:#e74c3c; }
+
+  /* ── Buttons ── */
+  .btn { border:none; border-radius:var(--radius); padding:8px 16px; font-family:var(--font);
+    font-size:12px; cursor:pointer; transition:.12s; font-weight:600; }
+  .btn-gold  { background:var(--gold); color:var(--bg); }
+  .btn-gold:hover  { background:var(--gold2); }
+  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--text2); }
+  .btn-ghost:hover { border-color:var(--gold); color:var(--gold); }
+  .btn-red   { background:#e74c3c22; border:1px solid #e74c3c55; color:#e74c3c; }
+  .btn-red:hover { background:#e74c3c44; }
+  .btn-sm { padding:5px 10px; font-size:11px; }
+  .btn-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+
+  /* ── Forms ── */
+  .field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .field label { font-size:11px; color:var(--text2); letter-spacing:.5px; }
+  .field input, .field select, .field textarea {
+    background:var(--bg); border:1px solid var(--border); border-radius:6px;
+    padding:10px 12px; color:var(--text); font-family:var(--font); font-size:13px;
+    outline:none; transition:.12s; }
+  .field input:focus, .field select:focus { border-color:var(--gold); }
+  .field textarea { min-height:120px; resize:vertical; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* ── Monetization toggles ── */
+  .mon-grid { display:grid; gap:10px; }
+  .mon-row { display:flex; align-items:center; gap:14px; padding:12px 14px;
+    background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);
+    cursor:pointer; transition:.12s; }
+  .mon-row:hover { border-color:var(--gold); }
+  .mon-row.unavail { opacity:.4; cursor:not-allowed; }
+  .mon-row .icon { font-size:18px; width:24px; text-align:center; }
+  .mon-row .info { flex:1; }
+  .mon-row .info .name { font-size:12px; font-weight:600; color:var(--text); }
+  .mon-row .info .desc { font-size:11px; color:var(--dim); margin-top:2px; }
+  .mon-row .config-btn { font-size:10px; color:var(--dim); padding:4px 8px;
+    border:1px solid var(--border); border-radius:4px; }
+  .mon-row .config-btn:hover { border-color:var(--cyan); color:var(--cyan); }
+  .toggle { width:38px; height:22px; border-radius:11px; background:var(--border);
+    position:relative; transition:.2s; flex-shrink:0; }
+  .toggle.on { background:var(--green); }
+  .toggle::after { content:''; position:absolute; top:3px; left:3px;
+    width:16px; height:16px; border-radius:50%; background:white; transition:.2s; }
+  .toggle.on::after { left:19px; }
+
+  /* ── Alerts ── */
+  .alert { padding:10px 14px; border-radius:var(--radius); font-size:12px; margin-bottom:12px; }
+  .alert-info  { background:#4ecdc422; border:1px solid #4ecdc455; color:var(--cyan); }
+  .alert-ok    { background:#2ecc7122; border:1px solid #2ecc7155; color:var(--green); }
+  .alert-error { background:#e74c3c22; border:1px solid #e74c3c55; color:#e74c3c; }
+  .alert-warn  { background:#f39c1222; border:1px solid #f39c1255; color:var(--orange); }
+
+  /* ── Login screen ── */
+  #login-screen { display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-height:100vh; gap:24px; }
+  #login-box { background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:36px 40px; width:380px; }
+  #login-box h1 { color:var(--gold); font-size:22px; letter-spacing:3px; margin-bottom:4px; }
+  #login-box .sub { color:var(--dim); font-size:11px; margin-bottom:28px; }
+
+  /* ── Misc ── */
+  .sep { border:none; border-top:1px solid var(--border); margin:16px 0; }
+  .mono { font-family:var(--font); font-size:11px; color:var(--text2); }
+  .pill-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .hidden { display:none !important; }
+  .dimtext { color:var(--dim); font-size:11px; }
+  .pulse { animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  #toast { position:fixed; bottom:24px; right:24px; z-index:9999;
+    display:flex; flex-direction:column; gap:8px; }
+  .toast-item { background:var(--surface); border:1px solid var(--border); border-radius:8px;
+    padding:10px 16px; font-size:12px; min-width:220px; transition:.3s;
+    box-shadow:0 4px 20px #00000066; }
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ LOGIN ══ -->
+<div id="login-screen">
+  <div id="login-box">
+    <h1>⚗ MAGOFONTE</h1>
+    <p class="sub">home mining server — authenticate to continue</p>
+    <div id="setup-notice" class="alert alert-warn hidden">No accounts exist yet. Creating owner account.</div>
+    <div class="field"><label>USERNAME</label><input id="l-user" type="text" autocomplete="username" autofocus></div>
+    <div class="field"><label>PASSWORD</label><input id="l-pass" type="password" autocomplete="current-password"></div>
+    <div id="login-err" class="alert alert-error hidden"></div>
+    <button class="btn btn-gold" style="width:100%" onclick="doLogin()">ENTER</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ APP ═══ -->
+<div id="app" class="hidden">
+
+  <!-- Topbar -->
+  <div id="topbar">
+    <div class="logo">⚗ MAGOFONTE <span>home mining server</span></div>
+    <div class="spacer"></div>
+    <div id="node-pill" class="topbar-pill">⛏ node: —</div>
+    <div id="pool-pill" class="topbar-pill">⚡ pool: —</div>
+    <div id="user-badge">
+      <span id="u-name" style="color:var(--text2);font-size:12px"></span>
+      <span id="u-role" class="role-badge"></span>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">logout</button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div id="body">
+
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div class="nav-section">Overview</div>
+      <div class="nav-item active" onclick="nav('dashboard')"  data-view="dashboard">  <span class="icon">◈</span><span class="label">Dashboard</span></div>
+      <div class="nav-item" onclick="nav('miners')"    data-view="miners">    <span class="icon">⛏</span><span class="label">Miners</span></div>
+      <div class="nav-item" onclick="nav('payout')"    data-view="payout">    <span class="icon">₿</span><span class="label">Payout</span></div>
+      <div class="nav-section">Control</div>
+      <div class="nav-item" onclick="nav('pool')"      data-view="pool">      <span class="icon">⚙</span><span class="label">Pool Settings</span></div>
+      <div class="nav-item" onclick="nav('monetize')"  data-view="monetize">  <span class="icon">⚡</span><span class="label">Monetization</span></div>
+      <div class="nav-item" onclick="nav('nodes')"     data-view="nodes">     <span class="icon">◉</span><span class="label">Nodes</span></div>
+      <div class="nav-item" onclick="nav('coins')"     data-view="coins">     <span class="icon">✦</span><span class="label">Launch Coin</span></div>
+      <div class="nav-item" onclick="nav('logs')"      data-view="logs">      <span class="icon">▤</span><span class="label">Logs</span></div>
+      <div class="nav-section">Admin</div>
+      <div class="nav-item" id="nav-users"  onclick="nav('users')"   data-view="users">  <span class="icon">👤</span><span class="label">Users</span></div>
+      <div class="nav-item" id="nav-system" onclick="nav('system')"  data-view="system"> <span class="icon">⌘</span><span class="label">System</span></div>
+    </nav>
+
+    <!-- Main -->
+    <main id="main">
+      <!-- Panels injected by JS -->
+    </main>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// State
+// ═══════════════════════════════════════════════════════════════════════
+const S = { token: null, user: null, view: 'dashboard', pollTimer: null };
+const BASE = '';
+
+// ═══════════════════════════════════════════════════════════════════════
+// API helpers
+// ═══════════════════════════════════════════════════════════════════════
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type':'application/json' } };
+  if (S.token) opts.headers['Authorization'] = 'Bearer ' + S.token;
+  if (body)    opts.body = JSON.stringify(body);
+  const res  = await fetch(BASE + '/api/v1' + path, opts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw Object.assign(new Error(data.error || res.statusText), { status: res.status });
+  return data;
+}
+const GET    = (p)    => api('GET',    p);
+const POST   = (p, b) => api('POST',   p, b);
+const PATCH  = (p, b) => api('PATCH',  p, b);
+const DELETE = (p)    => api('DELETE', p);
+
+// ═══════════════════════════════════════════════════════════════════════
+// Auth
+// ═══════════════════════════════════════════════════════════════════════
+async function checkSetup() {
+  try {
+    await GET('/ward/me');
+  } catch(e) {
+    if (e.status === 401) {
+      // Check if owner exists
+      try { await GET('/ward/users'); }
+      catch(e2) {
+        if (e2.status === 404 || e2.status === 401) {
+          // Try setup endpoint probe — if 403 owner exists, else show setup mode
+          try { await POST('/ward/setup', { username: '__probe__', password: '__probe__' }); }
+          catch(e3) { if (e3.status !== 403) show('setup-notice'); }
+        }
+      }
+    }
+  }
+}
+
+async function doLogin() {
+  const username = document.getElementById('l-user').value.trim();
+  const password = document.getElementById('l-pass').value;
+  const err = document.getElementById('login-err');
+  err.classList.add('hidden');
+  try {
+    // First-run: if no owner, create one
+    let data;
+    try {
+      data = await POST('/ward/login', { username, password });
+    } catch(e) {
+      if (e.status === 401) {
+        // Maybe needs setup
+        try {
+          await POST('/ward/setup', { username, password });
+          data = await POST('/ward/login', { username, password });
+          toast('Owner account created', 'ok');
+        } catch(e2) {
+          throw e; // re-throw original 401
+        }
+      } else throw e;
+    }
+    S.token = data.token;
+    S.user  = { username: data.username, role: data.role };
+    localStorage.setItem('mf_token', S.token);
+    bootApp();
+  } catch(e) {
+    err.textContent = e.message;
+    err.classList.remove('hidden');
+  }
+}
+
+function doLogout() {
+  S.token = null; S.user = null;
+  localStorage.removeItem('mf_token');
+  clearInterval(S.pollTimer);
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Boot
+// ═══════════════════════════════════════════════════════════════════════
+async function bootApp() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('u-name').textContent = S.user.username;
+  const rb = document.getElementById('u-role');
+  rb.textContent = S.user.role;
+  rb.className   = 'role-badge role-' + S.user.role;
+
+  // Hide admin-only nav items for non-admins
+  const rank = { member:0, operator:1, admin:2, owner:3 };
+  if (rank[S.user.role] < rank['admin']) {
+    document.getElementById('nav-users').classList.add('locked');
+    document.getElementById('nav-system').classList.add('locked');
+  }
+
+  await nav('dashboard');
+  S.pollTimer = setInterval(pollStatus, 5000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Navigation
+// ═══════════════════════════════════════════════════════════════════════
+function nav(view) {
+  S.view = view;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelector(`[data-view="${view}"]`)?.classList.add('active');
+  const renders = {
+    dashboard: renderDashboard,
+    miners:    renderMiners,
+    payout:    renderPayout,
+    pool:      renderPoolSettings,
+    monetize:  renderMonetize,
+    nodes:     renderNodes,
+    coins:     renderCoins,
+    logs:      renderLogs,
+    users:     renderUsers,
+    system:    renderSystem
+  };
+  const fn = renders[view];
+  if (fn) fn();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Live poll
+// ═══════════════════════════════════════════════════════════════════════
+async function pollStatus() {
+  try {
+    const status = await GET('/pool/status');
+    document.getElementById('pool-pill').textContent =
+      `⚡ ${(status.coin||'—').toUpperCase()} · ${fmt(status.hashrate||0)} · ${status.miners||0} miners`;
+    const node = await GET('/node/status').catch(()=>[]);
+    const active = Array.isArray(node) ? node.find(n=>n.status==='ready') : null;
+    document.getElementById('node-pill').textContent =
+      active ? `⛏ ${active.coin.toUpperCase()} · h=${active.syncHeight}` : '⛏ node: offline';
+    if (S.view === 'dashboard') renderDashboard();
+    if (S.view === 'miners')    renderMiners();
+  } catch {}
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Views
+// ═══════════════════════════════════════════════════════════════════════
+
+async function renderDashboard() {
+  let status = {}, payout = {}, job = {};
+  try { status = await GET('/pool/status'); } catch {}
+  try { payout = await GET('/pool/payout'); } catch {}
+  try { job    = await GET('/pool/job');    } catch {}
+  setMain(`
+    <div class="card">
+      <div class="card-title">◈ Live Status</div>
+      <div class="card-grid">
+        <div class="stat cyan">
+          <div class="label">Total Hashrate</div>
+          <div class="value">${fmt(status.hashrate||0)}</div>
+          <div class="sub">${status.miners||0} miners connected</div>
+        </div>
+        <div class="stat gold">
+          <div class="label">Current Height</div>
+          <div class="value">${job.height || '—'}</div>
+          <div class="sub">${job.jobId ? 'job ' + job.jobId : 'waiting for node'}</div>
+        </div>
+        <div class="stat green">
+          <div class="label">Blocks Found</div>
+          <div class="value">${payout.blocksFound||0}</div>
+          <div class="sub">PPLNS window: ${payout.windowShares||0} shares</div>
+        </div>
+        <div class="stat">
+          <div class="label">Coin · Algo</div>
+          <div class="value" style="font-size:16px">${(status.coin||'—').toUpperCase()}</div>
+          <div class="sub">${(status.algo||'—').toUpperCase()} · party mine</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">👤 Miners</div>
+      ${minerTable(status.miners_list || [])}
+    </div>
+
+    <div class="card">
+      <div class="card-title">₿ Recent Blocks</div>
+      ${blockTable(payout.recentBlocks || [])}
+    </div>
+  `);
+}
+
+async function renderMiners() {
+  let miners = [];
+  try { miners = await GET('/pool/miners'); } catch {}
+  setMain(`
+    <div class="card">
+      <div class="card-title">⛏ Connected Miners</div>
+      ${minerTable(miners)}
+    </div>
+  `);
+}
+
+async function renderPayout() {
+  let p = {};
+  try { p = await GET('/pool/payout'); } catch {}
+  const rows = Object.entries(p.earnings||{}).map(([u,e]) =>
+    `<tr><td>${u}</td><td class="mono">${Math.round(e)} sat</td></tr>`).join('');
+  setMain(`
+    <div class="card">
+      <div class="card-title">₿ Payout — PPLNS</div>
+      <div class="card-grid" style="margin-bottom:20px">
+        <div class="stat gold"><div class="label">Blocks Found</div><div class="value">${p.blocksFound||0}</div></div>
+        <div class="stat"><div class="label">Window Shares</div><div class="value">${p.windowShares||0}</div></div>
+      </div>
+      <table><thead><tr><th>Miner</th><th>Pending (sat)</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan=2 class="dimtext">No earnings yet</td></tr>'}</tbody></table>
+    </div>
+    <div class="card">
+      <div class="card-title">Recent Blocks</div>
+      ${blockTable(p.recentBlocks||[])}
+    </div>
+  `);
+}
+
+async function renderPoolSettings() {
+  let pools = [], active = null;
+  try { pools  = await GET('/pool/settings/pools'); } catch {}
+  const poolRows = pools.map(p => `
+    <tr>
+      <td>${p.id}</td>
+      <td>${(p.coin||'').toUpperCase()}</td>
+      <td>${p.algo||'—'}</td>
+      <td><span class="tag ${p.enabled?'tag-on':'tag-off'}">${p.enabled?'enabled':'disabled'}</span></td>
+      <td>${p.stratumPort||3333}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="setActive('${p.id}')">Set Active</button></td>
+    </tr>`).join('');
+  setMain(`
+    <div class="card">
+      <div class="card-title">⚙ Pool Configurations</div>
+      <div class="btn-row" style="margin-bottom:16px">
+        <button class="btn btn-gold btn-sm" onclick="nav('coins')">+ Launch Coin</button>
+        <button class="btn btn-ghost btn-sm" onclick="renderPoolSettings()">↺ Refresh</button>
+      </div>
+      <table><thead><tr><th>ID</th><th>Coin</th><th>Algo</th><th>Status</th><th>Port</th><th></th></tr></thead>
+      <tbody>${poolRows||'<tr><td colspan=6 class="dimtext">No pools yet — launch a coin first</td></tr>'}</tbody></table>
+    </div>
+  `);
+}
+
+async function renderMonetize() {
+  let pools = [], opts = [];
+  try { pools = await GET('/pool/settings/pools'); } catch {}
+  const pid = pools[0]?.id;
+  if (pid) { try { opts = await GET(`/pool/settings/pools/${pid}/monetization`); } catch {} }
+  const monIcons = { mining:'⛏', lightning_routing:'⚡', rpc_endpoint:'🔌', staking:'🥩',
+    channel_leasing:'💧', masternode:'🖥', merge_mining:'⛓', mempool_services:'🔍' };
+  const rows = opts.map(o => `
+    <div class="mon-row ${!o.available?'unavail':''}" onclick="toggleMon('${pid}','${o.id}','${o.enabled}','${o.available}')">
+      <span class="icon">${monIcons[o.id]||'◈'}</span>
+      <div class="info">
+        <div class="name">${o.label}</div>
+        <div class="desc">${o.description.slice(0,60)}…</div>
+      </div>
+      ${o.available ? `<span class="config-btn" onclick="event.stopPropagation();editMon('${pid}','${o.id}')">⚙ config</span>` : '<span class="tag tag-off">N/A</span>'}
+      <div class="toggle ${o.enabled?'on':''}"></div>
+    </div>`).join('');
+  setMain(`
+    <div class="card">
+      <div class="card-title">⚡ Monetization — ${pid||'no active pool'}</div>
+      ${!pid ? '<div class="alert alert-warn">No pool configured. Launch a coin first.</div>' : ''}
+      <div class="mon-grid">${rows}</div>
+    </div>
+  `);
+}
+
+async function renderNodes() {
+  let nodes = [];
+  try { nodes = await GET('/node/status'); } catch {}
+  if (!Array.isArray(nodes)) nodes = [];
+  const rows = nodes.map(n => `
+    <tr>
+      <td>${n.coin}</td>
+      <td><span class="tag tag-${n.status}">${n.status}</span></td>
+      <td class="mono">${n.syncHeight||'—'}</td>
+      <td class="mono">${n.pid||'—'}</td>
+      <td class="mono dimtext">${(n.recentLogs||[]).slice(-1)[0]?.slice(0,40)||'—'}</td>
+      <td><button class="btn btn-red btn-sm" onclick="stopNode('${n.coin}')">stop</button></td>
+    </tr>`).join('');
+  setMain(`
+    <div class="card">
+      <div class="card-title">◉ Running Nodes</div>
+      <table><thead><tr><th>Coin</th><th>Status</th><th>Height</th><th>PID</th><th>Last log</th><th></th></tr></thead>
+      <tbody>${rows||'<tr><td colspan=6 class="dimtext">No nodes running</td></tr>'}</tbody></table>
+    </div>
+    <div class="card">
+      <div class="card-title">Start Node</div>
+      <div class="form-row">
+        <div class="field"><label>COIN ID</label><input id="ni-coin" placeholder="dgb"></div>
+        <div class="field"><label>RPC USER</label><input id="ni-user" placeholder="dgbrpc"></div>
+      </div>
+      <div class="field"><label>RPC PASSWORD</label><input id="ni-pass" type="password"></div>
+      <button class="btn btn-gold" onclick="startNode()">Start Node</button>
+    </div>
+  `);
+}
+
+async function renderCoins() {
+  setMain(`
+    <div class="card">
+      <div class="card-title">✦ Launch Coin — Paste Definition</div>
+      <div class="alert alert-info">Paste a <code>coins/*.json</code> definition. The node will start, sync, and the pool will come online automatically.</div>
+      <div class="field" style="margin-top:12px"><label>COIN JSON</label><textarea id="coin-json" placeholder='{ "id": "dgb", "name": "DigiByte", ... }'></textarea></div>
+      <div class="form-row">
+        <div class="field"><label>RPC USERNAME</label><input id="ci-user" placeholder="dgbrpc"></div>
+        <div class="field"><label>RPC PASSWORD</label><input id="ci-pass" type="password"></div>
+      </div>
+      <button class="btn btn-gold" onclick="launchCoin()">⚗ Launch</button>
+    </div>
+  `);
+}
+
+async function renderLogs() {
+  let logs = [];
+  try {
+    const nodes = await GET('/node/status');
+    if (nodes[0]) logs = await GET(`/node/logs/${nodes[0].coin}`);
+  } catch {}
+  setMain(`
+    <div class="card">
+      <div class="card-title">▤ Node Logs <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="renderLogs()">↺</button></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;max-height:60vh;overflow-y:auto;font-size:11px;line-height:1.7;color:var(--text2)">
+        ${logs.length ? logs.map(l=>`<div>${escHtml(l)}</div>`).join('') : '<div class="dimtext">No logs — start a node first</div>'}
+      </div>
+    </div>
+  `);
+}
+
+async function renderUsers() {
+  const rank = { member:0, operator:1, admin:2, owner:3 };
+  if (rank[S.user.role] < rank['admin']) {
+    setMain('<div class="card"><div class="alert alert-error">Admin access required.</div></div>');
+    return;
+  }
+  let users = [];
+  try { users = await GET('/ward/users'); } catch {}
+  const roleColors = { owner:'#a78bfa', admin:'#f87171', operator:'#fb923c', member:'#4ade80' };
+  const rows = users.map(u => `
+    <tr>
+      <td>${escHtml(u.username)}</td>
+      <td><span class="tag" style="background:${roleColors[u.role]}22;color:${roleColors[u.role]}">${u.role}</span></td>
+      <td class="dimtext">${new Date(u.createdAt).toLocaleDateString()}</td>
+      <td>
+        <select onchange="assignRole('${u.id}', this.value)" ${u.id === S.user?.id ? 'disabled' : ''}>
+          ${['member','operator','admin','owner'].map(r =>
+            `<option value="${r}" ${r===u.role?'selected':''}>${r}</option>`).join('')}
+        </select>
+      </td>
+      <td>${S.user.role==='owner' && u.username!==S.user.username
+        ? `<button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}','${escHtml(u.username)}')">delete</button>`
+        : ''}
+      </td>
+    </tr>`).join('');
+  setMain(`
+    <div class="card">
+      <div class="card-title">👤 Users</div>
+      <table><thead><tr><th>Username</th><th>Role</th><th>Created</th><th>Assign Role</th><th></th></tr></thead>
+      <tbody>${rows||'<tr><td colspan=5 class="dimtext">No users</td></tr>'}</tbody></table>
+    </div>
+    <div class="card">
+      <div class="card-title">+ New User</div>
+      <div class="form-row">
+        <div class="field"><label>USERNAME</label><input id="nu-user"></div>
+        <div class="field"><label>PASSWORD (≥12 chars)</label><input id="nu-pass" type="password"></div>
+      </div>
+      <div class="field"><label>ROLE</label>
+        <select id="nu-role">
+          <option value="member">member — read only</option>
+          <option value="operator">operator — can force jobs</option>
+          <option value="admin">admin — manage pool + settings</option>
+          ${S.user.role==='owner'?'<option value="owner">owner — full control</option>':''}
+        </select>
+      </div>
+      <button class="btn btn-gold" onclick="createUser()">Create User</button>
+    </div>
+  `);
+}
+
+async function renderSystem() {
+  const rank = { member:0, operator:1, admin:2, owner:3 };
+  if (rank[S.user.role] < rank['admin']) {
+    setMain('<div class="card"><div class="alert alert-error">Admin access required.</div></div>');
+    return;
+  }
+  setMain(`
+    <div class="card">
+      <div class="card-title">⌘ System</div>
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="forceJob()">↺ Force New Job</button>
+        <button class="btn btn-ghost" onclick="renderSystem()">↺ Refresh</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">REST API Reference</div>
+      <div style="font-size:11px;color:var(--text2);line-height:2">
+        <div><span style="color:var(--cyan)">GET</span>   /api/v1/pool/status</div>
+        <div><span style="color:var(--cyan)">GET</span>   /api/v1/pool/miners</div>
+        <div><span style="color:var(--cyan)">GET</span>   /api/v1/pool/payout</div>
+        <div><span style="color:var(--cyan)">GET</span>   /api/v1/pool/settings/pools</div>
+        <div><span style="color:var(--cyan)">POST</span>  /api/v1/pool/settings/pools/:id/monetization/:type</div>
+        <div><span style="color:var(--cyan)">GET</span>   /api/v1/node/status</div>
+        <div><span style="color:var(--cyan)">POST</span>  /api/v1/node/start</div>
+        <div><span style="color:var(--cyan)">POST</span>  /api/v1/ward/login</div>
+        <div><span style="color:var(--cyan)">GET</span>   /api/v1/ward/users</div>
+        <div><span style="color:var(--cyan)">PATCH</span> /api/v1/ward/users/:id/role</div>
+      </div>
+    </div>
+  `);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Actions
+// ═══════════════════════════════════════════════════════════════════════
+async function setActive(poolId) {
+  try { await POST('/pool/settings/active', { poolId }); toast('Active pool → ' + poolId, 'ok'); renderPoolSettings(); }
+  catch(e) { toast(e.message, 'error'); }
+}
+
+async function toggleMon(poolId, typeId, enabled, available) {
+  if (available === 'false') { toast('Not available for this coin', 'warn'); return; }
+  const rank = { member:0, operator:1, admin:2, owner:3 };
+  if (rank[S.user.role] < rank['admin']) { toast('Admin access required', 'warn'); return; }
+  try {
+    await POST(`/pool/settings/pools/${poolId}/monetization/${typeId}`, { enabled: enabled==='true'?false:true });
+    toast(`${typeId} ${enabled==='true'?'disabled':'enabled'}`, 'ok');
+    renderMonetize();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function editMon(poolId, typeId) {
+  const rank = { member:0, operator:1, admin:2, owner:3 };
+  if (rank[S.user.role] < rank['admin']) { toast('Admin access required', 'warn'); return; }
+  let opts = [];
+  try { opts = await GET(`/pool/settings/pools/${poolId}/monetization`); } catch {}
+  const opt = opts.find(o => o.id === typeId);
+  if (!opt) return;
+  const fields = Object.entries(opt.settings).map(([k,s]) =>
+    `<div class="field"><label>${k.toUpperCase()}${s.type?` (${s.type})`:''}</label>
+     <input id="mc-${k}" value="${opt.config[k]??s.default??''}" placeholder="${s.default??''}"></div>`
+  ).join('');
+  setMain(`
+    <div class="card">
+      <div class="card-title">⚙ Configure: ${typeId}</div>
+      <div class="alert alert-info">${opt.description}</div>
+      <div style="margin-top:16px">${fields}</div>
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="saveMon('${poolId}','${typeId}')">Save Config</button>
+        <button class="btn btn-ghost" onclick="renderMonetize()">Cancel</button>
+      </div>
+    </div>
+  `);
+}
+
+async function saveMon(poolId, typeId) {
+  let opts = [];
+  try { opts = await GET(`/pool/settings/pools/${poolId}/monetization`); } catch {}
+  const opt = opts.find(o => o.id === typeId);
+  if (!opt) return;
+  const config = {};
+  for (const [k, s] of Object.entries(opt.settings)) {
+    const el = document.getElementById('mc-' + k);
+    if (!el) continue;
+    const val = el.value.trim();
+    if (s.type === 'number')  config[k] = parseFloat(val);
+    else if (s.type === 'boolean') config[k] = val === 'true';
+    else config[k] = val;
+  }
+  try {
+    await POST(`/pool/settings/pools/${poolId}/monetization/${typeId}`, { enabled: opt.enabled, config });
+    toast('Config saved', 'ok'); renderMonetize();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function startNode() {
+  const coin = document.getElementById('ni-coin').value.trim();
+  const rpcuser = document.getElementById('ni-user').value.trim();
+  const rpcpass = document.getElementById('ni-pass').value;
+  try { await POST('/node/start', { coin, rpcuser, rpcpass }); toast('Node starting…', 'ok'); renderNodes(); }
+  catch(e) { toast(e.message, 'error'); }
+}
+
+async function stopNode(coin) {
+  try { await POST('/node/stop', { coin }); toast('Node stopping…', 'ok'); renderNodes(); }
+  catch(e) { toast(e.message, 'error'); }
+}
+
+async function launchCoin() {
+  const coinJson = document.getElementById('coin-json').value.trim();
+  const rpcuser  = document.getElementById('ci-user').value.trim();
+  const rpcpass  = document.getElementById('ci-pass').value;
+  try {
+    await POST('/node/register', { coinJson, rpcuser, rpcpass });
+    toast('Coin registered — node starting', 'ok'); nav('nodes');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function forceJob() {
+  try { await POST('/pool/job/new', {}); toast('New job broadcast', 'ok'); }
+  catch(e) { toast(e.message, 'error'); }
+}
+
+async function createUser() {
+  const username = document.getElementById('nu-user').value.trim();
+  const password = document.getElementById('nu-pass').value;
+  const role     = document.getElementById('nu-role').value;
+  try { await POST('/ward/users', { username, password, role }); toast('User created', 'ok'); renderUsers(); }
+  catch(e) { toast(e.message, 'error'); }
+}
+
+async function assignRole(id, role) {
+  try { await PATCH(`/ward/users/${id}/role`, { role }); toast('Role updated', 'ok'); }
+  catch(e) { toast(e.message, 'error'); renderUsers(); }
+}
+
+async function deleteUser(id, username) {
+  if (!confirm(`Delete user "${username}"?`)) return;
+  try { await DELETE(`/ward/users/${id}`); toast('User deleted', 'ok'); renderUsers(); }
+  catch(e) { toast(e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// UI helpers
+// ═══════════════════════════════════════════════════════════════════════
+function setMain(html) { document.getElementById('main').innerHTML = html; }
+
+function minerTable(miners) {
+  if (!miners?.length) return '<div class="dimtext">No miners connected</div>';
+  return `<table><thead><tr><th>User</th><th>Diff</th><th>✓ Accept</th><th>✗ Reject</th><th>Hashrate</th><th>Connected</th></tr></thead>
+  <tbody>${miners.map(m=>`<tr>
+    <td>${escHtml(m.user||m.id?.slice(0,8)||'—')}</td>
+    <td class="mono">${(m.difficulty||0).toFixed(4)}</td>
+    <td class="mono" style="color:var(--green)">${m.accepted||0}</td>
+    <td class="mono" style="color:var(--red)">${m.rejected||0}</td>
+    <td class="mono" style="color:var(--cyan)">${fmt(m.hashrate||0)}</td>
+    <td class="dimtext">${m.connectedAt?new Date(m.connectedAt).toLocaleTimeString():'—'}</td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+function blockTable(blocks) {
+  if (!blocks?.length) return '<div class="dimtext">No blocks found yet — keep mining</div>';
+  return `<table><thead><tr><th>Height</th><th>Reward</th><th>Time</th></tr></thead>
+  <tbody>${blocks.map(b=>`<tr>
+    <td class="mono" style="color:var(--gold)">${b.height}</td>
+    <td class="mono">${b.reward} sat</td>
+    <td class="dimtext">${new Date(b.ts).toLocaleString()}</td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+function fmt(hps) {
+  if (hps > 1e9) return (hps/1e9).toFixed(2)+' GH/s';
+  if (hps > 1e6) return (hps/1e6).toFixed(2)+' MH/s';
+  if (hps > 1e3) return (hps/1e3).toFixed(2)+' KH/s';
+  return Math.round(hps)+' H/s';
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg, type='info') {
+  const el  = document.createElement('div');
+  el.className = 'toast-item';
+  el.style.borderColor = { ok:'var(--green)', error:'var(--red)', warn:'var(--orange)', info:'var(--cyan)' }[type]||'var(--border)';
+  el.style.color = { ok:'var(--green)', error:'var(--red)', warn:'var(--orange)', info:'var(--cyan)' }[type]||'var(--text)';
+  el.textContent = msg;
+  document.getElementById('toast').prepend(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+function show(id) { document.getElementById(id)?.classList.remove('hidden'); }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Init — try token from localStorage
+// ═══════════════════════════════════════════════════════════════════════
+(async () => {
+  const stored = localStorage.getItem('mf_token');
+  if (stored) {
+    try {
+      S.token = stored;
+      const me = await GET('/ward/me');
+      S.user = { username: me.username, role: me.role };
+      bootApp();
+      return;
+    } catch { localStorage.removeItem('mf_token'); }
+  }
+  await checkSetup();
+})();
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement?.id === 'l-pass') doLogin();
+});
+</script>
+</body>
+</html>

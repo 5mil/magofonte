@@ -1,237 +1,98 @@
 /**
  * MagoFonte — ward module
  *
- * Authentication, session management, and role-based access control.
+ * Authentication + role-based access control.
  *
- * Roles (hierarchy, highest first):
- *   admin   — full access, manages accounts + permissions
- *   dev     — pool/node control, coin launch, settings, no account management
- *   operator— start/stop mining, view all, no settings changes
- *   member  — default for all new accounts; view-only + own stats
+ * Roles (ascending privilege):
+ *   member  — read-only: status, miners, payout, logs
+ *   operator— member + force jobs, view settings
+ *   admin   — operator + manage users, assign roles,
+ *             toggle monetization, start/stop nodes,
+ *             launch coins, edit all configs
+ *   owner   — admin + change owner credentials,
+ *             delete accounts, full system control
  *
- * All new accounts created as 'member'. Only admin can promote/demote.
- * First account registered automatically becomes admin.
+ * Flow:
+ *   POST /api/v1/ward/setup       — first-run: create owner account
+ *   POST /api/v1/ward/login       — returns signed JWT
+ *   GET  /api/v1/ward/me          — current user info
+ *   GET  /api/v1/ward/users       — list users (admin+)
+ *   POST /api/v1/ward/users       — create user (admin+)
+ *   PATCH /api/v1/ward/users/:id/role — assign role (admin+)
+ *   DELETE /api/v1/ward/users/:id — delete user (owner only)
  *
- * Sessions: signed JWT-like tokens (HMAC-SHA256), stored in memory + persisted
- * to ward/sessions.json. Token in Authorization: Bearer <token> header
- * or __token cookie.
- *
- * Persists to ward/users.json.
+ * JWT middleware: ward.authenticate(minRole)
+ * Use in core router to protect routes.
  */
 
+import crypto from 'node:crypto';
 import fs     from 'node:fs';
 import path   from 'node:path';
-import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
-const __dir       = path.dirname(fileURLToPath(import.meta.url));
-const USERS_FILE  = path.join(__dir, 'users.json');
-const SECRET_FILE = path.join(__dir, '.secret');
+const __dir   = path.dirname(fileURLToPath(import.meta.url));
+const DB_FILE = path.join(__dir, 'users.json');
 
-// ─── Role definitions ───────────────────────────────────────────────────────────
+// Role hierarchy — higher index = more privilege
+const ROLES  = ['member', 'operator', 'admin', 'owner'];
+const RANK   = Object.fromEntries(ROLES.map((r, i) => [r, i]));
 
-export const ROLES = ['admin', 'dev', 'operator', 'member'];
+// ─── Tiny JWT (HMAC-SHA256, no deps) ─────────────────────────────────────────
 
-// Permission → minimum role required
-export const PERMISSIONS = {
-  // Viewing
-  'view:status':        'member',
-  'view:miners':        'member',
-  'view:payout':        'member',
-  'view:logs':          'operator',
-  'view:node':          'operator',
-  'view:settings':      'operator',
-  'view:accounts':      'admin',
-
-  // Pool control
-  'pool:start':         'operator',
-  'pool:stop':          'operator',
-  'pool:job:new':       'operator',
-  'pool:settings:read': 'operator',
-  'pool:settings:write':'dev',
-  'pool:monetization':  'dev',
-
-  // Node control
-  'node:start':         'dev',
-  'node:stop':          'dev',
-  'node:register':      'dev',
-
-  // Coin management
-  'coin:launch':        'dev',
-  'coin:delete':        'admin',
-
-  // Account management
-  'account:create':     'admin',
-  'account:delete':     'admin',
-  'account:promote':    'admin',
-  'account:demote':     'admin',
-  'account:grant':      'admin',
-  'account:revoke':     'admin',
-
-  // System
-  'system:restart':     'admin',
-  'system:config':      'admin',
-};
-
-// Default permissions per role (what member gets vs what admin gets)
-export const ROLE_PERMISSIONS = {
-  admin:    Object.keys(PERMISSIONS),
-  dev:      Object.keys(PERMISSIONS).filter(p => PERMISSIONS[p] !== 'admin'),
-  operator: Object.keys(PERMISSIONS).filter(p => ['member','operator'].includes(PERMISSIONS[p])),
-  member:   Object.keys(PERMISSIONS).filter(p => PERMISSIONS[p] === 'member'),
-};
-
-// ─── Token signing ───────────────────────────────────────────────────────────────
-
-function loadSecret() {
-  try { return fs.readFileSync(SECRET_FILE, 'utf8').trim(); } catch {}
-  const s = crypto.randomBytes(64).toString('hex');
-  fs.writeFileSync(SECRET_FILE, s);
-  return s;
+function b64url(buf) {
+  return Buffer.from(buf).toString('base64')
+    .replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
+}
+function b64urlDecode(str) {
+  return Buffer.from(str.replace(/-/g,'+').replace(/_/g,'/'), 'base64');
 }
 
-const SECRET = loadSecret();
-
-function signToken(payload) {
-  const data = Buffer.from(JSON.stringify(payload)).toString('base64url');
-  const sig  = crypto.createHmac('sha256', SECRET).update(data).digest('base64url');
-  return `${data}.${sig}`;
+function signJWT(payload, secret) {
+  const header  = b64url(JSON.stringify({ alg:'HS256', typ:'JWT' }));
+  const body    = b64url(JSON.stringify(payload));
+  const sig     = b64url(crypto.createHmac('sha256', secret).update(`${header}.${body}`).digest());
+  return `${header}.${body}.${sig}`;
 }
 
-function verifyToken(token) {
-  try {
-    const [data, sig] = token.split('.');
-    const expected    = crypto.createHmac('sha256', SECRET).update(data).digest('base64url');
-    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
-    return JSON.parse(Buffer.from(data, 'base64url').toString());
-  } catch { return null; }
+function verifyJWT(token, secret) {
+  const parts = (token || '').split('.');
+  if (parts.length !== 3) throw new Error('malformed token');
+  const [header, body, sig] = parts;
+  const expected = b64url(crypto.createHmac('sha256', secret).update(`${header}.${body}`).digest());
+  if (sig !== expected) throw new Error('invalid signature');
+  const payload = JSON.parse(b64urlDecode(body).toString());
+  if (payload.exp && Date.now() / 1000 > payload.exp) throw new Error('token expired');
+  return payload;
 }
 
-// ─── Password hashing ───────────────────────────────────────────────────────────
+// ─── Password hashing (scrypt) ───────────────────────────────────────────────
 
-function hashPassword(password, salt) {
-  salt = salt || crypto.randomBytes(16).toString('hex');
-  const hash = crypto.pbkdf2Sync(password, salt, 310_000, 32, 'sha256').toString('hex');
-  return { hash, salt };
+async function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = await new Promise((res, rej) =>
+    crypto.scrypt(password, salt, 64, (e, d) => e ? rej(e) : res(d.toString('hex'))));
+  return `${salt}:${hash}`;
 }
 
-function verifyPassword(password, hash, salt) {
-  const { hash: h } = hashPassword(password, salt);
-  return crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(hash, 'hex'));
+async function verifyPassword(password, stored) {
+  const [salt, hash] = stored.split(':');
+  const attempt = await new Promise((res, rej) =>
+    crypto.scrypt(password, salt, 64, (e, d) => e ? rej(e) : res(d.toString('hex'))));
+  return crypto.timingSafeEqual(Buffer.from(attempt), Buffer.from(hash));
 }
 
-// ─── UserStore ─────────────────────────────────────────────────────────────────
+// ─── User DB (JSON file, good enough for home server) ────────────────────────
 
-class UserStore {
-  constructor() {
-    this.users = this._load();
-  }
-
-  _load() {
-    try { return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8')); } catch { return {}; }
-  }
-
-  save() {
-    fs.writeFileSync(USERS_FILE, JSON.stringify(this.users, null, 2));
-  }
-
-  count() { return Object.keys(this.users).length; }
-
-  create(username, password, role) {
-    if (this.users[username]) throw new Error(`user already exists: ${username}`);
-    const { hash, salt } = hashPassword(password);
-    this.users[username] = {
-      username,
-      role,
-      hash, salt,
-      // Extra permissions granted/revoked explicitly by admin beyond role defaults
-      grantedPermissions:  [],
-      revokedPermissions:  [],
-      createdAt: Date.now(),
-      lastLogin: null,
-      active:    true
-    };
-    this.save();
-    return this.publicView(username);
-  }
-
-  get(username) { return this.users[username] ?? null; }
-
-  list() { return Object.values(this.users).map(u => this.publicView(u.username)); }
-
-  publicView(username) {
-    const u = this.users[username];
-    if (!u) return null;
-    return {
-      username:    u.username,
-      role:        u.role,
-      permissions: this.effectivePermissions(username),
-      active:      u.active,
-      createdAt:   u.createdAt,
-      lastLogin:   u.lastLogin
-    };
-  }
-
-  effectivePermissions(username) {
-    const u = this.users[username];
-    if (!u) return [];
-    const base    = new Set(ROLE_PERMISSIONS[u.role] || []);
-    for (const p of (u.grantedPermissions || [])) base.add(p);
-    for (const p of (u.revokedPermissions || [])) base.delete(p);
-    return [...base];
-  }
-
-  hasPermission(username, permission) {
-    return this.effectivePermissions(username).includes(permission);
-  }
-
-  setRole(username, role) {
-    if (!ROLES.includes(role)) throw new Error(`invalid role: ${role}`);
-    if (!this.users[username]) throw new Error(`user not found: ${username}`);
-    this.users[username].role = role;
-    this.save();
-  }
-
-  grantPermission(username, permission) {
-    const u = this.users[username];
-    if (!u) throw new Error(`user not found: ${username}`);
-    if (!PERMISSIONS[permission]) throw new Error(`unknown permission: ${permission}`);
-    if (!u.grantedPermissions.includes(permission)) u.grantedPermissions.push(permission);
-    u.revokedPermissions = u.revokedPermissions.filter(p => p !== permission);
-    this.save();
-  }
-
-  revokePermission(username, permission) {
-    const u = this.users[username];
-    if (!u) throw new Error(`user not found: ${username}`);
-    if (!u.revokedPermissions.includes(permission)) u.revokedPermissions.push(permission);
-    u.grantedPermissions = u.grantedPermissions.filter(p => p !== permission);
-    this.save();
-  }
-
-  delete(username) {
-    if (!this.users[username]) throw new Error(`user not found: ${username}`);
-    delete this.users[username];
-    this.save();
-  }
-
-  setPassword(username, password) {
-    if (!this.users[username]) throw new Error(`user not found: ${username}`);
-    const { hash, salt } = hashPassword(password);
-    this.users[username].hash = hash;
-    this.users[username].salt = salt;
-    this.save();
-  }
-
-  recordLogin(username) {
-    if (this.users[username]) {
-      this.users[username].lastLogin = Date.now();
-      this.save();
-    }
-  }
+function loadDB() {
+  try   { return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); }
+  catch { return { users: {}, jwtSecret: crypto.randomBytes(48).toString('hex') }; }
 }
 
-// ─── Ward module ────────────────────────────────────────────────────────────────
+function saveDB(db) {
+  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+}
+
+// ─── Ward module ─────────────────────────────────────────────────────────────
 
 const Ward = {
   name: 'ward',
@@ -239,215 +100,179 @@ const Ward = {
   async init(config, registry) {
     this.config   = config;
     this.registry = registry;
-    this.store    = new UserStore();
-    this.sessions = new Map(); // token → { username, expiresAt }
-
-    // Auto-create first admin account if no users exist
-    if (this.store.count() === 0) {
-      const adminPass = config.adminPassword || process.env.ADMIN_PASSWORD || _randomPass();
-      this.store.create('admin', adminPass, 'admin');
-      console.log('\n' + '='.repeat(60));
-      console.log('[ward] ⚠  FIRST RUN: admin account created');
-      console.log(`[ward]    username: admin`);
-      console.log(`[ward]    password: ${adminPass}`);
-      console.log('[ward]    Change this immediately via the web panel.');
-      console.log('='.repeat(60) + '\n');
-    }
-
+    this.db       = loadDB();
+    // Persist new secret if first run
+    if (!fs.existsSync(DB_FILE)) saveDB(this.db);
+    console.log(`[ward] auth ready — ${Object.keys(this.db.users).length} user(s) registered`);
     return this;
   },
 
-  // ── Auth ────────────────────────────────────────────────────────────
-
-  login(username, password) {
-    const user = this.store.get(username);
-    if (!user || !user.active) return null;
-    if (!verifyPassword(password, user.hash, user.salt)) return null;
-    this.store.recordLogin(username);
-    const payload = { username, role: user.role, iat: Date.now(), exp: Date.now() + 86_400_000 };
-    const token   = signToken(payload);
-    this.sessions.set(token, { username, expiresAt: payload.exp });
-    return { token, user: this.store.publicView(username) };
+  // ── Middleware factory ── authenticate(minRole) → (req,res,next) => void
+  authenticate(minRole = 'member') {
+    return (req, res, next) => {
+      const auth  = req.headers['authorization'] || '';
+      const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+      if (!token) { res.writeHead(401); return res.end(JSON.stringify({ error: 'not authenticated' })); }
+      try {
+        const payload = verifyJWT(token, this.db.jwtSecret);
+        if (RANK[payload.role] < RANK[minRole]) {
+          res.writeHead(403);
+          return res.end(JSON.stringify({ error: `requires role: ${minRole}` }));
+        }
+        req.user = payload;
+        next();
+      } catch (err) {
+        res.writeHead(401);
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    };
   },
 
-  logout(token) {
-    this.sessions.delete(token);
-  },
+  hasUser()    { return Object.keys(this.db.users).length > 0; },
+  isOwnerSet() { return Object.values(this.db.users).some(u => u.role === 'owner'); },
 
-  // Verify token, return user public view or null
-  authenticate(token) {
-    if (!token) return null;
-    const payload = verifyToken(token);
-    if (!payload || payload.exp < Date.now()) { this.sessions.delete(token); return null; }
-    const user = this.store.get(payload.username);
-    if (!user || !user.active) return null;
-    return this.store.publicView(payload.username);
-  },
-
-  // Extract token from request (Bearer header or cookie)
-  extractToken(req) {
-    const auth = req.headers['authorization'];
-    if (auth?.startsWith('Bearer ')) return auth.slice(7);
-    const cookie = req.headers['cookie'] || '';
-    const m = cookie.match(/(?:^|;\s*)__token=([^;]+)/);
-    return m ? m[1] : null;
-  },
-
-  // Middleware-style: authenticate + check permission
-  // Returns user or sends 401/403 and returns null
-  guard(req, res, permission) {
-    const token = this.extractToken(req);
-    const user  = this.authenticate(token);
-    if (!user) { _json(res, { error: 'unauthorized' }, 401); return null; }
-    if (permission && !user.permissions.includes(permission)) {
-      _json(res, { error: 'forbidden', required: permission }, 403);
-      return null;
-    }
-    return user;
-  },
-
-  // ── REST routes (/api/v1/ward/*) ──────────────────────────────────────────
   get routes() {
+    const self = this;
     return [
-      // Login — public
+
+      // ── First-run setup: create owner ──────────────────────────────────────
+      ['POST', '/setup', async (req, res) => {
+        if (self.isOwnerSet()) return _403(res, 'owner already exists');
+        const { username, password } = await _body(req);
+        if (!username || !password) return _400(res, 'username + password required');
+        if (password.length < 12)  return _400(res, 'password must be ≥12 chars');
+        const id  = crypto.randomUUID();
+        const pwd = await hashPassword(password);
+        self.db.users[id] = { id, username, password: pwd, role: 'owner', createdAt: Date.now() };
+        saveDB(self.db);
+        console.log(`[ward] owner account created: ${username}`);
+        _json(res, { ok: true, username, role: 'owner' }, 201);
+      }],
+
+      // ── Login ──────────────────────────────────────────────────────────────
       ['POST', '/login', async (req, res) => {
-        const body = await _body(req);
-        const { username, password } = JSON.parse(body);
-        const result = this.login(username, password);
-        if (!result) { _json(res, { error: 'invalid credentials' }, 401); return; }
-        // Set cookie + return token
-        res.setHeader('Set-Cookie', `__token=${result.token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=86400`);
-        _json(res, { ok: true, token: result.token, user: result.user });
+        const { username, password } = await _body(req);
+        const user = Object.values(self.db.users).find(u => u.username === username);
+        if (!user) return _401(res, 'invalid credentials');
+        const ok = await verifyPassword(password, user.password);
+        if (!ok)  return _401(res, 'invalid credentials');
+        const token = signJWT(
+          { sub: user.id, username: user.username, role: user.role,
+            exp: Math.floor(Date.now()/1000) + 60 * 60 * 24 * 7 },  // 7 day
+          self.db.jwtSecret
+        );
+        self.registry.emit('ward:login', { username: user.username, role: user.role });
+        _json(res, { token, username: user.username, role: user.role });
       }],
 
-      // Logout
-      ['POST', '/logout', (req, res) => {
-        const token = this.extractToken(req);
-        if (token) this.logout(token);
-        res.setHeader('Set-Cookie', '__token=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');
-        _json(res, { ok: true });
-      }],
-
-      // Who am I
+      // ── Me ─────────────────────────────────────────────────────────────────
       ['GET', '/me', (req, res) => {
-        const user = this.guard(req, res);
-        if (!user) return;
-        _json(res, user);
+        const auth  = (req.headers['authorization']||'').slice(7);
+        try {
+          const p = verifyJWT(auth, self.db.jwtSecret);
+          _json(res, { id: p.sub, username: p.username, role: p.role });
+        } catch { _401(res, 'not authenticated'); }
       }],
 
-      // List all users (admin only)
+      // ── List users (admin+) ────────────────────────────────────────────────
       ['GET', '/users', (req, res) => {
-        const user = this.guard(req, res, 'view:accounts');
-        if (!user) return;
-        _json(res, this.store.list());
+        const auth  = (req.headers['authorization']||'').slice(7);
+        try {
+          const p = verifyJWT(auth, self.db.jwtSecret);
+          if (RANK[p.role] < RANK['admin']) return _403(res, 'requires admin');
+          _json(res, Object.values(self.db.users).map(u => ({
+            id: u.id, username: u.username, role: u.role, createdAt: u.createdAt
+          })));
+        } catch { _401(res, 'not authenticated'); }
       }],
 
-      // Create user (admin only)
+      // ── Create user (admin+) ───────────────────────────────────────────────
       ['POST', '/users', async (req, res) => {
-        const actor = this.guard(req, res, 'account:create');
-        if (!actor) return;
-        const body = await _body(req);
+        const auth = (req.headers['authorization']||'').slice(7);
         try {
-          const { username, password, role = 'member' } = JSON.parse(body);
-          if (!username || !password) throw new Error('username and password required');
-          // Only admin can create non-member accounts directly
-          const assignedRole = actor.role === 'admin' ? role : 'member';
-          const newUser = this.store.create(username, password, assignedRole);
-          this.registry.emit('ward:user:created', { username, role: assignedRole, by: actor.username });
-          _json(res, newUser, 201);
-        } catch(e) { _json(res, { error: e.message }, 400); }
+          const p = verifyJWT(auth, self.db.jwtSecret);
+          if (RANK[p.role] < RANK['admin']) return _403(res, 'requires admin');
+          const { username, password, role = 'member' } = await _body(req);
+          if (!username || !password) return _400(res, 'username + password required');
+          if (!ROLES.includes(role))  return _400(res, `invalid role — must be: ${ROLES.join('|')}`);
+          if (role === 'owner' && p.role !== 'owner') return _403(res, 'only owner can create owner accounts');
+          if (Object.values(self.db.users).find(u => u.username === username))
+            return _400(res, 'username taken');
+          const id  = crypto.randomUUID();
+          const pwd = await hashPassword(password);
+          self.db.users[id] = { id, username, password: pwd, role, createdAt: Date.now() };
+          saveDB(self.db);
+          _json(res, { id, username, role }, 201);
+        } catch(e) { _401(res, e.message); }
       }],
 
-      // Get user
-      ['GET', '/users/:username', (req, res) => {
-        const actor = this.guard(req, res, 'view:accounts');
-        if (!actor) return;
-        const u = this.store.publicView(req.params.username);
-        u ? _json(res, u) : _json(res, { error: 'not found' }, 404);
-      }],
-
-      // Delete user
-      ['DELETE', '/users/:username', (req, res) => {
-        const actor = this.guard(req, res, 'account:delete');
-        if (!actor) return;
-        if (req.params.username === actor.username) { _json(res, { error: 'cannot delete own account' }, 400); return; }
-        try { this.store.delete(req.params.username); _json(res, { ok: true }); }
-        catch(e) { _json(res, { error: e.message }, 404); }
-      }],
-
-      // Set role
-      ['PATCH', '/users/:username/role', async (req, res) => {
-        const actor = this.guard(req, res, 'account:promote');
-        if (!actor) return;
-        const body = await _body(req);
+      // ── Assign role (admin+) ───────────────────────────────────────────────
+      ['PATCH', '/users/:id/role', async (req, res) => {
+        const auth = (req.headers['authorization']||'').slice(7);
         try {
-          const { role } = JSON.parse(body);
-          this.store.setRole(req.params.username, role);
-          this.registry.emit('ward:user:roleChanged', { username: req.params.username, role, by: actor.username });
-          _json(res, this.store.publicView(req.params.username));
-        } catch(e) { _json(res, { error: e.message }, 400); }
+          const p    = verifyJWT(auth, self.db.jwtSecret);
+          if (RANK[p.role] < RANK['admin']) return _403(res, 'requires admin');
+          const { role } = await _body(req);
+          if (!ROLES.includes(role)) return _400(res, 'invalid role');
+          if (role === 'owner' && p.role !== 'owner') return _403(res, 'only owner can assign owner role');
+          const target = self.db.users[req.params.id];
+          if (!target) return _404(res);
+          // Prevent self-demotion of sole owner
+          if (target.role === 'owner' && role !== 'owner') {
+            const ownerCount = Object.values(self.db.users).filter(u => u.role==='owner').length;
+            if (ownerCount <= 1) return _400(res, 'cannot demote sole owner');
+          }
+          target.role = role;
+          saveDB(self.db);
+          _json(res, { id: target.id, username: target.username, role });
+        } catch(e) { _401(res, e.message); }
       }],
 
-      // Grant permission
-      ['POST', '/users/:username/grant', async (req, res) => {
-        const actor = this.guard(req, res, 'account:grant');
-        if (!actor) return;
-        const body = await _body(req);
+      // ── Delete user (owner only) ───────────────────────────────────────────
+      ['DELETE', '/users/:id', async (req, res) => {
+        const auth = (req.headers['authorization']||'').slice(7);
         try {
-          const { permission } = JSON.parse(body);
-          this.store.grantPermission(req.params.username, permission);
-          _json(res, this.store.publicView(req.params.username));
-        } catch(e) { _json(res, { error: e.message }, 400); }
-      }],
-
-      // Revoke permission
-      ['POST', '/users/:username/revoke', async (req, res) => {
-        const actor = this.guard(req, res, 'account:revoke');
-        if (!actor) return;
-        const body = await _body(req);
-        try {
-          const { permission } = JSON.parse(body);
-          this.store.revokePermission(req.params.username, permission);
-          _json(res, this.store.publicView(req.params.username));
-        } catch(e) { _json(res, { error: e.message }, 400); }
-      }],
-
-      // Change own password
-      ['POST', '/password', async (req, res) => {
-        const actor = this.guard(req, res);
-        if (!actor) return;
-        const body = await _body(req);
-        try {
-          const { currentPassword, newPassword } = JSON.parse(body);
-          const u = this.store.get(actor.username);
-          if (!verifyPassword(currentPassword, u.hash, u.salt)) { _json(res, { error: 'wrong current password' }, 403); return; }
-          if (newPassword.length < 8) { _json(res, { error: 'password must be at least 8 characters' }, 400); return; }
-          this.store.setPassword(actor.username, newPassword);
+          const p = verifyJWT(auth, self.db.jwtSecret);
+          if (p.role !== 'owner') return _403(res, 'owner only');
+          const target = self.db.users[req.params.id];
+          if (!target) return _404(res);
+          if (target.id === p.sub) return _400(res, 'cannot delete own account');
+          delete self.db.users[req.params.id];
+          saveDB(self.db);
           _json(res, { ok: true });
-        } catch(e) { _json(res, { error: e.message }, 400); }
+        } catch(e) { _401(res, e.message); }
       }],
 
-      // List all permissions (schema)
-      ['GET', '/permissions', (req, res) => {
-        const actor = this.guard(req, res, 'view:accounts');
-        if (!actor) return;
-        _json(res, { permissions: PERMISSIONS, roles: ROLE_PERMISSIONS });
+      // ── Change password ────────────────────────────────────────────────────
+      ['POST', '/users/:id/password', async (req, res) => {
+        const auth = (req.headers['authorization']||'').slice(7);
+        try {
+          const p = verifyJWT(auth, self.db.jwtSecret);
+          // Users can change own password; admins can change member/operator passwords
+          const target = self.db.users[req.params.id];
+          if (!target) return _404(res);
+          const isSelf  = p.sub === target.id;
+          const canEdit = isSelf || (RANK[p.role] >= RANK['admin'] && RANK[target.role] < RANK[p.role]);
+          if (!canEdit) return _403(res, 'insufficient privileges');
+          const { password } = await _body(req);
+          if (!password || password.length < 12) return _400(res, 'password must be ≥12 chars');
+          target.password = await hashPassword(password);
+          saveDB(self.db);
+          _json(res, { ok: true });
+        } catch(e) { _401(res, e.message); }
       }]
     ];
   }
 };
 
-// ─── Utilities ────────────────────────────────────────────────────────────────
-
-function _json(res, data, status = 200) {
-  res.writeHead(status, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(data));
-}
-function _body(req) {
-  return new Promise(r => { let b = ''; req.on('data', d => b += d); req.on('end', () => r(b)); });
-}
-function _randomPass() {
-  return crypto.randomBytes(8).toString('base64url');
+function _json(res, d, s=200) { res.writeHead(s,{'Content-Type':'application/json'}); res.end(JSON.stringify(d)); }
+function _400(res,m) { res.writeHead(400); res.end(JSON.stringify({error:m})); }
+function _401(res,m) { res.writeHead(401); res.end(JSON.stringify({error:m})); }
+function _403(res,m) { res.writeHead(403); res.end(JSON.stringify({error:m})); }
+function _404(res)   { res.writeHead(404); res.end(JSON.stringify({error:'not found'})); }
+async function _body(req) {
+  let b=''; for await (const c of req) b+=c;
+  try { return JSON.parse(b); } catch { return {}; }
 }
 
 export default Ward;
