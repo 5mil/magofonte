@@ -14,18 +14,27 @@
  *                          └─▶ CpuMiner     (built-in server-side CPU mining)
  *   MinerSession / CpuMiner ─mining.submit─▶ ShareValidator
  *   ShareValidator ─submitblock─▶ node
- *   ShareValidator ─share event─▶ PayoutTracker
+ *   ShareValidator ─share event─▶ PayoutTracker  (per-pool PPLNS)
+ *                             └─▶ BonusLedger   (cross-pool CPU bonus)
  *
- * Hash routing:
- *   algo=skein   → dblSkein512  (pool/skein.js)
- *   algo=sha256d → SHA256d
- *   algo=scrypt  → stub
+ * CPU bonus:
+ *   When the server CPU miner finds a block, 100% of that reward
+ *   (minus optional operator fee) is split proportionally across ALL
+ *   workers who submitted valid shares on ANY pool in the last 30 min.
+ *   Completely separate from per-pool PPLNS. Dust is carried forward.
  *
  * CPU mining config (in pool config object):
  *   cpuMining: {
  *     enabled:  true,
  *     threads:  4,       // defaults to os.cpus().length
  *     throttle: 0.75,    // 0.0–1.0 CPU fraction (default 1.0)
+ *   }
+ *
+ * BonusLedger config (top-level pool config):
+ *   bonus: {
+ *     windowMs:       1_800_000,  // 30 min rolling window (default)
+ *     operatorFeePct: 0,          // operator cut of CPU blocks (default 0)
+ *     dustThreshold:  1000,       // min satoshis to pay out (default)
  *   }
  */
 
@@ -38,6 +47,7 @@ import { SettingsManager, MONETIZATION_TYPES } from './settings.js';
 import { addressToScript, validateAddress }    from './address.js';
 import { hashHeader }                          from './hash.js';
 import { CpuMiner }                            from './miner.js';
+import { BonusLedger }                         from './bonus.js';
 
 // ─── Utilities ───────────────────────────────────────────────────────────────
 
@@ -291,9 +301,15 @@ class MinerSession {
     this.hashrate=this._shareTimes.length*this.difficulty*4_294_967_296/60;
     if(result.valid){
       this.accepted++;this.pool.payout.addShare(this.user,this.difficulty);
+      // ── feed into cross-pool bonus ledger ──
+      this.pool.registry.bonusLedger?.recordShare(this.pool.poolId, this.user, this.difficulty);
       this.send({id:msg.id,result:true,error:null});
       this.pool.registry.emit('share:accepted',{minerId:this.id,user:this.user,jobId,isBlock:result.isBlock,hashrate:this.hashrate});
-      if(result.isBlock){this.pool.registry.emit('block:found',{user:this.user,height:job.height,reward:job.coinbaseValue});this.pool.payout.recordBlock(job.height,job.coinbaseValue);this.pool.jobEngine.forceNewJob();}
+      if(result.isBlock){
+        this.pool.registry.emit('block:found',{user:this.user,height:job.height,reward:job.coinbaseValue});
+        this.pool.payout.recordBlock(job.height,job.coinbaseValue);
+        this.pool.jobEngine.forceNewJob();
+      }
     } else {
       this.rejected++;this.send({id:msg.id,result:false,error:[20,result.error,null]});
     }
@@ -301,52 +317,55 @@ class MinerSession {
   }
 }
 
-// ─── Internal CPU miner session (acts like a MinerSession, no socket) ─────────
-// Wraps CpuMiner's 'found' events into the same validate() path
-// that external Stratum shares use, so blocks found by the CPU
-// miner go through the exact same submitblock flow.
+// ─── CpuMinerSession (bridges CpuMiner → ShareValidator → BonusLedger) ──────────
 
 class CpuMinerSession {
   constructor(pool) {
     this.pool        = pool;
     this.id          = 'cpu-miner';
-    this.user        = 'server';
-    this.difficulty  = 1.0;           // CPU miner runs at full network difficulty
+    this.user        = 'server';          // excluded from bonus by BonusLedger
+    this.difficulty  = 1.0;
     this.extranonce1 = crypto.randomBytes(4).toString('hex');
     this._shares     = new Set();
-    this.accepted    = 0; this.rejected = 0; this.hashrate = 0;
+    this.accepted    = 0; this.rejected = 0;
   }
 
-  /**
-   * Called by CpuMiner 'found' event.
-   * Reconstructs the nonce as a padded 8-char hex string (as stratum expects)
-   * then calls validate() which handles submitblock if it's a real block.
-   */
   async onFound({ nonce, nonceHex, extranonce2, hashHex, jobId }) {
     const job = this.pool.jobEngine?.jobs[jobId] || this.pool.jobEngine?.currentJob;
-    if (!job) { console.warn('[miner] found but no job available'); return; }
+    if (!job) { console.warn('[miner] found but no job'); return; }
 
-    // The nonce field in stratum is 8 hex chars (LE 32-bit)
-    const nonceLE = nonceHex.padStart(8,'0');
-
-    // Use current ntime from job
     const result = await this.pool.validator.validate(
-      this, job, extranonce2, job.ntime, nonceLE
+      this, job, extranonce2, job.ntime, nonceHex.padStart(8,'0')
     );
 
     if (result.valid) {
       this.accepted++;
-      this.pool.payout.addShare(this.user, this.difficulty);
-      this.pool.registry.emit('share:accepted', { minerId:this.id, user:this.user, jobId, isBlock:result.isBlock, hashrate:this.hashrate });
+      // CPU miner's own valid work does NOT feed into bonus ledger share window —
+      // it is the *source* of the bonus pot, not a recipient.
+      this.pool.registry.emit('share:accepted', { minerId:this.id, user:this.user, jobId, isBlock:result.isBlock });
+
       if (result.isBlock) {
-        console.log(`[miner] 🎉 CPU found block h=${job.height}!`);
+        console.log(`[miner] 🎉 CPU found block h=${job.height} reward=${job.coinbaseValue}sat!`);
         this.pool.registry.emit('block:found', { user:this.user, height:job.height, reward:job.coinbaseValue });
         this.pool.payout.recordBlock(job.height, job.coinbaseValue);
+
+        // ── Distribute the entire coinbase reward as bonus to real workers ──
+        const ledger = this.pool.registry.bonusLedger;
+        if (ledger) {
+          ledger.cpuBlockFound(job.coinbaseValue, {
+            height:  job.height,
+            coin:    this.pool.activeConfig?.coin,
+            hashHex: result.hashHex,
+          });
+        } else {
+          console.warn('[miner] no bonusLedger on registry — CPU block reward not distributed');
+        }
+
         this.pool.jobEngine.forceNewJob();
       }
     } else {
       this.rejected++;
-      console.warn(`[miner] found share rejected: ${result.error}`);
+      console.warn(`[miner] CPU share rejected: ${result.error}`);
     }
   }
 }
@@ -362,6 +381,12 @@ const Pool = {
     this.jobEngine=null; this.validator=null; this.payout=null;
     this.varDiff=null; this.rpc=null; this.stratumServer=null;
     this.activeConfig=null; this.cpuMiner=null; this.cpuSession=null;
+    this.poolId = config?.coin ? `${config.coin}-${config.algo||'skein'}` : 'pool';
+
+    // ── Bootstrap the singleton BonusLedger on the registry ──
+    if (!registry.bonusLedger) {
+      registry.bonusLedger = new BonusLedger(registry, config?.bonus || {});
+    }
 
     registry.on('node:ready',({coin,node})=>{
       const poolCfg=this.settings.autoRegisterFromNode(coin);
@@ -390,6 +415,8 @@ const Pool = {
         this.cpuMiner?.newJob(job, this.cpuSession?.extranonce1);
       });
       this._openStratum(config.stratumPort||3333);
+      // Register this pool with the BonusLedger
+      registry.bonusLedger.registerPool(this.poolId, this.payout);
       if (config.cpuMining?.enabled) this._startCpuMiner(config);
     }
     return this;
@@ -398,6 +425,7 @@ const Pool = {
   _startMining(poolCfg, node) {
     console.log(`[pool] starting ${poolCfg.coin} (${poolCfg.algo}) on :${poolCfg.stratumPort}`);
     this.activeConfig=poolCfg;
+    this.poolId = `${poolCfg.coin}-${poolCfg.algo||'skein'}`;
     const rpcCfg={host:'127.0.0.1',port:node.coin.daemon.rpcPort,rpcuser:node.creds.user,rpcpass:node.creds.pass};
     this.rpc       = new NodeRPC(rpcCfg);
     this.validator = new ShareValidator(this.rpc, poolCfg.algo||'skein');
@@ -410,6 +438,10 @@ const Pool = {
     });
     this.jobEngine.start();
     this._openStratum(poolCfg.stratumPort||3333);
+    // Register with BonusLedger (creates if absent)
+    if (!this.registry.bonusLedger)
+      this.registry.bonusLedger = new BonusLedger(this.registry, poolCfg.bonus || {});
+    this.registry.bonusLedger.registerPool(this.poolId, this.payout);
     if (poolCfg.cpuMining?.enabled) this._startCpuMiner(poolCfg);
     this.registry.emit('pool:started',{coin:poolCfg.coin});
   },
@@ -423,17 +455,16 @@ const Pool = {
       algo:     config.algo  || 'skein',
     });
     this.cpuSession = new CpuMinerSession(this);
-    this.cpuMiner.on('found',    found    => this.cpuSession.onFound(found));
-    this.cpuMiner.on('hashrate', hr       => this.registry.emit('miner:hashrate', hr));
+    this.cpuMiner.on('found',    found => this.cpuSession.onFound(found));
+    this.cpuMiner.on('hashrate', hr    => this.registry.emit('miner:hashrate', hr));
     const job = this.jobEngine?.currentJob;
     if (job) this.cpuMiner.start(job, this.cpuSession.extranonce1);
-    console.log(`[pool] CPU miner started: ${this.cpuMiner.threads} threads, throttle=${this.cpuMiner.throttle}`);
+    console.log(`[pool] CPU miner: ${this.cpuMiner.threads} threads, throttle=${this.cpuMiner.throttle}`);
   },
 
   _stopCpuMiner() {
     this.cpuMiner?.stop();
-    this.cpuMiner   = null;
-    this.cpuSession = null;
+    this.cpuMiner = null; this.cpuSession = null;
     console.log('[pool] CPU miner stopped');
   },
 
@@ -463,19 +494,13 @@ const Pool = {
     return [
       ['GET', '/status', (req,res) => {
         const miners=this._minerList(); const job=this.jobEngine?.currentJob; const active=sm.getActivePool();
-        const cpuInfo = this.cpuMiner ? {
-          running:  this.cpuMiner.isRunning,
-          threads:  this.cpuMiner.threads,
-          throttle: this.cpuMiner.throttle,
-        } : null;
+        const cpuInfo = this.cpuMiner ? {running:this.cpuMiner.isRunning,threads:this.cpuMiner.threads,throttle:this.cpuMiner.throttle} : null;
         _json(res,{active:active?.id??null,coin:this.activeConfig?.coin,algo:this.activeConfig?.algo,
-          height:job?.height??null, miners:miners.length,
-          hashrate:miners.reduce((s,m)=>s+m.hashrate,0),
+          height:job?.height??null,miners:miners.length,hashrate:miners.reduce((s,m)=>s+m.hashrate,0),
           blocksFound:this.payout?.getStats().blocksFound??0,
           rewardAddress:this.activeConfig?.blockRewardAddress??null,
           rewardScript:this.jobEngine?._rewardScript??null,
-          cpuMiner: cpuInfo,
-          miners_list:miners});
+          cpuMiner:cpuInfo, miners_list:miners});
       }],
       ['GET',  '/miners', (req,res)=>_json(res,this._minerList())],
       ['GET',  '/payout', (req,res)=>_json(res,this.payout?.getStats()??{})],
@@ -487,26 +512,29 @@ const Pool = {
       ['POST', '/cpu-miner/start', async(req,res) => {
         const body=await _body(req); let cfg={}; try{cfg=JSON.parse(body);}catch{}
         if (!this.activeConfig) return _400(res,'pool not configured');
-        this._startCpuMiner({ ...this.activeConfig, cpuMining:{ enabled:true, ...cfg } });
+        this._startCpuMiner({...this.activeConfig,cpuMining:{enabled:true,...cfg}});
         _json(res,{ok:true,threads:this.cpuMiner.threads,throttle:this.cpuMiner.throttle});
       }],
-      ['POST', '/cpu-miner/stop', (req,res) => {
-        this._stopCpuMiner();
-        _json(res,{ok:true});
-      }],
+      ['POST', '/cpu-miner/stop',  (req,res) => { this._stopCpuMiner(); _json(res,{ok:true}); }],
       ['PATCH', '/cpu-miner', async(req,res) => {
         const body=await _body(req);
         try {
           const{threads,throttle}=JSON.parse(body);
-          if (!this.cpuMiner) return _400(res,'CPU miner not running');
-          if (threads  !== undefined) this.cpuMiner.setThreads(Number(threads));
-          if (throttle !== undefined) this.cpuMiner.setThrottle(Number(throttle));
+          if(!this.cpuMiner)return _400(res,'CPU miner not running');
+          if(threads!==undefined)this.cpuMiner.setThreads(Number(threads));
+          if(throttle!==undefined)this.cpuMiner.setThrottle(Number(throttle));
           _json(res,{ok:true,threads:this.cpuMiner.threads,throttle:this.cpuMiner.throttle});
-        } catch(e){_400(res,e.message);}
+        }catch(e){_400(res,e.message);}
       }],
-      ['GET',  '/cpu-miner', (req,res) => {
-        if (!this.cpuMiner) return _json(res,{running:false});
+      ['GET', '/cpu-miner', (req,res) => {
+        if(!this.cpuMiner)return _json(res,{running:false});
         _json(res,{running:this.cpuMiner.isRunning,threads:this.cpuMiner.threads,throttle:this.cpuMiner.throttle,algo:this.cpuMiner.algo});
+      }],
+
+      // ── Bonus ledger ─────────────────────────────────────────────────────
+      ['GET', '/bonus', (req,res) => {
+        const ledger = this.registry.bonusLedger;
+        _json(res, ledger ? ledger.getStats() : {error:'bonus ledger not initialised'});
       }],
 
       // ── Address & settings ─────────────────────────────────────────────────
@@ -520,7 +548,7 @@ const Pool = {
           if(!ok)return _400(res,'invalid address — check logs');
           if(this.activeConfig)this.activeConfig.blockRewardAddress=address;
           _json(res,{ok:true,address,script:this.jobEngine._rewardScript});
-        } catch(e){_400(res,e.message);}
+        }catch(e){_400(res,e.message);}
       }],
       ['POST', '/validate-address', async(req,res) => {
         const body=await _body(req);
