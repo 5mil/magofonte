@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MagoFonte — Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c9a84c; --gold2:#e8d08a; --ink:#0d0b0e;
+  --surface:#100e18; --surface2:#17142a;
+  --border:rgba(201,168,76,.2);
+  --green:#5ecf7a; --red:#e05050; --cyan:#4ecfcf;
+  --dim:rgba(201,168,76,.3);
+}
+html,body{height:100%;background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;overflow-x:hidden}
+body{min-height:100vh;background:
+  radial-gradient(ellipse at 50% 0%,rgba(201,168,76,.07) 0%,transparent 65%),
+  radial-gradient(ellipse at 20% 80%,rgba(80,50,140,.12) 0%,transparent 55%),
+  var(--ink);}
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.star{position:absolute;border-radius:50%;background:white;opacity:0;animation:twinkle var(--d,4s) var(--delay,0s) infinite ease-in-out}
+@keyframes twinkle{0%,100%{opacity:0}50%{opacity:var(--bright,.6)}}
+
+/* nav */
+.nav-bar{position:fixed;top:1rem;right:1.2rem;z-index:50;display:flex;gap:.55rem;align-items:center}
+.nav-pill{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .85rem;border:1px solid rgba(201,168,76,.2);border-radius:999px;background:rgba(13,11,14,.82);text-decoration:none;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(201,168,76,.45);transition:all .22s;backdrop-filter:blur(6px)}
+.nav-pill:hover{border-color:rgba(201,168,76,.55);color:var(--gold2)}
+.nav-pill.active{border-color:rgba(201,168,76,.4);color:var(--gold)}
+
+/* page */
+#app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:4.5rem 1.5rem 4rem}
+
+/* header */
+.dash-header{display:flex;align-items:baseline;gap:1rem;margin-bottom:2rem;flex-wrap:wrap}
+.dash-title{font-family:'Cinzel Decorative',serif;font-size:clamp(1.4rem,4vw,2rem);font-weight:700;
+  background:linear-gradient(135deg,var(--gold2) 0%,var(--gold) 55%,#a07830 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.06em;}
+.dash-sub{font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:var(--dim)}
+.dash-live{display:inline-flex;align-items:center;gap:.4rem;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(94,207,122,.65);margin-left:auto}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* stat grid */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-bottom:1.4rem}
+.stat-card{background:var(--surface2);border:1px solid rgba(201,168,76,.12);border-radius:10px;padding:1rem 1.1rem;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,168,76,.04) 0%,transparent 60%);pointer-events:none}
+.sc-label{font-size:.5rem;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);margin-bottom:.4rem}
+.sc-value{font-size:1.4rem;font-weight:900;line-height:1;color:var(--gold2)}
+.sc-value.green{color:var(--green)}
+.sc-value.red{color:var(--red)}
+.sc-value.cyan{color:var(--cyan)}
+.sc-value.gold{color:var(--gold)}
+.sc-value.dim{color:var(--dim)}
+.sc-unit{font-size:.6rem;letter-spacing:.15em;color:var(--dim);margin-top:.25rem}
+
+/* panel */
+.panel{background:rgba(201,168,76,.03);border:1px solid var(--border);border-radius:12px;position:relative;margin-bottom:1.2rem}
+.panel-label{position:absolute;top:-.65rem;left:1.4rem;font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);background:var(--ink);padding:0 .7rem;white-space:nowrap}
+.panel-body{padding:1.5rem 1.6rem}
+
+/* hashrate chart area */
+.chart-wrap{position:relative;width:100%;height:120px;margin-bottom:.6rem}
+canvas#hrChart{width:100%;height:100%;display:block}
+.chart-legend{display:flex;gap:1.2rem;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.cl-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:.3rem;vertical-align:middle}
+
+/* miner table */
+.miner-table{width:100%;border-collapse:collapse;font-size:.7rem}
+.miner-table th{font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);font-weight:400;padding:.5rem .7rem;border-bottom:1px solid rgba(201,168,76,.1);text-align:left}
+.miner-table td{padding:.6rem .7rem;border-bottom:1px solid rgba(201,168,76,.06);color:rgba(232,208,138,.75);vertical-align:middle}
+.miner-table tr:last-child td{border-bottom:none}
+.miner-table tr:hover td{background:rgba(201,168,76,.03)}
+.badge{font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;padding:.12rem .45rem;border-radius:999px;border:1px solid;white-space:nowrap}
+.badge.on{border-color:rgba(94,207,122,.4);color:rgba(94,207,122,.8)}
+.badge.off{border-color:rgba(224,80,80,.35);color:rgba(224,80,80,.7)}
+.badge.idle{border-color:rgba(201,168,76,.35);color:rgba(201,168,76,.7)}
+
+/* share feed */
+.share-feed{height:160px;overflow-y:auto;font-family:'Courier New',monospace;font-size:.65rem;line-height:1.6;background:#060608;border:1px solid rgba(201,168,76,.08);border-radius:6px;padding:.6rem .8rem}
+.sf-row{display:flex;gap:.7rem;padding:.05rem 0;white-space:nowrap}
+.sf-ts{color:rgba(201,168,76,.25);flex-shrink:0}
+.sf-worker{color:var(--gold);flex-shrink:0;min-width:9rem;overflow:hidden;text-overflow:ellipsis}
+.sf-msg.ok{color:var(--green)}
+.sf-msg.err{color:var(--red)}
+.sf-msg.info{color:rgba(201,168,76,.55)}
+.sf-msg.block{color:#ffe066;font-weight:700}
+
+/* payout table */
+.pay-table{width:100%;border-collapse:collapse;font-size:.68rem}
+.pay-table th{font-size:.5rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);font-weight:400;padding:.5rem .6rem;border-bottom:1px solid rgba(201,168,76,.1);text-align:left}
+.pay-table td{padding:.55rem .6rem;border-bottom:1px solid rgba(201,168,76,.06);color:rgba(232,208,138,.7);font-family:'Courier New',monospace}
+.pay-table tr:last-child td{border-bottom:none}
+.pay-amount{color:var(--green)}
+
+/* algo ring */
+.algo-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.3rem}
+.algo-chip{border:1px solid rgba(201,168,76,.18);border-radius:6px;padding:.4rem .75rem;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(201,168,76,.45);background:rgba(201,168,76,.03);display:flex;flex-direction:column;align-items:center;gap:.2rem;min-width:80px}
+.algo-chip.active{border-color:rgba(94,207,122,.4);color:rgba(94,207,122,.8);background:rgba(94,207,122,.04)}
+.algo-chip .ac-hr{font-size:.75rem;font-weight:700;color:var(--gold2)}
+.algo-chip.active .ac-hr{color:var(--green)}
+
+/* block feed */
+.block-row{display:grid;grid-template-columns:auto 1fr auto;gap:.5rem 1rem;padding:.65rem 0;border-bottom:1px solid rgba(201,168,76,.07);align-items:center;font-size:.68rem}
+.block-row:last-child{border-bottom:none}
+.block-height{font-family:'Courier New',monospace;color:var(--gold);font-weight:700;font-size:.75rem}
+.block-meta{color:rgba(232,208,138,.6);font-style:italic;font-size:.6rem}
+.block-reward{color:var(--green);font-family:'Courier New',monospace;white-space:nowrap}
+
+/* divider */
+.section-sep{border:none;border-top:1px solid rgba(201,168,76,.07);margin:1rem 0}
+
+/* refresh btn */
+.refresh-btn{border:1px solid rgba(201,168,76,.22);border-radius:6px;background:transparent;color:rgba(201,168,76,.55);font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;padding:.3rem .8rem;cursor:pointer;transition:all .18s;float:right;margin-top:-.2rem}
+.refresh-btn:hover{border-color:var(--gold);color:var(--gold2);background:rgba(201,168,76,.07)}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+
+<nav class="nav-bar">
+  <a class="nav-pill" href="index.html">&#10022; Home</a>
+  <a class="nav-pill active" href="dashboard.html">&#9685; Dashboard</a>
+  <a class="nav-pill" href="lancia.html">&#9741; Lancia</a>
+</nav>
+
+<div id="app">
+
+  <div class="dash-header">
+    <div>
+      <div class="dash-title">The Observatory</div>
+      <div class="dash-sub">Pool &middot; Miner &middot; Block &middot; Payout</div>
+    </div>
+    <div class="dash-live" id="live-indicator">
+      <span class="live-dot"></span> Live
+    </div>
+  </div>
+
+  <!-- Top stats -->
+  <div class="stat-grid" id="stat-grid">
+    <div class="stat-card"><div class="sc-label">Pool Hashrate</div><div class="sc-value gold" id="s-hashrate">&mdash;</div><div class="sc-unit">MH/s</div></div>
+    <div class="stat-card"><div class="sc-label">Active Miners</div><div class="sc-value green" id="s-miners">&mdash;</div><div class="sc-unit">connected</div></div>
+    <div class="stat-card"><div class="sc-label">Shares (1h)</div><div class="sc-value cyan" id="s-shares">&mdash;</div><div class="sc-unit">accepted</div></div>
+    <div class="stat-card"><div class="sc-label">Blocks Found</div><div class="sc-value gold" id="s-blocks">&mdash;</div><div class="sc-unit">all time</div></div>
+    <div class="stat-card"><div class="sc-label">Pending Payout</div><div class="sc-value green" id="s-pending">&mdash;</div><div class="sc-unit">DGB</div></div>
+    <div class="stat-card"><div class="sc-label">Network Diff</div><div class="sc-value dim" id="s-diff">&mdash;</div><div class="sc-unit">current</div></div>
+  </div>
+
+  <!-- Hashrate chart -->
+  <div class="panel">
+    <div class="panel-label">&#10097; Hashrate &middot; 30 min &#10096;</div>
+    <div class="panel-body">
+      <div class="chart-wrap"><canvas id="hrChart"></canvas></div>
+      <div class="chart-legend">
+        <span><span class="cl-dot" style="background:#c9a84c"></span>Pool total</span>
+        <span><span class="cl-dot" style="background:#5ecf7a"></span>Best miner</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Algo breakdown -->
+  <div class="panel">
+    <div class="panel-label">&#10097; Algorithm Breakdown &#10096;</div>
+    <div class="panel-body">
+      <div class="algo-row" id="algo-row">
+        <div class="algo-chip active" id="algo-skein"><span>Skein</span><span class="ac-hr" id="ah-skein">&mdash;</span><span style="font-size:.48rem;color:var(--dim)">MH/s</span></div>
+        <div class="algo-chip" id="algo-scrypt"><span>Scrypt</span><span class="ac-hr" id="ah-scrypt">&mdash;</span><span style="font-size:.48rem;color:var(--dim)">MH/s</span></div>
+        <div class="algo-chip" id="algo-sha256d"><span>SHA256d</span><span class="ac-hr" id="ah-sha256d">&mdash;</span><span style="font-size:.48rem;color:var(--dim)">MH/s</span></div>
+        <div class="algo-chip" id="algo-qubit"><span>Qubit</span><span class="ac-hr" id="ah-qubit">&mdash;</span><span style="font-size:.48rem;color:var(--dim)">MH/s</span></div>
+        <div class="algo-chip" id="algo-odo"><span>OdoCrypt</span><span class="ac-hr" id="ah-odo">&mdash;</span><span style="font-size:.48rem;color:var(--dim)">MH/s</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connected miners -->
+  <div class="panel">
+    <div class="panel-label">&#10097; Connected Miners &#10096;</div>
+    <div class="panel-body">
+      <button class="refresh-btn" onclick="fetchAll()">&#8635; Refresh</button>
+      <table class="miner-table">
+        <thead><tr>
+          <th>Worker</th><th>Hashrate</th><th>Shares</th><th>Rejects</th><th>Diff</th><th>Algo</th><th>Status</th><th>Last Seen</th>
+        </tr></thead>
+        <tbody id="miner-tbody"><tr><td colspan="8" style="color:var(--dim);font-style:italic;padding:1rem 0">Querying miners&hellip;</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Live share feed -->
+  <div class="panel">
+    <div class="panel-label">&#10097; Share Feed &#10096;</div>
+    <div class="panel-body" style="padding-top:1.3rem">
+      <div class="share-feed" id="share-feed"></div>
+    </div>
+  </div>
+
+  <!-- Recent blocks -->
+  <div class="panel">
+    <div class="panel-label">&#10097; Blocks Found &#10096;</div>
+    <div class="panel-body" id="blocks-body">
+      <div style="color:var(--dim);font-style:italic;font-size:.7rem">No blocks found yet &mdash; the first strike approaches.</div>
+    </div>
+  </div>
+
+  <!-- Payout ledger -->
+  <div class="panel">
+    <div class="panel-label">&#10097; Payout Ledger &#10096;</div>
+    <div class="panel-body">
+      <table class="pay-table">
+        <thead><tr>
+          <th>Time</th><th>Address</th><th>Amount (DGB)</th><th>Tx</th><th>Status</th>
+        </tr></thead>
+        <tbody id="pay-tbody"><tr><td colspan="5" style="color:var(--dim);font-style:italic;padding:1rem 0">No payouts yet.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// stars
+const starsEl=document.getElementById('stars');
+for(let i=0;i<130;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*2+0.3;s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*5+3).toFixed(1)}s;--delay:${(Math.random()*7).toFixed(1)}s;--bright:${(Math.random()*.5+.25).toFixed(2)}`;starsEl.appendChild(s);}
+
+const BASE='/api/v1';
+async function get(path){try{const r=await fetch(BASE+path);const t=await r.text();try{return JSON.parse(t);}catch{return{error:t};}}catch(e){return{error:e.message};}}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function ts(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function fmtHR(v){if(!v||isNaN(v))return'—';if(v>=1e9)return(v/1e9).toFixed(2)+' GH/s';if(v>=1e6)return(v/1e6).toFixed(2)+' MH/s';if(v>=1e3)return(v/1e3).toFixed(2)+' KH/s';return v.toFixed(0)+' H/s';}
+function fmtNum(v){if(v===undefined||v===null||isNaN(v))return'—';if(v>=1e9)return(v/1e9).toFixed(2)+'B';if(v>=1e6)return(v/1e6).toFixed(2)+'M';if(v>=1e3)return(v/1e3).toFixed(1)+'K';return String(v);}
+
+// ── Hashrate sparkline ──────────────────────────────────────────────────────
+const canvas=document.getElementById('hrChart');
+const ctx=canvas.getContext('2d');
+let hrHistory=[]; // [{t, pool, best}]
+function resizeCanvas(){canvas.width=canvas.offsetWidth*devicePixelRatio;canvas.height=canvas.offsetHeight*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);}
+resizeCanvas();
+new ResizeObserver(resizeCanvas).observe(canvas);
+
+function drawChart(){
+  const w=canvas.offsetWidth,h=canvas.offsetHeight;
+  ctx.clearRect(0,0,w,h);
+  if(hrHistory.length<2){
+    ctx.fillStyle='rgba(201,168,76,0.15)';
+    ctx.font=`${h*0.22}px Cinzel,serif`;
+    ctx.textAlign='center';
+    ctx.fillText('Awaiting data…',w/2,h/2+4);
+    return;
+  }
+  const maxVal=Math.max(...hrHistory.map(d=>Math.max(d.pool||0,d.best||0)),1);
+  const pad={t:8,b:6,l:4,r:4};
+  const aw=w-pad.l-pad.r, ah=h-pad.t-pad.b;
+  function px(i){return pad.l+i*(aw/(hrHistory.length-1));}
+  function py(v){return pad.t+ah-(v/maxVal)*ah;}
+  // grid lines
+  ctx.strokeStyle='rgba(201,168,76,0.06)';ctx.lineWidth=1;
+  for(let i=1;i<4;i++){const y=pad.t+(ah/4)*i;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+aw,y);ctx.stroke();}
+  // pool fill
+  ctx.beginPath();ctx.moveTo(px(0),py(hrHistory[0].pool||0));
+  hrHistory.forEach((d,i)=>ctx.lineTo(px(i),py(d.pool||0)));
+  ctx.lineTo(px(hrHistory.length-1),pad.t+ah);ctx.lineTo(px(0),pad.t+ah);ctx.closePath();
+  const grd=ctx.createLinearGradient(0,pad.t,0,pad.t+ah);
+  grd.addColorStop(0,'rgba(201,168,76,0.22)');grd.addColorStop(1,'rgba(201,168,76,0.02)');
+  ctx.fillStyle=grd;ctx.fill();
+  // pool line
+  ctx.beginPath();ctx.moveTo(px(0),py(hrHistory[0].pool||0));
+  hrHistory.forEach((d,i)=>ctx.lineTo(px(i),py(d.pool||0)));
+  ctx.strokeStyle='rgba(201,168,76,0.7)';ctx.lineWidth=1.5;ctx.stroke();
+  // best miner line
+  ctx.beginPath();ctx.moveTo(px(0),py(hrHistory[0].best||0));
+  hrHistory.forEach((d,i)=>ctx.lineTo(px(i),py(d.best||0)));
+  ctx.strokeStyle='rgba(94,207,122,0.6)';ctx.lineWidth=1;ctx.stroke();
+}
+
+// ── Stats ───────────────────────────────────────────────────────────────────
+async function fetchStats(){
+  const d=await get('/pool/stats');
+  if(d.error)return;
+  document.getElementById('s-hashrate').textContent=fmtHR(d.hashrate).replace(' MH/s','').replace(' GH/s','').replace(' KH/s','').replace(' H/s','');
+  document.getElementById('s-miners').textContent=fmtNum(d.miners);
+  document.getElementById('s-shares').textContent=fmtNum(d.sharesAccepted1h);
+  document.getElementById('s-blocks').textContent=fmtNum(d.blocksFound);
+  document.getElementById('s-pending').textContent=d.pendingPayout!=null?(+d.pendingPayout).toFixed(4):'—';
+  document.getElementById('s-diff').textContent=fmtNum(d.networkDiff);
+  // push to sparkline history
+  const now=Date.now();
+  hrHistory.push({t:now,pool:d.hashrate||0,best:d.bestMinerHashrate||0});
+  if(hrHistory.length>60)hrHistory.shift();
+  drawChart();
+  // algo breakdown
+  const algos=d.algos||{};
+  ['skein','scrypt','sha256d','qubit','odo'].forEach(a=>{
+    const el=document.getElementById('ah-'+a);
+    const chip=document.getElementById('algo-'+a);
+    const v=algos[a]||0;
+    el.textContent=v>0?fmtHR(v):'—';
+    chip.classList.toggle('active',v>0);
+  });
+}
+
+// ── Miners ──────────────────────────────────────────────────────────────────
+async function fetchMiners(){
+  const d=await get('/pool/miners');
+  const tbody=document.getElementById('miner-tbody');
+  if(d.error||!Array.isArray(d.miners)){
+    tbody.innerHTML=`<tr><td colspan="8" style="color:var(--dim);font-style:italic">No miner data available.</td></tr>`;
+    return;
+  }
+  if(d.miners.length===0){
+    tbody.innerHTML=`<tr><td colspan="8" style="color:var(--dim);font-style:italic">No miners connected.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=d.miners.map(m=>{
+    const st=m.status||'unknown';
+    const bdg=st==='active'?'on':st==='idle'?'idle':'off';
+    const ago=m.lastSeen?timeSince(m.lastSeen):'—';
+    return `<tr>
+      <td>${esc(m.worker||m.address||'unknown')}</td>
+      <td>${fmtHR(m.hashrate)}</td>
+      <td>${fmtNum(m.sharesAccepted)}</td>
+      <td style="color:${m.sharesRejected>0?'var(--red)':'var(--dim)'}">${fmtNum(m.sharesRejected)}</td>
+      <td>${fmtNum(m.difficulty)}</td>
+      <td style="font-size:.58rem;letter-spacing:.12em">${esc(m.algo||'—')}</td>
+      <td><span class="badge ${bdg}">${st}</span></td>
+      <td style="color:var(--dim);font-size:.62rem">${ago}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Blocks ──────────────────────────────────────────────────────────────────
+async function fetchBlocks(){
+  const d=await get('/pool/blocks');
+  const body=document.getElementById('blocks-body');
+  if(d.error||!Array.isArray(d.blocks)||d.blocks.length===0){
+    body.innerHTML='<div style="color:var(--dim);font-style:italic;font-size:.7rem">No blocks found yet &mdash; the first strike approaches.</div>';
+    return;
+  }
+  body.innerHTML=d.blocks.slice(0,20).map(b=>`
+    <div class="block-row">
+      <div class="block-height">#${esc(b.height||'?')}</div>
+      <div><div style="color:var(--gold2);font-size:.7rem">${esc(b.hash?b.hash.slice(0,28)+'\u2026':'—')}</div><div class="block-meta">${esc(b.algo||'—')} &middot; ${b.time?new Date(b.time*1000).toLocaleString():'—'}</div></div>
+      <div class="block-reward">+${b.reward!=null?(+b.reward).toFixed(2):'—'} DGB</div>
+    </div>`).join('');
+}
+
+// ── Payouts ─────────────────────────────────────────────────────────────────
+async function fetchPayouts(){
+  const d=await get('/pool/payouts');
+  const tbody=document.getElementById('pay-tbody');
+  if(d.error||!Array.isArray(d.payouts)||d.payouts.length===0){
+    tbody.innerHTML='<tr><td colspan="5" style="color:var(--dim);font-style:italic;padding:.8rem 0">No payouts yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=d.payouts.slice(0,30).map(p=>`<tr>
+    <td style="white-space:nowrap">${p.time?new Date(p.time*1000).toLocaleString():'—'}</td>
+    <td style="font-size:.6rem">${esc(p.address?p.address.slice(0,18)+'\u2026':p.address||'—')}</td>
+    <td class="pay-amount">+${(+p.amount).toFixed(4)}</td>
+    <td style="font-size:.58rem">${p.txid?'<a href="https://digiexplorer.info/tx/'+esc(p.txid)+'" target="_blank" rel="noopener" style="color:rgba(201,168,76,.5);text-decoration:none">'+esc(p.txid.slice(0,12))+'\u2026</a>':'—'}</td>
+    <td><span class="badge ${p.status==='confirmed'?'on':p.status==='pending'?'idle':'off'}">${esc(p.status||'unknown')}</span></td>
+  </tr>`).join('');
+}
+
+// ── Share feed (WebSocket or polling fallback) ───────────────────────────────
+const feedEl=document.getElementById('share-feed');
+let feedLines=[];
+function pushFeed(worker,msg,cls){
+  feedLines.push({t:ts(),worker,msg,cls});
+  if(feedLines.length>120)feedLines.shift();
+  feedEl.innerHTML=feedLines.map(l=>`<div class="sf-row"><span class="sf-ts">${esc(l.t)}</span><span class="sf-worker">${esc(l.worker)}</span><span class="sf-msg ${l.cls}">${esc(l.msg)}</span></div>`).join('');
+  feedEl.scrollTop=feedEl.scrollHeight;
+}
+function connectWS(){
+  const proto=location.protocol==='https:'?'wss':'ws';
+  const ws=new WebSocket(`${proto}://${location.host}/ws/shares`);
+  ws.onmessage=e=>{
+    try{
+      const d=JSON.parse(e.data);
+      const cls=d.type==='block'?'block':d.accepted?'ok':'err';
+      const msg=d.type==='block'?`BLOCK FOUND #${d.height||'?'} reward:${d.reward||'?'}DGB`:d.accepted?`share accepted diff:${d.diff||'?'}`:`share rejected: ${d.reason||'?'}`;
+      pushFeed(d.worker||'unknown',msg,cls);
+    }catch{}
+  };
+  ws.onopen=()=>pushFeed('system','WebSocket connected','info');
+  ws.onerror=()=>{
+    pushFeed('system','WS unavailable — polling mode','info');
+    setInterval(()=>fetchSharePoll(),8000);
+  };
+  ws.onclose=()=>setTimeout(connectWS,4000);
+}
+async function fetchSharePoll(){
+  const d=await get('/pool/shares/recent');
+  if(d.error||!Array.isArray(d.shares))return;
+  d.shares.slice(-5).forEach(s=>{
+    const cls=s.type==='block'?'block':s.accepted?'ok':'err';
+    const msg=s.type==='block'?`BLOCK FOUND #${s.height||'?'}`:s.accepted?'share accepted':'share rejected';
+    pushFeed(s.worker||'?',msg,cls);
+  });
+}
+
+// ── Orchestrate ─────────────────────────────────────────────────────────────
+function timeSince(ts){
+  const s=Math.floor((Date.now()-(ts*1000||ts))/1000);
+  if(s<60)return s+'s ago';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';
+}
+async function fetchAll(){await Promise.all([fetchStats(),fetchMiners(),fetchBlocks(),fetchPayouts()]);}
+
+pushFeed('system','Observatory initialised','info');
+try{connectWS();}catch{setInterval(fetchSharePoll,8000);}
+fetchAll();
+setInterval(fetchStats,15000);
+setInterval(fetchMiners,20000);
+setInterval(fetchBlocks,60000);
+setInterval(fetchPayouts,60000);
+</script>
+</body>
+</html>
