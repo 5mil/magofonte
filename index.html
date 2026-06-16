@@ -340,6 +340,47 @@
       font-size: 1.1rem; cursor: pointer; line-height: 1;
     }
     .wmodal-close:hover { color: var(--gold); }
+
+    /* ─── Lancia portal button ───────────────────────────────────────────── */
+    .lancia-portal {
+      position: fixed;
+      bottom: 1.6rem;
+      right: 1.8rem;
+      z-index: 50;
+    }
+    .lancia-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(201,168,76,0.18);
+      background: rgba(13,11,14,0.85);
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color .3s, box-shadow .3s, transform .25s;
+      box-shadow: 0 0 0 rgba(201,168,76,0);
+    }
+    .lancia-btn:hover {
+      border-color: rgba(201,168,76,0.55);
+      box-shadow: 0 0 14px rgba(201,168,76,0.18);
+      transform: scale(1.08);
+    }
+    .lancia-rune {
+      font-size: 1.05rem;
+      opacity: 0.28;
+      transition: opacity .3s;
+      user-select: none;
+      line-height: 1;
+    }
+    .lancia-btn:hover .lancia-rune { opacity: 0.7; }
+    /* subtle idle pulse */
+    @keyframes halo {
+      0%,100% { box-shadow: 0 0 0 rgba(201,168,76,0); }
+      50%      { box-shadow: 0 0 10px rgba(201,168,76,0.12); }
+    }
+    .lancia-btn { animation: halo 5s ease-in-out infinite; }
   </style>
 </head>
 <body>
@@ -453,8 +494,8 @@
     <ul class="wallet-list" id="walletList"></ul>
 
     <div class="wallet-actions">
-      <button class="wallet-action-btn" onclick="walletUI.openGenerate()">⚗ Generate</button>
-      <button class="wallet-action-btn" onclick="walletUI.openImport()">↓ Import WIF</button>
+      <button class="wallet-action-btn" onclick="walletUI.openGenerate()">&#9879; Generate</button>
+      <button class="wallet-action-btn" onclick="walletUI.openImport()">&#8595; Import WIF</button>
     </div>
   </div>
 
@@ -462,12 +503,12 @@
   <div class="grimoire">
 
     <div class="log-entry">
-      <div class="log-sigil">⛏</div>
+      <div class="log-sigil">&#9935;</div>
       <div class="log-body">
         <div class="log-title">The Mine Awakens <span class="log-date">June 2026</span></div>
         <div class="log-text">
           The pool module now speaks fluent Stratum. Miners connect, subscribe, receive jobs,
-          and submit shares — the full <code>mining.subscribe → authorize → notify → submit</code>
+          and submit shares &mdash; the full <code>mining.subscribe &rarr; authorize &rarr; notify &rarr; submit</code>
           handshake works end to end. VarDiff adjusts difficulty in real time so a phone CPU
           and a GPU can mine side by side without either drowning the other.
         </div>
@@ -481,11 +522,11 @@
     </div>
 
     <div class="log-entry">
-      <div class="log-sigil">🪙</div>
+      <div class="log-sigil">&#129689;</div>
       <div class="log-body">
         <div class="log-title">Coins Go Somewhere Now <span class="log-date">June 2026</span></div>
         <div class="log-text">
-          The coinbase output previously paid to the all-zeros burn address — a technically valid
+          The coinbase output previously paid to the all-zeros burn address &mdash; a technically valid
           script that leads exactly nowhere. <code>pool/address.js</code> now decodes real
           Base58Check addresses with full checksum verification. Every block found forwards
           its reward to the operator's actual DGB wallet. The module knows the version bytes
@@ -502,12 +543,12 @@
     </div>
 
     <div class="log-entry">
-      <div class="log-sigil">🌀</div>
+      <div class="log-sigil">&#127744;</div>
       <div class="log-body">
         <div class="log-title">Skein Woven In <span class="log-date">June 2026</span></div>
         <div class="log-text">
           DigiByte's Skein algorithm hashes the 80-byte block header with
-          <code>Skein512(Skein512(header))</code>. The old code used double-SHA256 — correct for
+          <code>Skein512(Skein512(header))</code>. The old code used double-SHA256 &mdash; correct for
           Bitcoin, wrong for DGB. <code>pool/skein.js</code> is a full pure-JavaScript Threefish-512
           implementation: 72 rounds, 8 MIX pairs per round, key injection every 4 rounds, UBI chaining,
           zero native addons. A NIST known-answer test vector (<code>Skein512(0xFF)</code>) validates
@@ -525,19 +566,19 @@
     </div>
 
     <div class="log-entry">
-      <div class="log-sigil">🔑</div>
+      <div class="log-sigil">&#128273;</div>
       <div class="log-body">
         <div class="log-title">Modular Wallets <span class="log-date">June 2026</span></div>
         <div class="log-text">
           The pool's reward address is no longer a hardcoded string buried in config.
           <code>pool/wallet.js</code> is a coin-agnostic key primitive library: WIF import/export,
           secp256k1 key generation, and P2PKH address derivation driven entirely by the coin
-          definition's version bytes — no native addons, no external dependencies.
+          definition's version bytes &mdash; no native addons, no external dependencies.
           <code>pool/walletManager.js</code> wraps it in a per-coin registry with AES-256-GCM
           vault persistence, an EventEmitter for hot address swaps, and a clean generate /
           import / export / delete / setActive API. The admin panel gains a live Wallet module
           where you can spin up a fresh keypair, paste in an existing WIF, export the raw key
-          for backup, and promote any stored wallet as the active coinbase target — all without
+          for backup, and promote any stored wallet as the active coinbase target &mdash; all without
           touching a config file or restarting the pool.
         </div>
         <div class="log-pills">
@@ -551,14 +592,14 @@
     </div>
 
     <div class="log-entry">
-      <div class="log-sigil">🔮</div>
+      <div class="log-sigil">&#128302;</div>
       <div class="log-body">
         <div class="log-title">What the Orb Shows Next <span class="log-date">on the horizon</span></div>
         <div class="log-text">
           The incantation is nearly complete. The remaining runes to inscribe before
           the first block emerges from the stone: connect a real miner, watch the
           share validator accept a genuine Skein hash, and let <code>submitblock</code>
-          carry it to the DGB network. Beyond that — the other four DGB algorithms
+          carry it to the DGB network. Beyond that &mdash; the other four DGB algorithms
           (Scrypt, Qubit, Odo, SHA256d) await their own scroll entries.
         </div>
         <div class="log-pills">
@@ -572,7 +613,7 @@
     </div>
 
     <div class="grimoire-footer">
-      Inscribed by the wizard's hand &nbsp;·&nbsp; entries added as spells complete
+      Inscribed by the wizard's hand &nbsp;&middot;&nbsp; entries added as spells complete
     </div>
   </div>
 
@@ -582,11 +623,18 @@
 
 </div>
 
+<!-- ─── Lancia portal — mysterious rune button ────────────────────────── -->
+<div class="lancia-portal">
+  <a class="lancia-btn" href="/lancia.html" title="">
+    <span class="lancia-rune">&#8962;</span>
+  </a>
+</div>
+
 <!-- ─── Generate Modal ─────────────────────────────────────────────────── -->
 <div class="wmodal-backdrop" id="modalGenerate">
   <div class="wmodal">
     <button class="wmodal-close" onclick="walletUI.close('modalGenerate')">&#10005;</button>
-    <div class="wmodal-title">⚗ Generate New DGB Wallet</div>
+    <div class="wmodal-title">&#9879; Generate New DGB Wallet</div>
     <div class="wmodal-field">
       <label>Label (optional)</label>
       <input type="text" id="genLabel" placeholder="e.g. pool-main" />
@@ -603,10 +651,10 @@
 <div class="wmodal-backdrop" id="modalImport">
   <div class="wmodal">
     <button class="wmodal-close" onclick="walletUI.close('modalImport')">&#10005;</button>
-    <div class="wmodal-title">↓ Import WIF Private Key</div>
+    <div class="wmodal-title">&#8595; Import WIF Private Key</div>
     <div class="wmodal-field">
       <label>WIF Private Key</label>
-      <textarea id="importWif" rows="3" placeholder="Paste your WIF key here…"></textarea>
+      <textarea id="importWif" rows="3" placeholder="Paste your WIF key here&hellip;"></textarea>
     </div>
     <div class="wmodal-field">
       <label>Label (optional)</label>
@@ -624,9 +672,9 @@
 <div class="wmodal-backdrop" id="modalExport">
   <div class="wmodal">
     <button class="wmodal-close" onclick="walletUI.close('modalExport')">&#10005;</button>
-    <div class="wmodal-title">↑ Export WIF Private Key</div>
+    <div class="wmodal-title">&#8593; Export WIF Private Key</div>
     <p style="font-size:0.68rem;color:rgba(240,120,120,0.75);letter-spacing:0.1em;margin-bottom:1rem;font-style:italic;">
-      ⚠ Keep this secret. Anyone with this key controls the wallet.
+      &#9888; Keep this secret. Anyone with this key controls the wallet.
     </p>
     <div class="wmodal-field">
       <label>WIF Key for <span id="exportLabelName" style="color:var(--gold)"></span></label>
@@ -699,11 +747,11 @@
         const li = document.createElement('li');
         li.className = 'wallet-item' + (w.isActive ? ' is-active' : '');
         li.innerHTML = `
-          <span class="wallet-item-label">${w.isActive ? '✦ ' : ''}${w.label}</span>
+          <span class="wallet-item-label">${w.isActive ? '&#10022; ' : ''}${w.label}</span>
           <span class="wallet-item-addr" title="${w.address}">${w.address}</span>
           ${!w.isActive ? `<button class="wallet-btn" onclick="walletUI.setActive('${w.label}')">Set Active</button>` : '<span></span>'}
           <button class="wallet-btn" onclick="walletUI.openExport('${w.label}')">Export</button>
-          <button class="wallet-btn danger" onclick="walletUI.remove('${w.label}')">✕</button>
+          <button class="wallet-btn danger" onclick="walletUI.remove('${w.label}')">&#10005;</button>
         `;
         list.appendChild(li);
       });
@@ -729,7 +777,7 @@
 
     async function generate() {
       const label = document.getElementById('genLabel').value.trim() || undefined;
-      setMsg('genMsg', 'Casting keys…', '');
+      setMsg('genMsg', 'Casting keys&hellip;', '');
       const res = await api('POST', `/${COIN}/generate`, { label });
       if (res.error) { setMsg('genMsg', res.error, 'err'); return; }
       setMsg('genMsg', `Created: ${res.address}`, 'ok');
@@ -748,7 +796,7 @@
       const wif   = document.getElementById('importWif').value.trim();
       const label = document.getElementById('importLabel').value.trim() || undefined;
       if (!wif) { setMsg('importMsg', 'Paste a WIF key first', 'err'); return; }
-      setMsg('importMsg', 'Validating…', '');
+      setMsg('importMsg', 'Validating&hellip;', '');
       const res = await api('POST', `/${COIN}/import`, { wif, label });
       if (res.error) { setMsg('importMsg', res.error, 'err'); return; }
       setMsg('importMsg', `Imported: ${res.address}`, 'ok');
@@ -758,7 +806,7 @@
 
     async function openExport(label) {
       document.getElementById('exportLabelName').textContent = label;
-      document.getElementById('exportWifValue').value = '…loading';
+      document.getElementById('exportWifValue').value = '&hellip;loading';
       setMsg('exportMsg', '');
       open('modalExport');
       const res = await api('GET', `/${COIN}/${encodeURIComponent(label)}/export`);
@@ -771,7 +819,7 @@
       try {
         await navigator.clipboard.writeText(val);
         setMsg('exportMsg', 'Copied to clipboard', 'ok');
-      } catch { setMsg('exportMsg', 'Copy failed — select manually', 'err'); }
+      } catch { setMsg('exportMsg', 'Copy failed &mdash; select manually', 'err'); }
     }
 
     async function setActive(label) {
