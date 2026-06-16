@@ -172,8 +172,8 @@ html,body{background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;ov
   <div class="onboard-title">&#9670; What is Lancia?</div>
   <div class="onboard-grid">
     <div class="ob-card"><div class="ob-card-title">&#9670; Purpose</div><div class="ob-card-body">One-page studio to spin up, monitor, and tear down MagoFonte mining pool instances on free cloud infrastructure. Each instance runs the full stack: Stratum server, DGB node/wallet, API, and block broadcaster.</div></div>
-    <div class="ob-card"><div class="ob-card-title">&#9670; How it works</div><div class="ob-card-body">Fill in the Launch form. Lancia calls the MagoFonte API (<code>/api/v1/lancia/instances</code>), provisions a container on your chosen provider with all config injected as environment variables, and returns a live instance ID.</div></div>
-    <div class="ob-card"><div class="ob-card-title">&#9670; Pool economics</div><div class="ob-card-body">PPLNS payouts. Pool fee fixed at <code>2%</code> — funds infrastructure. Miners keep 98%. The built-in DGB wallet handles all payouts automatically once the node has synced.</div></div>
+    <div class="ob-card"><div class="ob-card-title">&#9670; How it works</div><div class="ob-card-body">Paste your provider token, fill in the form, and click Launch. Lancia calls the provider's API directly from your browser — no backend required. Instance state is saved in browser storage.</div></div>
+    <div class="ob-card"><div class="ob-card-title">&#9670; Pool economics</div><div class="ob-card-body">PPLNS payouts. Pool fee fixed at <code>2%</code> — funds infrastructure. Miners keep 98%. The built-in DGB wallet handles all payouts automatically once the node syncs.</div></div>
     <div class="ob-card"><div class="ob-card-title">&#9670; Prerequisites</div><div class="ob-card-body"><div class="prereq-list"><div class="prereq-item">A free account on at least one supported provider</div><div class="prereq-item">Your provider API token (see Setup Guide below)</div><div class="prereq-item">A DGB address to receive the 2% pool fee</div></div></div></div>
   </div>
 </div>
@@ -198,16 +198,14 @@ html,body{background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;ov
         <div class="guide-logo">&#9992;</div>
         <div>
           <div class="guide-title">Fly.io</div>
-          <div class="guide-tagline">Recommended &middot; Global edge &middot; Raw TCP supported &middot; 3 free VMs</div>
+          <div class="guide-tagline">Recommended &middot; Global edge &middot; Raw TCP &middot; 3 free VMs</div>
           <div class="guide-badges"><span class="gbadge">Free tier</span><span class="gbadge">30+ regions</span><span class="gbadge">Docker native</span><span class="gbadge warn">Card required (not charged)</span></div>
         </div>
       </div>
       <div class="steps">
         <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Create account</div><div class="step-text">Sign up at <a href="https://fly.io/app/sign-up" target="_blank">fly.io/app/sign-up</a>. A credit card is required for identity verification — you won't be charged on the free tier.</div></div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Install flyctl</div><div class="step-text">Linux / macOS:</div><div class="step-cmd">curl -L https://fly.io/install.sh | sh</div><div class="step-text">Windows (PowerShell):</div><div class="step-cmd">iwr https://fly.io/install.ps1 -useb | iex</div></div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Log in</div><div class="step-cmd">flyctl auth login</div><div class="step-text">Opens a browser window to authenticate.</div></div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Generate your token</div><div class="step-cmd">flyctl tokens create deploy -x 999999h</div><div class="step-text">Copy the token — it starts with <code>FlyV1 fm2_</code> and is shown once. Or get one via the dashboard at <a href="https://fly.io/user/personal_access_tokens" target="_blank">fly.io/user/personal_access_tokens</a>.</div></div></div>
-        <div class="step"><div class="step-num">5</div><div class="step-body"><div class="step-title">Paste into Lancia</div><div class="step-text">Select <strong>Fly.io</strong> in the Provider dropdown below and paste the token into the <em>Provider API Token</em> field. Done.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Get a token</div><div class="step-text">Go to <a href="https://fly.io/user/personal_access_tokens" target="_blank">fly.io/user/personal_access_tokens</a> and create a token. Or via CLI:</div><div class="step-cmd">flyctl tokens create deploy -x 999999h</div><div class="step-text">The token starts with <code>FlyV1 fm2_</code> and is shown once.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Paste into Lancia</div><div class="step-text">Select <strong>Fly.io</strong> in the Provider dropdown and paste the token. Lancia calls the Fly Machines API directly from your browser.</div></div></div>
       </div>
     </div>
 
@@ -217,14 +215,14 @@ html,body{background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;ov
         <div class="guide-logo">&#128642;</div>
         <div>
           <div class="guide-title">Railway</div>
-          <div class="guide-tagline">Easiest setup &middot; $5 free credit/month &middot; GitHub deploy</div>
+          <div class="guide-tagline">Easy setup &middot; $5 free credit/month &middot; GitHub deploy</div>
           <div class="guide-badges"><span class="gbadge">Free hobby tier</span><span class="gbadge">US &amp; EU regions</span><span class="gbadge warn">TCP proxy needed for Stratum</span></div>
         </div>
       </div>
       <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Create account</div><div class="step-text">Sign up at <a href="https://railway.app" target="_blank">railway.app</a> with GitHub or email. The Hobby plan gives $5 free compute credit per month.</div></div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Get your API token</div><div class="step-text">Avatar (top-right) → <em>Account Settings</em> → <em>Tokens</em> → <em>Create Token</em>. Or go directly to <a href="https://railway.app/account/tokens" target="_blank">railway.app/account/tokens</a>. Copy the token — shown once.</div></div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Paste into Lancia</div><div class="step-text">Select <strong>Railway</strong> in the Provider dropdown below and paste the token into the <em>Provider API Token</em> field. Lancia handles Stratum TCP proxy configuration automatically.</div></div></div>
+        <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Create account</div><div class="step-text">Sign up at <a href="https://railway.app" target="_blank">railway.app</a>. The Hobby plan gives $5 free compute per month.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Get your token</div><div class="step-text">Go to <a href="https://railway.app/account/tokens" target="_blank">railway.app/account/tokens</a> → Create Token. Shown once.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Paste into Lancia</div><div class="step-text">Select <strong>Railway</strong> and paste the token. Lancia calls the Railway GraphQL API from your browser.</div></div></div>
       </div>
     </div>
 
@@ -234,14 +232,14 @@ html,body{background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;ov
         <div class="guide-logo">&#9729;</div>
         <div>
           <div class="guide-title">Render</div>
-          <div class="guide-tagline">No card required &middot; Free web service &middot; US Oregon &amp; Frankfurt</div>
+          <div class="guide-tagline">No card required &middot; Free web service &middot; US &amp; Frankfurt</div>
           <div class="guide-badges"><span class="gbadge">Free tier</span><span class="gbadge">Docker deploy</span><span class="gbadge warn">Sleeps after 15 min idle</span><span class="gbadge warn">No raw TCP on free tier</span></div>
         </div>
       </div>
       <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Create account</div><div class="step-text">Sign up at <a href="https://render.com" target="_blank">render.com</a> — no credit card needed. Lancia sends automatic keep-alive pings so the instance doesn't sleep.</div></div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Get your API key</div><div class="step-text">Avatar → <em>Account Settings</em> → <em>API Keys</em> → <em>Create API Key</em>. Or go directly to <a href="https://dashboard.render.com/u/settings#api-keys" target="_blank">dashboard.render.com/u/settings#api-keys</a>. Copy the key.</div></div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Paste into Lancia</div><div class="step-text">Select <strong>Render</strong> in the Provider dropdown below and paste the key into the <em>Provider API Token</em> field.</div><div class="step-note"><strong>Note:</strong> Render free tier only exposes HTTPS (port 443). Raw TCP Stratum requires a paid plan. Best used for the API/dashboard endpoint only — use Fly.io or Oracle for Stratum.</div></div></div>
+        <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Create account</div><div class="step-text">Sign up at <a href="https://render.com" target="_blank">render.com</a> — no card needed.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Get your API key</div><div class="step-text">Go to <a href="https://dashboard.render.com/u/settings#api-keys" target="_blank">dashboard.render.com/u/settings#api-keys</a> → Create API Key.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Paste into Lancia</div><div class="step-text">Select <strong>Render</strong> and paste the key. Lancia calls the Render REST API from your browser.</div><div class="step-note"><strong>Note:</strong> Free tier only exposes HTTPS. Raw TCP Stratum requires a paid plan — use Fly.io or Oracle for full Stratum support.</div></div></div>
       </div>
     </div>
 
@@ -251,15 +249,15 @@ html,body{background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;ov
         <div class="guide-logo">&#9654;</div>
         <div>
           <div class="guide-title">Oracle Cloud Free Tier</div>
-          <div class="guide-tagline">Always Free &middot; ARM VMs &middot; 4 OCPUs + 24 GB RAM &middot; Best raw performance</div>
-          <div class="guide-badges"><span class="gbadge">Never expires</span><span class="gbadge">ARM Ampere A1</span><span class="gbadge">Full TCP support</span><span class="gbadge warn">More setup steps</span></div>
+          <div class="guide-tagline">Always Free &middot; ARM VMs &middot; 4 OCPUs + 24 GB RAM &middot; Best performance</div>
+          <div class="guide-badges"><span class="gbadge">Never expires</span><span class="gbadge">ARM Ampere A1</span><span class="gbadge">Full TCP</span><span class="gbadge warn">More setup steps</span></div>
         </div>
       </div>
       <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Create account</div><div class="step-text">Sign up at <a href="https://www.oracle.com/cloud/free/" target="_blank">oracle.com/cloud/free</a>. Credit card required for verification — not charged. Pick your home region carefully, it can't be changed. Recommended: <code>us-ashburn-1</code> or <code>eu-frankfurt-1</code>.</div></div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Create an API signing key</div><div class="step-text">In the OCI Console: profile icon → <em>User Settings</em> → <em>API Keys</em> → <em>Add API Key</em> → <em>Generate API Key Pair</em>. Download the private key (<code>.pem</code> file) and copy the config snippet shown.</div></div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Paste credentials into Lancia</div><div class="step-text">Select <strong>Oracle Cloud</strong> below. Paste your credentials as a JSON object:</div><div class="step-cmd">{"user":"ocid1.user.oc1..xxx","tenancy":"ocid1.tenancy.oc1..xxx","region":"us-ashburn-1","fingerprint":"aa:bb:cc:...","privateKey":"-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"}</div></div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Open Stratum port in OCI firewall</div><div class="step-text">OCI Console → <em>Networking</em> → <em>Virtual Cloud Networks</em> → your VCN → <em>Security Lists</em> → <em>Add Ingress Rule</em>. Set: Source <code>0.0.0.0/0</code>, Protocol <code>TCP</code>, Port <code>3333</code>. Also open <code>3000</code> for the API.</div></div></div>
+        <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Create account</div><div class="step-text">Sign up at <a href="https://www.oracle.com/cloud/free/" target="_blank">oracle.com/cloud/free</a>. Card required for verification — not charged. Choose your home region carefully; it can't be changed. Recommended: <code>us-ashburn-1</code> or <code>eu-frankfurt-1</code>.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Create an API signing key</div><div class="step-text">OCI Console → profile icon → <em>User Settings</em> → <em>API Keys</em> → <em>Add API Key</em> → <em>Generate Key Pair</em>. Download the private key and copy the config snippet.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Paste credentials</div><div class="step-text">Select <strong>Oracle Cloud</strong> and paste your credentials as JSON:</div><div class="step-cmd">{"user":"ocid1.user.oc1..xxx","tenancy":"ocid1.tenancy.oc1..xxx","region":"us-ashburn-1","fingerprint":"aa:bb:cc:...","privateKey":"-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"}</div></div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Open firewall ports</div><div class="step-text">OCI Console → Networking → VCN → Security Lists → Add Ingress Rule. Open TCP port <code>3333</code> (Stratum) and <code>3000</code> (API) from <code>0.0.0.0/0</code>.</div></div></div>
       </div>
     </div>
 
@@ -269,19 +267,19 @@ html,body{background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;ov
         <div class="guide-logo">&#9881;</div>
         <div>
           <div class="guide-title">Custom / Self-Hosted</div>
-          <div class="guide-tagline">Any server with Docker &middot; VPS, homelab, or bare metal &middot; Full TCP support</div>
+          <div class="guide-tagline">Any Docker host &middot; VPS, homelab, or bare metal &middot; Full TCP</div>
           <div class="guide-badges"><span class="gbadge">Any Docker host</span><span class="gbadge">Full control</span><span class="gbadge">No vendor limits</span></div>
         </div>
       </div>
       <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Install Docker on your server</div><div class="step-cmd">curl -fsSL https://get.docker.com | sh</div><div class="step-text">Any Linux VPS or bare-metal machine works. Minimum: 1 CPU, 1 GB RAM.</div></div></div>
+        <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Install Docker</div><div class="step-cmd">curl -fsSL https://get.docker.com | sh</div><div class="step-text">Minimum: 1 CPU, 1 GB RAM.</div></div></div>
         <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Run the Lancia agent</div><div class="step-cmd">docker run -d --name lancia-agent \
   -p 4444:4444 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -e AGENT_TOKEN=your-secret-token \
-  ghcr.io/5mil/magofonte-lancia-agent:latest</div><div class="step-text">Replace <code>your-secret-token</code> with any strong random string — this is what you paste into Lancia.</div></div></div>
+  ghcr.io/5mil/magofonte-lancia-agent:latest</div><div class="step-text">Replace <code>your-secret-token</code> with any strong random string.</div></div></div>
         <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Open firewall ports</div><div class="step-cmd">ufw allow 3333/tcp && ufw allow 3000/tcp && ufw reload</div></div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Paste into Lancia</div><div class="step-text">Select <strong>Custom</strong> below. Enter your server IP as the agent endpoint (e.g. <code>http://1.2.3.4:4444</code>) and paste your token.</div></div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Paste into Lancia</div><div class="step-text">Select <strong>Custom</strong>, enter your agent endpoint (e.g. <code>http://1.2.3.4:4444</code>), and paste your token.</div></div></div>
       </div>
     </div>
 
@@ -292,7 +290,7 @@ html,body{background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;ov
 <div class="panel">
   <div class="panel-label">&#10097; Fleet Status &#10096;</div>
   <div class="panel-body">
-    <div class="panel-desc">Live summary of all instances. Auto-refreshes every 30 s. <span style="color:var(--green)">Green</span> = Stratum accepting connections &middot; <span style="color:var(--gold)">Gold</span> = starting &middot; <span style="color:var(--red)">Red</span> = stopped or crash-halted.</div>
+    <div class="panel-desc">All instances you have launched this session. Auto-refreshes every 30 s by querying each provider's API directly. <span style="color:var(--green)">Green</span> = running &middot; <span style="color:var(--gold)">Gold</span> = starting &middot; <span style="color:var(--red)">Red</span> = stopped or crashed.</div>
     <div class="stat-row">
       <div class="stat-card"><div class="sc-label">Total</div><div class="sc-value dim" id="s-total">&mdash;</div></div>
       <div class="stat-card"><div class="sc-label">Running</div><div class="sc-value green" id="s-running">&mdash;</div></div>
@@ -303,11 +301,11 @@ html,body{background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;ov
       <div class="stat-card"><div class="sc-label">Pool Hashrate</div><div class="sc-value blue" id="s-hashrate">&mdash;</div></div>
       <div class="stat-card"><div class="sc-label">Providers</div><div class="sc-value gold" id="s-providers">&mdash;</div></div>
     </div>
-    <div class="instance-list" id="instance-list"><div class="ll dim" style="padding:.5rem 0;font-family:'Courier New',monospace;font-size:.68rem">Querying the ether&hellip;</div></div>
+    <div class="instance-list" id="instance-list"><div class="ll dim" style="padding:.5rem 0;font-family:'Courier New',monospace;font-size:.68rem">No instances yet — launch one below.</div></div>
     <div class="action-bar">
       <button class="ibtn primary" onclick="refresh()">&#8635; Refresh Fleet</button>
-      <button class="ibtn" onclick="startAll()">&#9654; Start All</button>
       <button class="ibtn danger" onclick="stopAll()">&#9632; Stop All</button>
+      <button class="ibtn ghost" onclick="clearFleet()">&#9249; Clear List</button>
     </div>
   </div>
 </div>
@@ -316,26 +314,26 @@ html,body{background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;ov
 <div class="panel">
   <div class="panel-label">&#10097; Launch New Instance &#10096;</div>
   <div class="panel-body">
-    <div class="panel-desc">Configure and deploy a new MagoFonte pool instance. The DGB node and wallet are built into each instance — no external wallet setup required. Hover <span style="border:1px solid rgba(201,168,76,.3);border-radius:50%;padding:0 .25rem;font-size:.6rem;color:rgba(201,168,76,.5)">?</span> for field details.</div>
+    <div class="panel-desc">Configure and deploy a new MagoFonte pool instance. The DGB node and wallet are built in — no external setup needed. Hover <span style="border:1px solid rgba(201,168,76,.3);border-radius:50%;padding:0 .25rem;font-size:.6rem;color:rgba(201,168,76,.5)">?</span> for field details.</div>
 
     <div class="section-title">&#9670; Identity</div>
     <div class="launch-form">
       <div class="lf-group"><label class="lf-label">&#9672; Instance Name <span class="tip" data-tip="Unique slug used as the app/container name on the provider. Lowercase, hyphens only.">?</span></label><input class="lf-input" id="lf-name" placeholder="pool-skein-01"/><span class="lf-hint">Lowercase, hyphens only. Unique per provider.</span></div>
       <div class="lf-group"><label class="lf-label">&#9672; Provider <span class="tip" data-tip="Cloud platform for this instance. See the Provider Setup Guide above.">?</span></label><select class="lf-input" id="lf-provider" onchange="onProviderChange()"><option value="fly">Fly.io — free shared VMs, global edge</option><option value="railway">Railway — free hobby tier</option><option value="render">Render — free web service</option><option value="oracle">Oracle Cloud — always free ARM VMs</option><option value="custom">Custom / Self-hosted</option></select><div class="provider-badges" id="provider-badges"><span class="pbadge free">Free Tier</span><span class="pbadge">Global Regions</span><span class="pbadge">Docker Deploy</span></div></div>
-      <div class="lf-group span2"><label class="lf-label">&#9672; Provider API Token <span class="tip" data-tip="See the Provider Setup Guide above for how to get this. Stored in browser memory only — never sent to GitHub or any server.">?</span></label><input class="lf-input" id="lf-token" type="password" placeholder="Paste provider token here — session memory only"/><span class="lf-hint">&#9888; Cleared on page close. Never persisted.</span></div>
+      <div class="lf-group span2"><label class="lf-label">&#9672; Provider API Token <span class="tip" data-tip="See the Provider Setup Guide above. Stored in browser session memory only — never sent to any third-party server.">?</span></label><input class="lf-input" id="lf-token" type="password" placeholder="Paste provider token here — session memory only"/><span class="lf-hint">&#9888; Cleared on page close. Never persisted to any server.</span></div>
     </div>
 
     <div class="section-title">&#9670; Deployment</div>
     <div class="launch-form">
-      <div class="lf-group"><label class="lf-label">Region <span class="tip" data-tip="Datacenter closest to your miners for lowest Stratum latency.">?</span></label><select class="lf-input" id="lf-region"><option value="ord">ord — Chicago, US</option><option value="iad">iad — Ashburn, US</option><option value="lax">lax — Los Angeles, US</option><option value="ams">ams — Amsterdam, EU</option><option value="fra">fra — Frankfurt, EU</option><option value="sin">sin — Singapore, APAC</option><option value="nrt">nrt — Tokyo, APAC</option><option value="us-west">us-west — Railway / Render</option><option value="us-east">us-east — Railway / Render</option><option value="eu-west">eu-west — Railway / Render</option></select></div>
+      <div class="lf-group"><label class="lf-label">Region <span class="tip" data-tip="Datacenter closest to your miners for lowest Stratum latency.">?</span></label><select class="lf-input" id="lf-region"><option value="ord">ord — Chicago, US</option><option value="iad">iad — Ashburn, US</option><option value="lax">lax — Los Angeles, US</option><option value="ams">ams — Amsterdam, EU</option><option value="fra">fra — Frankfurt, EU</option><option value="sin">sin — Singapore, APAC</option><option value="nrt">nrt — Tokyo, APAC</option></select></div>
       <div class="lf-group"><label class="lf-label">Image / Version <span class="tip" data-tip="Docker image tag. 'latest' = newest build. Pin a tag like v0.3.1 for stability.">?</span></label><input class="lf-input" id="lf-image" placeholder="latest" value="latest"/></div>
-      <div class="lf-group"><label class="lf-label">Instance Size <span class="tip" data-tip="shared-cpu-1x = free tier dev. performance-1x = production.">?</span></label><select class="lf-input" id="lf-size"><option value="shared-cpu-1x">shared-cpu-1x — free tier / dev</option><option value="shared-cpu-2x">shared-cpu-2x — light load</option><option value="performance-1x" selected>performance-1x — production</option><option value="performance-2x">performance-2x — high load</option><option value="performance-4x">performance-4x — heavy / multi-algo</option></select></div>
-      <div class="lf-group"><label class="lf-label">Mining Algorithm <span class="tip" data-tip="PoW algorithm this instance serves. Run one instance per algo if needed.">?</span></label><select class="lf-input" id="lf-algo"><option value="skein" selected>Skein (DGB default)</option><option value="sha256d">SHA-256d</option><option value="scrypt">Scrypt</option><option value="qubit">Qubit</option><option value="odocrypt">OdoCrypt</option></select></div>
+      <div class="lf-group"><label class="lf-label">Instance Size <span class="tip" data-tip="shared-cpu-1x = free tier. performance-1x = production.">?</span></label><select class="lf-input" id="lf-size"><option value="shared-cpu-1x">shared-cpu-1x — free tier / dev</option><option value="shared-cpu-2x">shared-cpu-2x — light load</option><option value="performance-1x" selected>performance-1x — production</option><option value="performance-2x">performance-2x — high load</option><option value="performance-4x">performance-4x — heavy</option></select></div>
+      <div class="lf-group"><label class="lf-label">Mining Algorithm <span class="tip" data-tip="PoW algorithm this instance serves.">?</span></label><select class="lf-input" id="lf-algo"><option value="skein" selected>Skein (DGB default)</option><option value="sha256d">SHA-256d</option><option value="scrypt">Scrypt</option><option value="qubit">Qubit</option><option value="odocrypt">OdoCrypt</option></select></div>
     </div>
 
     <div class="section-title">&#9670; Network &amp; Ports</div>
     <div class="launch-form">
-      <div class="lf-group"><label class="lf-label">Stratum Port <span class="tip" data-tip="TCP port miners connect to. Default 3333 Skein, 3334 SHA256d, 3335 Scrypt, 3336 Qubit, 3337 OdoCrypt.">?</span></label><input class="lf-input" id="lf-stratum" type="number" value="3333"/></div>
+      <div class="lf-group"><label class="lf-label">Stratum Port <span class="tip" data-tip="TCP port miners connect to. Default 3333.">?</span></label><input class="lf-input" id="lf-stratum" type="number" value="3333"/></div>
       <div class="lf-group"><label class="lf-label">API Port <span class="tip" data-tip="HTTP port for the MagoFonte REST API. Default 3000.">?</span></label><input class="lf-input" id="lf-apiport" type="number" value="3000"/></div>
     </div>
 
@@ -343,17 +341,17 @@ html,body{background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;ov
     <div class="launch-form">
       <div class="lf-group span2">
         <div class="lf-fixed" style="font-size:.66rem;font-family:'Cinzel',serif;letter-spacing:.06em;">&#9670; Built-in &nbsp;<span class="fixed-pill">Bundled with each instance</span></div>
-        <span class="lf-hint" style="margin-top:.4rem">Each pool instance includes a full DigiByte Core node and wallet. The node syncs to the chain on first boot and exposes RPC locally. The wallet generates payout addresses and handles all miner payouts automatically. No external DGB node is required.</span>
+        <span class="lf-hint" style="margin-top:.4rem">Each instance includes a full DigiByte Core node and wallet. The node syncs on first boot and handles all payouts automatically. No external DGB node required.</span>
       </div>
-      <div class="lf-group span2"><label class="lf-label">&#9672; Pool Fee Reward Address <span class="tip" data-tip="DGB address that receives the 2% pool fee from every block. Leave blank to auto-generate one from the built-in wallet at launch.">?</span></label><input class="lf-input" id="lf-addr" placeholder="Leave blank to auto-generate from built-in wallet"/><span class="lf-hint">Optional. If blank, a fresh address is generated from the instance wallet on first boot.</span></div>
+      <div class="lf-group span2"><label class="lf-label">&#9672; Pool Fee Reward Address <span class="tip" data-tip="DGB address that receives the 2% pool fee. Leave blank to auto-generate on first boot.">?</span></label><input class="lf-input" id="lf-addr" placeholder="Leave blank to auto-generate from built-in wallet"/><span class="lf-hint">Optional. Auto-generated if blank.</span></div>
     </div>
 
     <div class="section-title">&#9670; Pool Economics</div>
     <div class="launch-form">
-      <div class="lf-group"><label class="lf-label">Pool Fee <span class="tip" data-tip="Fixed at 2%. Miners receive 98% of every block.">?</span></label><div class="lf-fixed">2% &nbsp;<span class="fixed-pill">Fixed</span></div><span class="lf-hint">Non-configurable.</span></div>
+      <div class="lf-group"><label class="lf-label">Pool Fee</label><div class="lf-fixed">2% &nbsp;<span class="fixed-pill">Fixed</span></div><span class="lf-hint">Non-configurable.</span></div>
       <div class="lf-group"><label class="lf-label">Payout Scheme</label><div class="lf-fixed">PPLNS &nbsp;<span class="fixed-pill">Default</span></div></div>
-      <div class="lf-group"><label class="lf-label">PPLNS Window <span class="tip" data-tip="Share window size for PPLNS calculation. 2048 is a solid default.">?</span></label><input class="lf-input" id="lf-pplns" type="number" value="2048"/></div>
-      <div class="lf-group"><label class="lf-label">Min Payout (DGB) <span class="tip" data-tip="Minimum balance before auto-payout triggers. Default 1 DGB.">?</span></label><input class="lf-input" id="lf-minpay" type="number" value="1" step="0.1"/></div>
+      <div class="lf-group"><label class="lf-label">PPLNS Window <span class="tip" data-tip="Share window size. 2048 is a solid default.">?</span></label><input class="lf-input" id="lf-pplns" type="number" value="2048"/></div>
+      <div class="lf-group"><label class="lf-label">Min Payout (DGB) <span class="tip" data-tip="Minimum balance before auto-payout triggers.">?</span></label><input class="lf-input" id="lf-minpay" type="number" value="1" step="0.1"/></div>
     </div>
 
     <div class="section-title">&#9670; Reliability</div>
@@ -361,17 +359,17 @@ html,body{background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;ov
       <div class="lf-group span2">
         <div class="toggle-row">
           <label class="toggle"><input type="checkbox" id="lf-autorestart" checked/><div class="toggle-track"></div></label>
-          <div><div class="toggle-label-text">Auto-Restart on Crash</div><div class="toggle-desc">Automatically restart if the container exits unexpectedly. Recommended on.</div></div>
+          <div><div class="toggle-label-text">Auto-Restart on Crash</div><div class="toggle-desc">Restart container if it exits unexpectedly. Recommended on.</div></div>
         </div>
-        <div class="crash-info">&#9888;&nbsp; <strong>Crash-loop guard:</strong> if an instance restarts more than <strong>3 times in 5 minutes</strong> it is halted and flagged <span style="color:var(--red)">Crash-Halted</span>. Click <em>Resume</em> in the fleet after investigating logs.</div>
+        <div class="crash-info">&#9888;&nbsp; <strong>Crash-loop guard:</strong> restarts more than <strong>3 times in 5 minutes</strong> halts the instance and flags it <span style="color:var(--red)">Crash-Halted</span>.</div>
       </div>
-      <div class="lf-group"><label class="lf-label">Max Restarts / 5 min <span class="tip" data-tip="Crash-loop guard threshold. Default 3.">?</span></label><input class="lf-input" id="lf-maxrestarts" type="number" value="3" min="1" max="20"/></div>
-      <div class="lf-group"><label class="lf-label">Health Check Interval (s) <span class="tip" data-tip="How often Lancia pings the instance API. Miss 3 = unresponsive.">?</span></label><input class="lf-input" id="lf-healthinterval" type="number" value="30" min="10"/></div>
+      <div class="lf-group"><label class="lf-label">Max Restarts / 5 min</label><input class="lf-input" id="lf-maxrestarts" type="number" value="3" min="1" max="20"/></div>
+      <div class="lf-group"><label class="lf-label">Health Check Interval (s)</label><input class="lf-input" id="lf-healthinterval" type="number" value="30" min="10"/></div>
     </div>
 
     <div class="section-title">&#9670; Advanced — Env Overrides</div>
     <div class="launch-form">
-      <div class="lf-group span2"><label class="lf-label">Env Variables <span class="tip" data-tip="KEY=VALUE pairs injected into the container. One per line. Overrides image defaults.">?</span></label><textarea class="lf-input" id="lf-env" rows="4" placeholder="NODE_ENV=production&#10;LOG_LEVEL=info&#10;POOL_DIFF_TARGET=512"></textarea><span class="lf-hint">One KEY=VALUE per line.</span></div>
+      <div class="lf-group span2"><label class="lf-label">Env Variables <span class="tip" data-tip="KEY=VALUE pairs injected into the container. One per line.">?</span></label><textarea class="lf-input" id="lf-env" rows="4" placeholder="NODE_ENV=production&#10;LOG_LEVEL=info&#10;POOL_DIFF_TARGET=512"></textarea><span class="lf-hint">One KEY=VALUE per line.</span></div>
     </div>
 
     <div class="action-bar" style="margin-top:1.4rem">
@@ -395,6 +393,10 @@ html,body{background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;ov
 </div><!-- /app -->
 
 <script>
+// ── OPTION FLAG: set to true and define BACKEND_URL to proxy through your own server instead ──
+const USE_BACKEND = false;
+const BACKEND_URL = 'https://magofonte.fly.dev/api/v1';
+
 // ── stars ──
 const starsEl=document.getElementById('stars');
 for(let i=0;i<140;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*2.1+.35;s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*5+3).toFixed(1)}s;--delay:${(Math.random()*7).toFixed(1)}s;--bright:${(Math.random()*.5+.25).toFixed(2)}`;starsEl.appendChild(s);}
@@ -411,9 +413,9 @@ function showGuide(provider, btn){
 // ── provider dropdown ──
 const PROVIDERS={
   fly:{badges:['Free Tier','Global Edge','Docker Deploy'],regions:['ord — Chicago, US','iad — Ashburn, US','lax — Los Angeles, US','ams — Amsterdam, EU','fra — Frankfurt, EU','sin — Singapore, APAC','nrt — Tokyo, APAC']},
-  railway:{badges:['Free Hobby Tier','US / EU Regions','One-click Docker'],regions:['us-west — Railway US West','us-east — Railway US East','eu-west — Railway EU West']},
-  render:{badges:['Free Web Service','US Oregon / Frankfurt'],regions:['us-west — Render Oregon','eu-west — Render Frankfurt']},
-  oracle:{badges:['Always Free ARM','US / EU / APAC'],regions:['us-ashburn — Oracle Ashburn','us-phoenix — Oracle Phoenix','eu-frankfurt — Oracle Frankfurt','ap-tokyo — Oracle Tokyo']},
+  railway:{badges:['Free Hobby Tier','US / EU Regions','GraphQL API'],regions:['us-west — Railway US West','us-east — Railway US East','eu-west — Railway EU West']},
+  render:{badges:['Free Web Service','US Oregon / Frankfurt'],regions:['oregon — Render Oregon','frankfurt — Render Frankfurt']},
+  oracle:{badges:['Always Free ARM','US / EU / APAC'],regions:['us-ashburn-1 — Oracle Ashburn','us-phoenix-1 — Oracle Phoenix','eu-frankfurt-1 — Oracle Frankfurt','ap-tokyo-1 — Oracle Tokyo']},
   custom:{badges:['Self-hosted','Full control'],regions:['custom — Your own endpoint']}
 };
 function onProviderChange(){
@@ -432,14 +434,197 @@ function clearLog(){logLines=[];renderLog();}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function setMsg(id,text,cls=''){const el=document.getElementById(id);el.textContent=text;el.className='msg '+cls;}
 
-// ── api ──
-const BASE='/api/v1';
-async function apiCall(method,path,body,token){
-  const headers={'Content-Type':'application/json'};
-  if(token)headers['Authorization']='Bearer '+token;
-  try{const r=await fetch(BASE+path,{method,headers,body:body?JSON.stringify(body):undefined});
-  const t=await r.text();try{return JSON.parse(t);}catch{return{error:t};}}
-  catch(e){return{error:e.message};}
+// ── local fleet store (persists across page reloads) ──
+const STORE_KEY='lancia_fleet_v1';
+function loadFleet(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||'[]');}catch{return[];}}
+function saveFleet(fleet){localStorage.setItem(STORE_KEY,JSON.stringify(fleet));}
+function upsertInstance(inst){const fleet=loadFleet();const idx=fleet.findIndex(i=>i.id===inst.id);if(idx>=0)fleet[idx]={...fleet[idx],...inst};else fleet.push(inst);saveFleet(fleet);}
+function removeInstance(id){saveFleet(loadFleet().filter(i=>i.id!==id));}
+
+// ── Fly.io Machines API ──
+const FLY_API='https://api.machines.dev/v1';
+async function flyPost(path,body,token){
+  const r=await fetch(FLY_API+path,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const t=await r.text();try{return JSON.parse(t);}catch{return{error:t,status:r.status};}
+}
+async function flyGet(path,token){
+  const r=await fetch(FLY_API+path,{headers:{'Authorization':'Bearer '+token}});
+  const t=await r.text();try{return JSON.parse(t);}catch{return{error:t,status:r.status};}
+}
+async function flyDelete(path,token){
+  const r=await fetch(FLY_API+path,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+  if(r.status===200||r.status===204)return{ok:true};
+  const t=await r.text();try{return JSON.parse(t);}catch{return{error:t};}
+}
+
+async function flyLaunch(cfg,token){
+  log('Fly.io: creating app "'+cfg.name+'"…');
+  // 1. create app
+  const appRes=await flyPost('/apps',{app_name:cfg.name,org_slug:'personal'},token);
+  if(appRes.error)return{error:'App create: '+appRes.error};
+  log('Fly.io: app created — allocating IP…');
+  // 2. allocate shared IPv4
+  await flyPost(`/apps/${cfg.name}/allocate-ip`,{type:'shared_v4'},token);
+  // 3. build env
+  const env=buildEnv(cfg);
+  // 4. create machine
+  log('Fly.io: creating machine…');
+  const machineRes=await flyPost(`/apps/${cfg.name}/machines`,{
+    name:cfg.name+'-m1',
+    region:cfg.region,
+    config:{
+      image:'ghcr.io/5mil/magofonte:'+cfg.image,
+      env,
+      services:[
+        {ports:[{port:443,handlers:['tls','http']},{port:80,handlers:['http']}],protocol:'tcp',internal_port:cfg.apiPort},
+        {ports:[{port:cfg.stratumPort}],protocol:'tcp',internal_port:cfg.stratumPort}
+      ],
+      restart:{policy:cfg.autoRestart?'on-failure':'no',max_retries:cfg.maxRestarts}
+    }
+  },token);
+  if(machineRes.error)return{error:'Machine create: '+machineRes.error};
+  return{id:machineRes.id,name:cfg.name,provider:'fly',region:cfg.region,algo:cfg.algo,status:'pending',flyApp:cfg.name,token};
+}
+
+async function flyStatus(inst){
+  const machines=await flyGet(`/apps/${inst.flyApp}/machines`,inst.token);
+  if(!Array.isArray(machines)||machines.length===0)return{...inst,status:'unknown'};
+  const m=machines[0];
+  const st=m.state==='started'?'running':m.state==='stopped'?'stopped':m.state==='destroyed'?'destroyed':'pending';
+  return{...inst,status:st,url:`https://${inst.flyApp}.fly.dev`};
+}
+
+async function flyStop(inst){
+  await flyPost(`/apps/${inst.flyApp}/machines/${inst.id}/stop`,{},inst.token);
+}
+async function flyRestart(inst){
+  await flyPost(`/apps/${inst.flyApp}/machines/${inst.id}/restart`,{},inst.token);
+}
+async function flyDestroy(inst){
+  await flyPost(`/apps/${inst.flyApp}/machines/${inst.id}/stop`,{},inst.token);
+  await new Promise(r=>setTimeout(r,2000));
+  await flyDelete(`/apps/${inst.flyApp}/machines/${inst.id}?force=true`,inst.token);
+}
+
+// ── Railway GraphQL API ──
+const RAILWAY_GQL='https://backboard.railway.app/graphql/v2';
+async function railwayGql(query,variables,token){
+  const r=await fetch(RAILWAY_GQL,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({query,variables})});
+  const t=await r.text();try{return JSON.parse(t);}catch{return{error:t};}
+}
+
+async function railwayLaunch(cfg,token){
+  log('Railway: creating project…');
+  const proj=await railwayGql(`mutation{projectCreate(input:{name:"${cfg.name}"}){id name}}`,{},token);
+  if(proj.errors)return{error:proj.errors[0].message};
+  const projectId=proj.data.projectCreate.id;
+  log('Railway: creating service…');
+  const env=buildEnv(cfg);
+  const envVars=Object.entries(env).map(([k,v])=>`${k}: "${v}"`).join(', ');
+  const svc=await railwayGql(`mutation{serviceCreate(input:{projectId:"${projectId}",name:"${cfg.name}",source:{image:"ghcr.io/5mil/magofonte:${cfg.image}"}}){id name}}`,{},token);
+  if(svc.errors)return{error:svc.errors[0].message};
+  const serviceId=svc.data.serviceCreate.id;
+  // set env vars via variables mutation
+  await railwayGql(`mutation SetVars($projectId:String!,$serviceId:String!,$vars:EnvironmentVariablesInput!){variableCollectionUpsert(input:{projectId:$projectId,serviceId:$serviceId,variables:$vars})}`,
+    {projectId,serviceId,vars:env},token);
+  log('Railway: deploying…');
+  const dep=await railwayGql(`mutation{serviceInstanceDeploy(serviceId:"${serviceId}",environmentId:null){id}}`,{},token);
+  return{id:serviceId,name:cfg.name,provider:'railway',region:cfg.region,algo:cfg.algo,status:'pending',railwayProjectId:projectId,token};
+}
+
+async function railwayStatus(inst){
+  const res=await railwayGql(`{service(id:"${inst.id}"){serviceInstances{edges{node{latestDeployment{status}domains{edges{node{domain}}}}}}}}`,{},inst.token);
+  if(res.errors||!res.data)return{...inst,status:'unknown'};
+  const node=res.data.service?.serviceInstances?.edges?.[0]?.node;
+  const depStatus=node?.latestDeployment?.status||'UNKNOWN';
+  const domain=node?.domains?.edges?.[0]?.node?.domain;
+  const st=depStatus==='SUCCESS'?'running':depStatus==='FAILED'?'crashed':depStatus==='REMOVED'?'stopped':'pending';
+  return{...inst,status:st,url:domain?'https://'+domain:undefined};
+}
+
+// ── Render REST API ──
+const RENDER_API='https://api.render.com/v1';
+async function renderReq(method,path,body,token){
+  const r=await fetch(RENDER_API+path,{method,headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  const t=await r.text();try{return JSON.parse(t);}catch{return{error:t,status:r.status};}
+}
+
+async function renderLaunch(cfg,token){
+  log('Render: creating service…');
+  const env=buildEnv(cfg);
+  const envVars=Object.entries(env).map(([k,v])=>({key:k,value:v}));
+  const body={type:'web_service',name:cfg.name,serviceDetails:{env:'docker',dockerImage:'ghcr.io/5mil/magofonte:'+cfg.image,region:cfg.region==='frankfurt'?'frankfurt':'oregon',plan:'free',envVars}};
+  const res=await renderReq('POST','/services',body,token);
+  if(res.id===undefined&&res.service===undefined)return{error:JSON.stringify(res)};
+  const svcId=(res.service?.id||res.id);
+  return{id:svcId,name:cfg.name,provider:'render',region:cfg.region,algo:cfg.algo,status:'pending',token};
+}
+
+async function renderStatus(inst){
+  const res=await renderReq('GET',`/services/${inst.id}`,null,inst.token);
+  if(res.error)return{...inst,status:'unknown'};
+  const st=res.serviceDetails?.status==='live'?'running':res.serviceDetails?.status==='suspended'?'stopped':'pending';
+  return{...inst,status:st,url:res.serviceDetails?.url};
+}
+
+// ── Custom agent ──
+async function customLaunch(cfg,token){
+  log('Custom agent: launching container…');
+  const env=buildEnv(cfg);
+  const r=await fetch(cfg.agentEndpoint+'/launch',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({...cfg,env})});
+  const t=await r.text();try{const d=JSON.parse(t);if(d.error)return{error:d.error};return{id:d.id||cfg.name,name:cfg.name,provider:'custom',region:cfg.region,algo:cfg.algo,status:'pending',agentEndpoint:cfg.agentEndpoint,token};}catch{return{error:t};}
+}
+
+// ── env builder ──
+function buildEnv(cfg){
+  const env={
+    POOL_ALGO:cfg.algo,
+    STRATUM_PORT:String(cfg.stratumPort),
+    API_PORT:String(cfg.apiPort),
+    POOL_FEE:'2',
+    PPLNS_WINDOW:String(cfg.pplnsWindow),
+    MIN_PAYOUT:String(cfg.minPayout),
+    AUTO_RESTART:cfg.autoRestart?'true':'false',
+    MAX_RESTARTS:String(cfg.maxRestarts),
+    HEALTH_INTERVAL:String(cfg.healthCheckInterval),
+    ...cfg.env
+  };
+  if(cfg.rewardAddress)env.REWARD_ADDRESS=cfg.rewardAddress;
+  return env;
+}
+
+// ── provider dispatch ──
+async function dispatchLaunch(cfg,token){
+  if(USE_BACKEND) return backendLaunch(cfg,token);
+  if(cfg.provider==='fly')    return flyLaunch(cfg,token);
+  if(cfg.provider==='railway')return railwayLaunch(cfg,token);
+  if(cfg.provider==='render') return renderLaunch(cfg,token);
+  if(cfg.provider==='custom') return customLaunch(cfg,token);
+  return{error:'Oracle Cloud requires manual provisioning — use the OCI CLI or console, then register the instance here via Custom.'};
+}
+async function dispatchStatus(inst){
+  if(inst.provider==='fly')    return flyStatus(inst);
+  if(inst.provider==='railway')return railwayStatus(inst);
+  if(inst.provider==='render') return renderStatus(inst);
+  return inst; // custom / oracle: return last known state
+}
+async function dispatchStop(inst){
+  if(inst.provider==='fly')return flyStop(inst);
+  log(`Stop not yet implemented for ${inst.provider} — use provider dashboard`,'warn');
+}
+async function dispatchRestart(inst){
+  if(inst.provider==='fly')return flyRestart(inst);
+  log(`Restart not yet implemented for ${inst.provider} — use provider dashboard`,'warn');
+}
+async function dispatchDestroy(inst){
+  if(inst.provider==='fly')return flyDestroy(inst);
+  log(`Destroy for ${inst.provider} — use provider dashboard to delete, then click Clear List`,'warn');
+}
+
+// ── (Option A stub) backend proxy ──
+async function backendLaunch(cfg,token){
+  const r=await fetch(BACKEND_URL+'/lancia/instances',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(cfg)});
+  const t=await r.text();try{return JSON.parse(t);}catch{return{error:t};}
 }
 
 // ── instance row ──
@@ -448,15 +633,14 @@ function instanceRow(inst){
   const dotCls=st==='running'?'on':st==='stopped'||st==='destroyed'?'off':st==='crashed'?'crashed':'pending';
   const badgeCls=['running','stopped','pending','crashed'].includes(st)?st:'unknown';
   const rowCls=st==='running'?'running':st==='crashed'?'crashed':'';
-  const resumeBtn=st==='crashed'?`<button class="ibtn" onclick="resumeInst('${inst.id}')">&#9654; Resume</button>`:'';
+  const urlBit=inst.url?` &nbsp;&middot;&nbsp; <a href="${esc(inst.url)}" target="_blank" style="color:rgba(201,168,76,.55);font-size:.56rem">${esc(inst.url)}</a>`:'';
   return `<div class="instance-row ${rowCls}">
     <div class="inst-dot ${dotCls}"></div>
     <div class="inst-meta">
       <div class="inst-name">${esc(inst.name||inst.id)}</div>
-      <div class="inst-detail">${esc(inst.provider||'')} &nbsp;&middot;&nbsp; ${esc(inst.region||'')}${inst.algo?' · '+inst.algo:''}${inst.url?' · '+inst.url:''}</div>
+      <div class="inst-detail">${esc(inst.provider||'')} &nbsp;&middot;&nbsp; ${esc(inst.region||'')}${inst.algo?' · '+inst.algo:''}${urlBit}</div>
     </div>
     <span class="inst-badge ${badgeCls}">${st}</span>
-    ${resumeBtn}
     <button class="ibtn" onclick="restartInst('${inst.id}')">&#8635;</button>
     <button class="ibtn danger" onclick="destroyInst('${inst.id}')">&#9632; Destroy</button>
   </div>`;
@@ -464,28 +648,33 @@ function instanceRow(inst){
 
 // ── fleet refresh ──
 async function refresh(){
-  log('Fetching fleet…');
-  const token=document.getElementById('lf-token').value.trim();
-  const data=await apiCall('GET','/lancia/instances',null,token);
-  if(data.error){log('Fleet fetch failed: '+data.error,'err');document.getElementById('instance-list').innerHTML=`<div class="ll err" style="padding:.5rem 0">Could not reach Lancia API — ${esc(data.error)}</div>`;return;}
-  const instances=Array.isArray(data)?data:(data.instances||[]);
-  const running=instances.filter(i=>i.status==='running').length;
-  const stopped=instances.filter(i=>['stopped','destroyed'].includes(i.status)).length;
-  const pending=instances.filter(i=>!['running','stopped','destroyed','crashed'].includes(i.status)).length;
-  const crashed=instances.filter(i=>i.status==='crashed').length;
-  const providers=[...new Set(instances.map(i=>i.provider).filter(Boolean))];
-  document.getElementById('s-total').textContent=instances.length;
+  log('Refreshing fleet…');
+  const fleet=loadFleet();
+  if(fleet.length===0){
+    document.getElementById('instance-list').innerHTML='<div class="ll dim" style="padding:.5rem 0">No instances yet — launch one below.</div>';
+    ['s-total','s-running','s-stopped','s-pending','s-crashed'].forEach(id=>document.getElementById(id).textContent='0');
+    document.getElementById('s-miners').textContent='—';
+    document.getElementById('s-hashrate').textContent='—';
+    document.getElementById('s-providers').textContent='—';
+    return;
+  }
+  const updated=await Promise.all(fleet.map(inst=>dispatchStatus(inst).catch(()=>inst)));
+  updated.forEach(inst=>upsertInstance(inst));
+  const running=updated.filter(i=>i.status==='running').length;
+  const stopped=updated.filter(i=>['stopped','destroyed'].includes(i.status)).length;
+  const pending=updated.filter(i=>!['running','stopped','destroyed','crashed'].includes(i.status)).length;
+  const crashed=updated.filter(i=>i.status==='crashed').length;
+  const providers=[...new Set(updated.map(i=>i.provider).filter(Boolean))];
+  document.getElementById('s-total').textContent=updated.length;
   document.getElementById('s-running').textContent=running;
   document.getElementById('s-stopped').textContent=stopped;
   document.getElementById('s-pending').textContent=pending;
   document.getElementById('s-crashed').textContent=crashed;
-  document.getElementById('s-miners').textContent=data.totalMiners??'—';
-  document.getElementById('s-hashrate').textContent=data.totalHashrate??'—';
+  document.getElementById('s-miners').textContent='—';
+  document.getElementById('s-hashrate').textContent='—';
   document.getElementById('s-providers').textContent=providers.join(', ')||'—';
-  document.getElementById('instance-list').innerHTML=instances.length===0
-    ?'<div class="ll dim" style="padding:.5rem 0">No instances found. Launch one below.</div>'
-    :instances.map(instanceRow).join('');
-  log(`Fleet: ${instances.length} instance(s) — ${running} running, ${stopped} stopped, ${pending} pending, ${crashed} crash-halted`,'ok');
+  document.getElementById('instance-list').innerHTML=updated.map(instanceRow).join('');
+  log(`Fleet: ${updated.length} instance(s) — ${running} running, ${stopped} stopped, ${pending} pending, ${crashed} crash-halted`,'ok');
 }
 
 // ── launch ──
@@ -494,38 +683,70 @@ async function launchInstance(){
   const token=document.getElementById('lf-token').value.trim();
   if(!name){setMsg('launch-msg','◈ Instance name is required.','err');return;}
   if(!token){setMsg('launch-msg','◈ Provider token is required.','err');return;}
-  const region=document.getElementById('lf-region').value;
-  const image=document.getElementById('lf-image').value.trim()||'latest';
-  const size=document.getElementById('lf-size').value;
-  const provider=document.getElementById('lf-provider').value;
-  const algo=document.getElementById('lf-algo').value;
-  const stratum=parseInt(document.getElementById('lf-stratum').value)||3333;
-  const apiPort=parseInt(document.getElementById('lf-apiport').value)||3000;
-  const addr=document.getElementById('lf-addr').value.trim();
-  const pplns=parseInt(document.getElementById('lf-pplns').value)||2048;
-  const minpay=parseFloat(document.getElementById('lf-minpay').value)||1;
-  const autoRestart=document.getElementById('lf-autorestart').checked;
-  const maxRestarts=parseInt(document.getElementById('lf-maxrestarts').value)||3;
-  const healthInterval=parseInt(document.getElementById('lf-healthinterval').value)||30;
+  const cfg={
+    name,
+    provider:document.getElementById('lf-provider').value,
+    region:document.getElementById('lf-region').value,
+    image:document.getElementById('lf-image').value.trim()||'latest',
+    size:document.getElementById('lf-size').value,
+    algo:document.getElementById('lf-algo').value,
+    stratumPort:parseInt(document.getElementById('lf-stratum').value)||3333,
+    apiPort:parseInt(document.getElementById('lf-apiport').value)||3000,
+    rewardAddress:document.getElementById('lf-addr').value.trim(),
+    pplnsWindow:parseInt(document.getElementById('lf-pplns').value)||2048,
+    minPayout:parseFloat(document.getElementById('lf-minpay').value)||1,
+    autoRestart:document.getElementById('lf-autorestart').checked,
+    maxRestarts:parseInt(document.getElementById('lf-maxrestarts').value)||3,
+    healthCheckInterval:parseInt(document.getElementById('lf-healthinterval').value)||30,
+    env:{},
+    token
+  };
+  // parse custom agent endpoint out of token field for custom provider
+  if(cfg.provider==='custom'){
+    const parts=token.split('|');
+    cfg.agentEndpoint=parts[0];
+    cfg.token=parts[1]||token;
+  }
   const envRaw=document.getElementById('lf-env').value.trim();
-  const env={};
-  if(envRaw){for(const line of envRaw.split('\n')){const eq=line.indexOf('=');if(eq>0)env[line.slice(0,eq).trim()]=line.slice(eq+1).trim();}}
-  const body={name,provider,region,image,size,algo,stratumPort:stratum,apiPort,poolFee:2,pplnsWindow:pplns,minPayout:minpay,autoRestart,maxRestarts,healthCheckInterval:healthInterval,providerToken:token,env};
-  if(addr)body.rewardAddress=addr;
+  if(envRaw){for(const line of envRaw.split('\n')){const eq=line.indexOf('=');if(eq>0)cfg.env[line.slice(0,eq).trim()]=line.slice(eq+1).trim();}}
   setMsg('launch-msg','Casting the spell…','info');
-  log(`Launching "${name}" on ${provider}/${region} (${size} · ${algo} · ${image})…`);
-  const r=await apiCall('POST','/lancia/instances',body,token);
-  if(r.error){setMsg('launch-msg','Launch failed: '+r.error,'err');log('Launch failed: '+r.error,'err');return;}
-  setMsg('launch-msg',`✦ Instance "${r.name||name}" summoned (${r.id||'…'})`,'ok');
-  log(`Summoned: ${r.id||name} · status: ${r.status||'pending'}`,'ok');
+  log(`Launching "${name}" on ${cfg.provider}/${cfg.region} (${cfg.size} · ${cfg.algo} · ${cfg.image})…`);
+  const result=await dispatchLaunch(cfg,token);
+  if(result.error){setMsg('launch-msg','Launch failed: '+result.error,'err');log('Launch failed: '+result.error,'err');return;}
+  // store token with instance so fleet refresh can re-query
+  result.token=token;
+  upsertInstance(result);
+  setMsg('launch-msg',`✦ Instance "${result.name||name}" summoned`,'ok');
+  log(`Summoned: ${result.id||name} · status: ${result.status||'pending'}`,'ok');
   setTimeout(refresh,2000);
 }
 
-async function restartInst(id){const token=document.getElementById('lf-token').value.trim();log(`Restarting ${id}…`);const r=await apiCall('POST',`/lancia/instances/${id}/restart`,null,token);if(r.error){log('Restart failed: '+r.error,'err');return;}log(`Restarted: ${id}`,'ok');setTimeout(refresh,2200);}
-async function resumeInst(id){const token=document.getElementById('lf-token').value.trim();log(`Resuming crash-halted ${id}…`,'warn');const r=await apiCall('POST',`/lancia/instances/${id}/resume`,null,token);if(r.error){log('Resume failed: '+r.error,'err');return;}log(`Resumed: ${id} — auto-restart re-enabled`,'ok');setTimeout(refresh,2000);}
-async function destroyInst(id){if(!confirm(`Destroy instance ${id}?\n\nThis is irreversible.`))return;const token=document.getElementById('lf-token').value.trim();log(`Destroying ${id}…`,'warn');const r=await apiCall('DELETE',`/lancia/instances/${id}`,null,token);if(r.error){log('Destroy failed: '+r.error,'err');return;}log(`Destroyed: ${id}`,'warn');setTimeout(refresh,1600);}
-async function startAll(){const token=document.getElementById('lf-token').value.trim();log('Starting all…');const r=await apiCall('POST','/lancia/instances/start-all',null,token);if(r.error){log('Start-all failed: '+r.error,'err');return;}log(`Started ${r.started??'?'} instance(s)`,'ok');setTimeout(refresh,2400);}
-async function stopAll(){if(!confirm('Stop all running instances?'))return;const token=document.getElementById('lf-token').value.trim();log('Stopping all…','warn');const r=await apiCall('POST','/lancia/instances/stop-all',null,token);if(r.error){log('Stop-all failed: '+r.error,'err');return;}log(`Stopped ${r.stopped??'?'} instance(s)`,'warn');setTimeout(refresh,2400);}
+async function restartInst(id){
+  const inst=loadFleet().find(i=>i.id===id);if(!inst)return;
+  log(`Restarting ${inst.name}…`);
+  await dispatchRestart(inst).catch(e=>log('Restart error: '+e.message,'err'));
+  setTimeout(refresh,2200);
+}
+async function destroyInst(id){
+  const inst=loadFleet().find(i=>i.id===id);if(!inst)return;
+  if(!confirm(`Destroy instance "${inst.name}"?\n\nThis is irreversible.`))return;
+  log(`Destroying ${inst.name}…`,'warn');
+  await dispatchDestroy(inst).catch(e=>log('Destroy error: '+e.message,'warn'));
+  removeInstance(id);
+  setTimeout(refresh,1600);
+}
+async function stopAll(){
+  if(!confirm('Stop all running instances?'))return;
+  const fleet=loadFleet();
+  log('Stopping all…','warn');
+  await Promise.all(fleet.filter(i=>i.status==='running').map(i=>dispatchStop(i).catch(()=>{})));
+  setTimeout(refresh,2400);
+}
+function clearFleet(){
+  if(!confirm('Remove all instances from the local list?\n\nThis does NOT delete them on the provider.'))return;
+  saveFleet([]);
+  refresh();
+}
 
 function clearForm(){
   ['lf-name','lf-addr','lf-env'].forEach(id=>document.getElementById(id).value='');
@@ -542,8 +763,8 @@ function clearForm(){
 }
 
 setInterval(refresh,30000);
-log('Lancia initialised — fleet auto-refreshes every 30s','ok');
-log('Select a provider tab above for setup instructions','dim');
+log('Lancia initialised — client-side mode (calls provider APIs directly)','ok');
+log('Select a provider tab above for token instructions','dim');
 refresh();
 </script>
 </body>
