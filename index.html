@@ -21,31 +21,21 @@
 
     /* ── Hero banner (Doré) ─────────────────────── */
     .hero {
-      position: relative;
-      width: 100%;
-      min-height: 420px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      padding-bottom: 3rem;
-      overflow: hidden;
-      z-index: 1;
+      position: relative; width: 100%; min-height: 420px;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+      padding-bottom: 3rem; overflow: hidden; z-index: 1;
     }
     .hero-img {
       position: absolute; inset: 0; width: 100%; height: 100%;
       object-fit: cover; object-position: center 20%;
-      filter: grayscale(30%) contrast(1.05) brightness(0.5);
-      z-index: 0;
+      filter: grayscale(30%) contrast(1.05) brightness(0.5); z-index: 0;
     }
     .hero-veil {
       position: absolute; inset: 0; z-index: 1;
       background:
         linear-gradient(to bottom,
-          rgba(13,11,14,.55) 0%,
-          rgba(13,11,14,.2)  35%,
-          rgba(13,11,14,.65) 70%,
-          rgba(13,11,14,.98) 100%),
+          rgba(13,11,14,.55) 0%, rgba(13,11,14,.2) 35%,
+          rgba(13,11,14,.65) 70%, rgba(13,11,14,.98) 100%),
         radial-gradient(ellipse at 50% 60%, rgba(201,168,76,.06) 0%, transparent 65%);
     }
     .hero-content {
@@ -62,45 +52,18 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
       filter: drop-shadow(0 2px 22px rgba(201,168,76,.3));
     }
-    .hero-sub {
-      font-size: clamp(.7rem, 2vw, .9rem); letter-spacing: .35em;
-      text-transform: uppercase; color: rgba(201,168,76,.5);
-    }
-    .hero-divider {
-      width: 240px; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      opacity: .4; margin: .15rem 0;
-    }
-    .hero-caption {
-      font-size: .52rem; letter-spacing: .2em; text-transform: uppercase;
-      color: rgba(201,168,76,.2); font-style: italic;
-    }
+    .hero-sub { font-size: clamp(.7rem,2vw,.9rem); letter-spacing: .35em; text-transform: uppercase; color: rgba(201,168,76,.5); }
+    .hero-divider { width: 240px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: .4; margin: .15rem 0; }
+    .hero-caption { font-size: .52rem; letter-spacing: .2em; text-transform: uppercase; color: rgba(201,168,76,.2); font-style: italic; }
 
     /* ── Nav (top-right) ───────────────────────── */
-    .nav-bar {
-      position: fixed; top: 1rem; right: 1.2rem; z-index: 200;
-      display: flex; gap: .5rem; align-items: center;
-      /* force stacking context so it's never clipped */
-      transform: translateZ(0);
-    }
-    .nav-pill {
-      display: inline-flex; align-items: center; gap: .3rem;
-      padding: .28rem .8rem;
-      border: 1px solid rgba(201,168,76,.2); border-radius: 999px;
-      background: rgba(13,11,14,.88); backdrop-filter: blur(6px);
-      text-decoration: none; font-size: .55rem; letter-spacing: .18em;
-      text-transform: uppercase; color: rgba(201,168,76,.45); transition: all .22s;
-    }
+    .nav-bar { position: fixed; top: 1rem; right: 1.2rem; z-index: 200; display: flex; gap: .5rem; align-items: center; transform: translateZ(0); }
+    .nav-pill { display: inline-flex; align-items: center; gap: .3rem; padding: .28rem .8rem; border: 1px solid rgba(201,168,76,.2); border-radius: 999px; background: rgba(13,11,14,.88); backdrop-filter: blur(6px); text-decoration: none; font-size: .55rem; letter-spacing: .18em; text-transform: uppercase; color: rgba(201,168,76,.45); transition: all .22s; }
     .nav-pill:hover  { border-color: rgba(201,168,76,.55); color: var(--gold-light); }
     .nav-pill.active { border-color: rgba(201,168,76,.4); color: var(--gold); }
 
     /* ── Body layout ───────────────────────────── */
-    .container {
-      position: relative; z-index: 1;
-      max-width: 760px; margin: 0 auto;
-      display: flex; flex-direction: column; align-items: center;
-      gap: 2rem; padding: 2rem 1.5rem 4rem;
-    }
+    .container { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 2rem; padding: 2rem 1.5rem 4rem; }
     .divider      { width: 260px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: .5; }
     .divider-wide { width: 100%; max-width: 660px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: .3; }
 
@@ -113,8 +76,18 @@
     .module { border: 1px solid rgba(201,168,76,.22); border-radius: 999px; padding: .28rem .85rem; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: rgba(201,168,76,.45); background: rgba(201,168,76,.03); transition: all .28s; }
     .module:hover { border-color: rgba(201,168,76,.55); color: var(--gold-light); background: rgba(201,168,76,.07); }
 
-    .gh-link { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem 1.3rem; border: 1px solid rgba(201,168,76,.32); border-radius: 999px; text-decoration: none; font-size: .75rem; letter-spacing: .2em; text-transform: uppercase; color: rgba(201,168,76,.55); transition: all .28s; }
-    .gh-link:hover { border-color: var(--gold); color: var(--gold-light); background: rgba(201,168,76,.06); }
+    /* shared pill-link style */
+    .gh-link, .lancia-link {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .5rem 1.3rem;
+      border: 1px solid rgba(201,168,76,.32); border-radius: 999px;
+      text-decoration: none; font-size: .75rem; letter-spacing: .2em; text-transform: uppercase;
+      color: rgba(201,168,76,.55); transition: all .28s;
+    }
+    .gh-link:hover, .lancia-link:hover { border-color: var(--gold); color: var(--gold-light); background: rgba(201,168,76,.06); }
+
+    /* link group — stacks both pills, centred, tight gap */
+    .link-group { display: flex; flex-direction: column; align-items: center; gap: .6rem; }
 
     /* ── Grimoire ──────────────────────────────── */
     .grimoire { width: 100%; max-width: 680px; border: 1px solid var(--border); border-radius: 12px; background: rgba(201,168,76,.03); padding: 2rem 2rem 1.5rem; text-align: left; position: relative; }
@@ -136,28 +109,6 @@
     .footer { margin-top: 1rem; font-size: .62rem; letter-spacing: .14em; color: rgba(201,168,76,.2); text-transform: uppercase; text-align: center; }
     .footer a { color: inherit; text-decoration: none; }
     .footer a:hover { color: rgba(201,168,76,.42); }
-
-    /* ── Lancia portal rune ─────────────────────── */
-    .lancia-portal {
-      position: fixed;
-      bottom: 1.6rem; right: 1.8rem;
-      z-index: 200;
-      /* force own stacking context — prevents clip from any overflow:hidden ancestor */
-      transform: translateZ(0);
-    }
-    .lancia-btn {
-      display: flex; align-items: center; justify-content: center;
-      width: 44px; height: 44px; border-radius: 50%;
-      border: 1px solid rgba(201,168,76,.22);
-      background: rgba(13,11,14,.9);
-      text-decoration: none; cursor: pointer;
-      transition: border-color .3s, box-shadow .3s, transform .22s;
-      animation: halo 5s ease-in-out infinite;
-    }
-    .lancia-btn:hover { border-color: rgba(201,168,76,.6); box-shadow: 0 0 16px rgba(201,168,76,.22); transform: scale(1.1) translateZ(0); }
-    .lancia-rune { font-size: 1.1rem; opacity: .32; transition: opacity .28s; user-select: none; line-height: 1; color: var(--gold-light); }
-    .lancia-btn:hover .lancia-rune { opacity: .8; }
-    @keyframes halo { 0%,100%{ box-shadow: 0 0 0 rgba(201,168,76,0); } 50%{ box-shadow: 0 0 12px rgba(201,168,76,.14); } }
   </style>
 </head>
 <body>
@@ -207,7 +158,11 @@
     <span class="module">Bridge</span><span class="module">Sigil</span>
   </div>
 
-  <a class="gh-link" href="https://github.com/5mil/magofonte" target="_blank" rel="noopener">&#11041;&nbsp; github.com/5mil/magofonte</a>
+  <!-- GitHub + Lancia links, same style, stacked -->
+  <div class="link-group">
+    <a class="gh-link" href="https://github.com/5mil/magofonte" target="_blank" rel="noopener">&#11041;&nbsp; github.com/5mil/magofonte</a>
+    <a class="lancia-link" href="lancia.html">&#9741;&nbsp; Lancia</a>
+  </div>
 
   <div class="divider-wide"></div>
 
@@ -231,11 +186,6 @@
   </div>
 
 </div><!-- .container -->
-
-<!-- Lancia portal rune — fixed, isolated stacking context -->
-<a class="lancia-btn lancia-portal" href="lancia.html">
-  <span class="lancia-rune">&#8962;</span>
-</a>
 
 <script>
 const starsEl = document.getElementById('stars');
