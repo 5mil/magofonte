@@ -39,12 +39,19 @@
     },
     "blockPollMs":  500,
     "payoutScheme": "PPLNS",
-    "pplnsWindow":  100
+    "pplnsWindow":  100,
+    "bonus": {
+      "windowMs":       1800000,
+      "operatorFeePct": 0.01,
+      "dustThreshold":  1000
+    }
   },
   "monetization": {
-    "collectIntervalMinutes": 30,
-    "sweepIntervalHours":     6,
-    "sweepThresholdSol":      0.01,
-    "minClaimThreshold":      1000
+    "collectIntervalMinutes":  30,
+    "sweepIntervalHours":      6,
+    "sweepThresholdSol":       0.01,
+    "sweepThresholdDgbSats":   100000000,
+    "minClaimThreshold":       1000,
+    "operatorFeePct":          0.01
   }
 }
