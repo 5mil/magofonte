@@ -48,7 +48,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
 #topbar .meta{color:var(--dim);font-size:10px;margin-left:12px}
 #topbar .right{display:flex;align-items:center;gap:12px;font-size:11px}
 #topbar .user-chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;display:flex;align-items:center;gap:6px}
-
 #layout{display:flex;flex:1;overflow:hidden}
 
 /* ─ Sidebar ─────────────────────────────────────────────────────────── */
@@ -134,6 +133,23 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
 .modal .form-group input,.modal .form-group select{width:100%}
 .modal .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 
+/* ─ Treasury ────────────────────────────────────────────────────────── */
+.treasury-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:16px}
+.tnet-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px}
+.tnet-card.has-pending{border-color:var(--gold)}
+.tnet-card .tnet-label{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.tnet-card .tnet-addr{color:var(--cyan);font-size:10px;word-break:break-all;margin-bottom:8px}
+.tnet-card .tnet-pending{font-size:1.1rem;font-weight:bold;color:var(--gold);margin-bottom:4px}
+.tnet-card .tnet-sub{color:var(--dim);font-size:10px;margin-bottom:8px}
+.ledger-status-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.event-type{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:bold}
+.event-type.block_fee{color:var(--green);border:1px solid var(--green);background:#4ec94e11}
+.event-type.bonus_cut{color:var(--cyan);border:1px solid var(--cyan);background:#4ecfcf11}
+.event-type.sweep{color:var(--gold);border:1px solid var(--gold);background:#c8a84b11}
+.event-type.lp_fee{color:var(--blue);border:1px solid var(--blue);background:#4e8fe011}
+.event-type.other{color:var(--dim);border:1px solid var(--border)}
+.ledger-pager{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:11px;color:var(--dim)}
+
 /* ─ Responsive hide ─────────────────────────────────────────────────────── */
 .page{display:none}.page.active{display:contents}
 </style>
@@ -172,6 +188,9 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
   <div class="nav-item" onclick="nav('monetize')">
     <span class="icon">⚡</span><span class="label">Monetize</span>
   </div>
+  <div class="nav-item" onclick="nav('treasury')">
+    <span class="icon">🏦</span><span class="label">Treasury</span>
+  </div>
   <hr class="nav-sep">
   <div class="nav-section">Infrastructure</div>
   <div class="nav-item" onclick="nav('nodes')">
@@ -181,7 +200,6 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
     <span class="icon">📜</span><span class="label">Logs</span>
   </div>
   <hr class="nav-sep">
-  <!-- Admin-only sections shown/hidden by role -->
   <div class="nav-section admin-only">Administration</div>
   <div class="nav-item admin-only" onclick="nav('accounts')">
     <span class="icon">👤</span><span class="label">Accounts</span>
@@ -255,6 +273,66 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
       <div class="mon-grid" id="mon-grid"></div>
     </div>
   </div>
+</div>
+
+<!-- ── TREASURY ──────────────────────────────────────────────────────────── -->
+<div class="page" id="page-treasury">
+
+  <!-- Status + sweep -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>🏦 Treasury Status</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="sweepSol()" id="btn-sweep-sol">Sweep SOL</button>
+        <button class="btn" onclick="sweepDgb()" id="btn-sweep-dgb">Sweep DGB</button>
+        <button class="btn" onclick="loadTreasury()">↺ Refresh</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="treasury-grid" id="treasury-grid">
+        <div style="color:var(--dim);font-size:11px">Loading…</div>
+      </div>
+      <div id="treasury-msg" style="font-size:11px;margin-top:4px"></div>
+    </div>
+  </div>
+
+  <!-- Revenue sources -->
+  <div class="panel">
+    <div class="panel-header"><h2>📡 Revenue Sources</h2></div>
+    <div class="panel-body" style="padding:0">
+      <table><thead><tr>
+        <th>ID</th><th>Name</th><th>Status</th><th>Fee %</th><th>Listening</th>
+      </tr></thead><tbody id="sources-table"></tbody></table>
+    </div>
+  </div>
+
+  <!-- Revenue ledger -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>📒 Revenue Ledger</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="ledger-filter" onchange="loadLedger(0)" style="font-size:11px">
+          <option value="">All types</option>
+          <option value="block_fee">block_fee</option>
+          <option value="bonus_cut">bonus_cut</option>
+          <option value="sweep">sweep</option>
+          <option value="lp_fee">lp_fee</option>
+        </select>
+        <button class="btn" onclick="loadLedger(0)">↺</button>
+      </div>
+    </div>
+    <div class="panel-body" style="padding:0">
+      <table><thead><tr>
+        <th>Time</th><th>Source</th><th>Type</th><th>Amount</th><th>Status</th><th>Details</th>
+      </tr></thead><tbody id="ledger-table"></tbody></table>
+      <div class="ledger-pager" style="padding:10px 16px">
+        <button class="btn" id="ledger-prev" onclick="ledgerPage(-1)" disabled>‹ Prev</button>
+        <span id="ledger-page-info">—</span>
+        <button class="btn" id="ledger-next" onclick="ledgerPage(1)">Next ›</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ── NODES ─────────────────────────────────────────────────────────────── -->
@@ -414,6 +492,8 @@ let CURRENT_PAGE = 'dashboard';
 let PERMISSIONS_SCHEMA = null;
 let USERS_CACHE = [];
 let LOGS = [];
+let LEDGER_OFFSET = 0;
+const LEDGER_LIMIT = 25;
 
 // ── Auth ───────────────────────────────────────────────────────────────
 function token() { return localStorage.getItem('mg_token'); }
@@ -447,6 +527,7 @@ function nav(page) {
   if (page === 'dashboard')   loadDashboard();
   if (page === 'pool')        loadPools();
   if (page === 'monetize')    loadMonetizationPage();
+  if (page === 'treasury')    { loadTreasury(); loadSources(); loadLedger(0); }
   if (page === 'nodes')       loadNodes();
   if (page === 'accounts')    loadAccounts();
   if (page === 'permissions') loadPermissionsPage();
@@ -475,7 +556,6 @@ async function loadDashboard() {
   document.getElementById('tb-hashrate').textContent = fmtH(status.hashrate ?? 0);
   document.getElementById('tb-coin').textContent = (status.coin ?? '') + ' ' + (status.algo ?? '');
 
-  const miners = status.miners_detail || [];
   document.getElementById('miners-table').innerHTML =
     (status.miners_list || []).map(m =>
       `<tr><td style="color:var(--cyan)">${m.user ?? m.id.slice(0,8)}</td>
@@ -575,4 +655,350 @@ function monCard(poolId, opt) {
         ? `<label class="toggle"><input type="checkbox" ${opt.enabled ? 'checked' : ''}
              onchange="toggleMon('${poolId}','${opt.id}',this.checked)">
            <span class="slider"></span></label>`
-        : '<span style="color:var(--dim);font-size:1
+        : '<span style="color:var(--dim);font-size:10px">unavailable</span>'}
+    </div>
+    <div class="mc-desc">${opt.description ?? ''}</div>
+    ${cfgRows ? `<button class="btn" style="font-size:10px;padding:3px 8px" onclick="this.closest('.mon-card').classList.toggle('expanded')">Config ▾</button>
+    <div class="mc-config">${cfgRows}<button class="btn primary cfg-save" onclick="saveMon('${poolId}','${opt.id}')">Save</button></div>` : ''}
+  </div>`;
+}
+
+async function toggleMon(poolId, typeId, enabled) {
+  await api('POST', `/pool/settings/pools/${poolId}/monetization/${typeId}`, { enabled });
+  loadMonetization();
+}
+async function saveMon(poolId, typeId) {
+  const prefix = `cfg-${poolId}-${typeId}-`;
+  const config = {};
+  document.querySelectorAll(`[id^="${prefix}"]`).forEach(el => {
+    config[el.id.slice(prefix.length)] = el.value;
+  });
+  await api('POST', `/pool/settings/pools/${poolId}/monetization/${typeId}`, { enabled: true, config });
+  loadMonetization();
+}
+
+// ── Treasury ─────────────────────────────────────────────────────────────
+async function loadTreasury() {
+  const data = await api('GET', '/monetization/status');
+  if (!data) return;
+  const sol = data.solana || {};
+  const dgb = data.dgb || {};
+  const ltc = data.ltc || {};
+  const tw  = data.treasury || {};
+
+  const cards = [
+    {
+      label: 'Solana',
+      addr:  tw.solana || '—',
+      pending: sol.pendingSol ? sol.pendingSol + ' SOL' : '0 SOL',
+      sub:   `${sol.pendingEvents ?? 0} pending event(s)  •  threshold ${sol.sweepThresholdSol ?? '—'} SOL`,
+      hasPending: (sol.pendingEvents ?? 0) > 0,
+      sweepId: 'sol',
+    },
+    {
+      label: 'DigiByte',
+      addr:  tw.dgb || '—',
+      pending: dgb.pendingDgb ? dgb.pendingDgb + ' DGB' : '0 DGB',
+      sub:   `${dgb.pendingEvents ?? 0} pending event(s)  •  threshold ${dgb.sweepThresholdDgbSats != null ? (dgb.sweepThresholdDgbSats/1e8).toFixed(2)+' DGB' : '—'}`,
+      hasPending: (dgb.pendingEvents ?? 0) > 0,
+      sweepId: 'dgb',
+    },
+    {
+      label: 'Litecoin',
+      addr:  tw.ltc || '—',
+      pending: '—',
+      sub: 'collector not yet active',
+      hasPending: false,
+      sweepId: null,
+    },
+  ];
+
+  document.getElementById('treasury-grid').innerHTML = cards.map(c => `
+    <div class="tnet-card ${c.hasPending ? 'has-pending' : ''}">
+      <div class="tnet-label">${c.label}</div>
+      <div class="tnet-addr">${c.addr}</div>
+      <div class="tnet-pending">${c.pending}</div>
+      <div class="tnet-sub">${c.sub}</div>
+      ${c.sweepId ? `<button class="btn" style="font-size:10px;padding:3px 10px" onclick="sweepNetwork('${c.sweepId}')">Sweep ${c.label}</button>` : ''}
+    </div>
+  `).join('');
+
+  // recent sweeps
+  const recent = data.recentSweeps || [];
+  document.getElementById('treasury-msg').innerHTML =
+    recent.length
+      ? '<span style="color:var(--dim)">Last sweep: ' + fmtTs(recent[0]?.created_at) + ' — ' +
+        (recent[0]?.metadata?.trigger || '') + '</span>'
+      : '<span style="color:var(--dim)">No sweeps recorded yet</span>';
+}
+
+async function loadSources() {
+  const data = await api('GET', '/monetization/sources');
+  if (!data?.sources) return;
+  document.getElementById('sources-table').innerHTML = data.sources.map(s => `
+    <tr>
+      <td style="color:var(--cyan)">${s.id}</td>
+      <td>${s.name}</td>
+      <td>${s.status === 'active'
+        ? '<span class="on">● active</span>'
+        : '<span class="off">○ ' + s.status + '</span>'}</td>
+      <td style="color:var(--gold)">${s.feePct != null ? (s.feePct*100).toFixed(2)+'%' : '—'}</td>
+      <td style="color:var(--dim);font-size:10px">${(s.listening||[]).join(', ') || '—'}</td>
+    </tr>
+  `).join('');
+}
+
+let _ledgerTotal = 0;
+async function loadLedger(offset) {
+  LEDGER_OFFSET = Math.max(0, offset);
+  const filter = document.getElementById('ledger-filter')?.value || '';
+  const qs = `?limit=${LEDGER_LIMIT}&offset=${LEDGER_OFFSET}${filter ? '&type='+filter : ''}`;
+  const rows = await api('GET', '/monetization/ledger' + qs);
+  if (!rows) return;
+  const arr = Array.isArray(rows) ? rows : (rows.events || []);
+  _ledgerTotal = rows.total ?? arr.length;
+
+  document.getElementById('ledger-table').innerHTML = arr.length === 0
+    ? '<tr><td colspan="6" style="color:var(--dim);text-align:center;padding:16px">No events recorded yet</td></tr>'
+    : arr.map(e => {
+        const meta  = e.metadata || {};
+        const amtRaw = Number(e.amount || 0);
+        const amtStr = e.source === 'pool_fees'
+          ? (amtRaw/1e8).toFixed(8) + ' DGB'
+          : (amtRaw/1e9).toFixed(6) + ' SOL';
+        const tclass = ['block_fee','bonus_cut','sweep','lp_fee'].includes(e.type) ? e.type : 'other';
+        const detail = meta.height ? `h=${meta.height}` : (meta.events ? `${meta.events} events` : '');
+        return `<tr>
+          <td style="color:var(--dim);font-size:10px">${fmtTs(e.created_at)}</td>
+          <td style="color:var(--cyan);font-size:10px">${e.source || '—'}</td>
+          <td><span class="event-type ${tclass}">${e.type || '—'}</span></td>
+          <td style="color:var(--gold)">${amtStr}</td>
+          <td style="font-size:10px">${e.status === 'swept'
+            ? '<span class="on">swept</span>'
+            : '<span style="color:var(--dim)">' + (e.status||'—') + '</span>'}</td>
+          <td style="color:var(--dim);font-size:10px">${detail}</td>
+        </tr>`;
+      }).join('');
+
+  const pageNum = Math.floor(LEDGER_OFFSET / LEDGER_LIMIT) + 1;
+  const pageTotal = Math.max(1, Math.ceil((_ledgerTotal || arr.length + LEDGER_OFFSET) / LEDGER_LIMIT));
+  document.getElementById('ledger-page-info').textContent = `Page ${pageNum} / ${pageTotal}`;
+  document.getElementById('ledger-prev').disabled = LEDGER_OFFSET === 0;
+  document.getElementById('ledger-next').disabled = arr.length < LEDGER_LIMIT;
+}
+
+function ledgerPage(dir) {
+  loadLedger(LEDGER_OFFSET + dir * LEDGER_LIMIT);
+}
+
+async function sweepSol() {
+  await sweepNetwork('sol');
+}
+async function sweepDgb() {
+  await sweepNetwork('dgb');
+}
+async function sweepNetwork(network) {
+  const msg = document.getElementById('treasury-msg');
+  msg.innerHTML = '<span style="color:var(--gold)">Sweeping…</span>';
+  const path = network === 'dgb' ? '/monetization/sweep-dgb' : '/monetization/sweep';
+  const r = await api('POST', path);
+  if (!r) return;
+  if (r.error) {
+    msg.innerHTML = `<span class="err">${r.error}</span>`;
+  } else {
+    msg.innerHTML = `<span class="ok">✓ Swept ${r.swept} event(s) → ${r.treasury ?? ''} (${network.toUpperCase()})</span>`;
+    loadTreasury();
+    loadLedger(0);
+  }
+}
+
+// ── Nodes ────────────────────────────────────────────────────────────────
+async function loadNodes() {
+  const data = await api('GET', '/node/list');
+  if (!data) return;
+  const nodes = Array.isArray(data) ? data : Object.values(data);
+  document.getElementById('nodes-table').innerHTML = nodes.map(n =>
+    `<tr>
+      <td style="color:var(--gold)">${n.coin?.toUpperCase?.() ?? n.coin ?? '—'}</td>
+      <td>${n.status === 'ready' ? '<span class="on">● ready</span>' : '<span class="off">○ ' + (n.status||'—') + '</span>'}</td>
+      <td style="color:var(--cyan)">${n.height ?? '—'}</td>
+      <td style="color:var(--dim)">${n.pid ?? '—'}</td>
+      <td><button class="btn danger" onclick="stopNode('${n.coin}')" perm="node:stop">Stop</button></td>
+    </tr>`
+  ).join('') || '<tr><td colspan="5" style="color:var(--dim);text-align:center">No nodes running</td></tr>';
+}
+async function stopNode(coin) {
+  if (!confirm('Stop ' + coin + ' node?')) return;
+  await api('POST', '/node/stop', { coin });
+  loadNodes();
+}
+async function launchCoin() {
+  let def;
+  try { def = JSON.parse(document.getElementById('lc-json').value); }
+  catch { document.getElementById('lc-err').textContent = 'Invalid JSON'; return; }
+  const r = await api('POST', '/node/launch', {
+    coin: def,
+    rpcuser: document.getElementById('lc-rpcuser').value,
+    rpcpass: document.getElementById('lc-rpcpass').value
+  });
+  if (r?.ok) { closeModal('modal-launchcoin'); loadNodes(); }
+  else document.getElementById('lc-err').textContent = r?.error || 'Failed';
+}
+
+// ── Accounts ─────────────────────────────────────────────────────────────
+async function loadAccounts() {
+  const users = await api('GET', '/ward/users');
+  if (!users) return;
+  USERS_CACHE = users;
+  document.getElementById('accounts-table').innerHTML = users.map(u =>
+    `<tr>
+      <td style="color:var(--cyan)">${u.username}</td>
+      <td><span class="badge ${u.role}">${u.role}</span></td>
+      <td style="color:var(--dim)">${u.lastLogin ? fmtTs(u.lastLogin) : 'Never'}</td>
+      <td><button class="btn danger" onclick="deleteUser('${u.id}')" perm="ward:users:delete">Delete</button></td>
+    </tr>`
+  ).join('');
+}
+async function createUser() {
+  const r = await api('POST', '/ward/users', {
+    username: document.getElementById('nu-username').value,
+    password: document.getElementById('nu-password').value,
+    role:     document.getElementById('nu-role').value
+  });
+  if (r?.id) { closeModal('modal-newuser'); loadAccounts(); }
+  else document.getElementById('nu-err').textContent = r?.error || 'Failed';
+}
+async function deleteUser(id) {
+  if (!confirm('Delete user?')) return;
+  await api('DELETE', '/ward/users/' + id);
+  loadAccounts();
+}
+
+// ── Permissions ──────────────────────────────────────────────────────────
+async function loadPermissionsPage() {
+  const [schema, users] = await Promise.all([
+    api('GET', '/ward/permissions/schema'),
+    api('GET', '/ward/users')
+  ]);
+  PERMISSIONS_SCHEMA = schema;
+  USERS_CACHE = users || [];
+  const sel = document.getElementById('perm-user-select');
+  sel.innerHTML = USERS_CACHE.map(u => `<option value="${u.id}">${u.username} (${u.role})</option>`).join('');
+  loadUserPerms();
+}
+async function loadUserPerms() {
+  const userId = document.getElementById('perm-user-select').value;
+  if (!userId) return;
+  const perms = await api('GET', '/ward/users/' + userId + '/permissions');
+  if (!perms || !PERMISSIONS_SCHEMA) return;
+  const granted = new Set(Array.isArray(perms) ? perms : perms.permissions || []);
+  const allPerms = PERMISSIONS_SCHEMA.permissions || [];
+  document.getElementById('perm-editor').innerHTML =
+    '<div class="perm-grid">' +
+    allPerms.map(p => `
+      <span class="perm-chip ${granted.has(p) ? 'granted' : 'revoked'}" onclick="togglePerm('${userId}','${p}',this)">${p}</span>
+    `).join('') + '</div>';
+}
+async function togglePerm(userId, perm, el) {
+  const isGranted = el.classList.contains('granted');
+  await api('POST', '/ward/users/' + userId + '/permissions', {
+    action: isGranted ? 'revoke' : 'grant', permission: perm
+  });
+  el.classList.toggle('granted', !isGranted);
+  el.classList.toggle('revoked', isGranted);
+}
+
+// ── My Account ───────────────────────────────────────────────────────────
+async function loadMyAccount() {
+  if (!ME) return;
+  document.getElementById('account-info').innerHTML =
+    `<div style="margin-bottom:6px"><span style="color:var(--dim)">Username: </span><span style="color:var(--cyan)">${ME.username}</span></div>` +
+    `<div><span style="color:var(--dim)">Role: </span><span class="badge ${ME.role}">${ME.role}</span></div>`;
+}
+async function changePassword() {
+  const cur  = document.getElementById('pw-current').value;
+  const nw   = document.getElementById('pw-new').value;
+  const conf = document.getElementById('pw-confirm').value;
+  const msg  = document.getElementById('pw-msg');
+  if (nw !== conf) { msg.innerHTML = '<span class="err">Passwords do not match</span>'; return; }
+  const r = await api('POST', '/ward/change-password', { currentPassword: cur, newPassword: nw });
+  msg.innerHTML = r?.ok ? '<span class="ok">✓ Password updated</span>' : `<span class="err">${r?.error || 'Failed'}</span>`;
+}
+
+// ── Logs ─────────────────────────────────────────────────────────────────
+function renderLogs() {
+  const box = document.getElementById('log-box');
+  box.innerHTML = LOGS.map(l => {
+    const cls = l.includes('[WARN]') ? 'warn' : l.includes('[ERROR]') ? 'error' : l.includes('BLOCK') ? 'block' : '';
+    return `<div class="log-line ${cls}">${escHtml(l)}</div>`;
+  }).join('') || '<span style="color:var(--dim)">No logs yet</span>';
+  box.scrollTop = box.scrollHeight;
+}
+function clearLogs() { LOGS = []; renderLogs(); }
+
+// ── Modals ────────────────────────────────────────────────────────────────
+function showNewUserModal()   { openModal('modal-newuser'); }
+function showNewPoolModal()   { openModal('modal-newpool'); }
+function showLaunchCoinModal(){ openModal('modal-launchcoin'); }
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── Utils ─────────────────────────────────────────────────────────────────
+function stat(label, value, color='') {
+  return `<div class="stat-card"><div class="label">${label}</div><div class="value ${color}">${value}</div></div>`;
+}
+function fmtH(h) {
+  if (h >= 1e12) return (h/1e12).toFixed(2)+'TH/s';
+  if (h >= 1e9)  return (h/1e9).toFixed(2)+'GH/s';
+  if (h >= 1e6)  return (h/1e6).toFixed(2)+'MH/s';
+  if (h >= 1e3)  return (h/1e3).toFixed(2)+'KH/s';
+  return Math.round(h)+'H/s';
+}
+function fmtTs(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+}
+function timeSince(ms) {
+  const s = Math.floor((Date.now()-ms)/1000);
+  if (s < 60) return s + 's';
+  if (s < 3600) return Math.floor(s/60) + 'm';
+  return Math.floor(s/3600) + 'h';
+}
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Boot ──────────────────────────────────────────────────────────────────
+(async () => {
+  const me = await api('GET', '/ward/me');
+  if (!me) return;
+  ME = me;
+  document.getElementById('tb-user').textContent = me.username;
+  const rb = document.getElementById('tb-role');
+  rb.textContent = me.role; rb.className = 'badge ' + me.role;
+  if (me.role !== 'admin') {
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+  }
+  loadDashboard();
+
+  // Websocket for live logs + events
+  try {
+    const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${wsProto}//${location.host}/ws?token=${token()}`);
+    ws.onmessage = ({ data }) => {
+      try {
+        const ev = JSON.parse(data);
+        if (ev.type === 'log') {
+          LOGS.push(ev.line);
+          if (LOGS.length > 500) LOGS.shift();
+          if (CURRENT_PAGE === 'logs') renderLogs();
+        }
+        if (ev.type === 'block:found' && CURRENT_PAGE === 'treasury') {
+          loadTreasury(); loadLedger(0);
+        }
+      } catch {}
+    };
+  } catch {}
+})();
+</script>
+</body>
+</html>
