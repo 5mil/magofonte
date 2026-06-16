@@ -13,96 +13,51 @@
     }
     html, body { background: var(--ink); color: var(--gold-light); font-family: 'Cinzel', serif; overflow-x: hidden; }
     body { min-height: 100vh; }
-
-    /* stars */
     .stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
     .star { position: absolute; border-radius: 50%; background: white; opacity: 0; animation: twinkle var(--d,4s) var(--delay,0s) infinite ease-in-out; }
     @keyframes twinkle { 0%,100%{opacity:0} 50%{opacity:var(--bright,.6)} }
-
-    /* ── Hero banner (Doré) ─────────────────────── */
-    .hero {
-      position: relative; width: 100%; min-height: 420px;
-      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-      padding-bottom: 3rem; overflow: hidden; z-index: 1;
-    }
-    .hero-img {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      object-fit: cover; object-position: center 20%;
-      filter: grayscale(30%) contrast(1.05) brightness(0.5); z-index: 0;
-    }
-    .hero-veil {
-      position: absolute; inset: 0; z-index: 1;
-      background:
-        linear-gradient(to bottom,
-          rgba(13,11,14,.55) 0%, rgba(13,11,14,.2) 35%,
-          rgba(13,11,14,.65) 70%, rgba(13,11,14,.98) 100%),
-        radial-gradient(ellipse at 50% 60%, rgba(201,168,76,.06) 0%, transparent 65%);
-    }
-    .hero-content {
-      position: relative; z-index: 2;
-      display: flex; flex-direction: column; align-items: center; gap: .6rem;
-      text-align: center; padding: 0 1.5rem;
-    }
+    .hero { position: relative; width: 100%; min-height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 3rem; overflow: hidden; z-index: 1; }
+    .hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; filter: grayscale(30%) contrast(1.05) brightness(0.5); z-index: 0; }
+    .hero-veil { position: absolute; inset: 0; z-index: 1; background: linear-gradient(to bottom, rgba(13,11,14,.55) 0%, rgba(13,11,14,.2) 35%, rgba(13,11,14,.65) 70%, rgba(13,11,14,.98) 100%), radial-gradient(ellipse at 50% 60%, rgba(201,168,76,.06) 0%, transparent 65%); }
+    .hero-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: .6rem; text-align: center; padding: 0 1.5rem; }
     .hero-rune { font-size: 1.6rem; opacity: .4; letter-spacing: .5em; animation: flicker 6s ease-in-out infinite; }
     @keyframes flicker { 0%,90%,100%{opacity:.4} 95%{opacity:.12} }
-    .hero-title {
-      font-family: 'Cinzel Decorative', serif;
-      font-size: clamp(2.6rem, 8vw, 4.5rem); font-weight: 700; letter-spacing: .08em;
-      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, #a07830 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-      filter: drop-shadow(0 2px 22px rgba(201,168,76,.3));
-    }
+    .hero-title { font-family: 'Cinzel Decorative', serif; font-size: clamp(2.6rem, 8vw, 4.5rem); font-weight: 700; letter-spacing: .08em; background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, #a07830 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 2px 22px rgba(201,168,76,.3)); }
     .hero-sub { font-size: clamp(.7rem,2vw,.9rem); letter-spacing: .35em; text-transform: uppercase; color: rgba(201,168,76,.5); }
     .hero-divider { width: 240px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: .4; margin: .15rem 0; }
     .hero-caption { font-size: .52rem; letter-spacing: .2em; text-transform: uppercase; color: rgba(201,168,76,.2); font-style: italic; }
-
-    /* ── Nav (top-right) ───────────────────────── */
     .nav-bar { position: fixed; top: 1rem; right: 1.2rem; z-index: 200; display: flex; gap: .5rem; align-items: center; transform: translateZ(0); }
     .nav-pill { display: inline-flex; align-items: center; gap: .3rem; padding: .28rem .8rem; border: 1px solid rgba(201,168,76,.2); border-radius: 999px; background: rgba(13,11,14,.88); backdrop-filter: blur(6px); text-decoration: none; font-size: .55rem; letter-spacing: .18em; text-transform: uppercase; color: rgba(201,168,76,.45); transition: all .22s; }
-    .nav-pill:hover  { border-color: rgba(201,168,76,.55); color: var(--gold-light); }
+    .nav-pill:hover { border-color: rgba(201,168,76,.55); color: var(--gold-light); }
     .nav-pill.active { border-color: rgba(201,168,76,.4); color: var(--gold); }
-
-    /* ── Body layout ───────────────────────────── */
     .container { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 2rem; padding: 2rem 1.5rem 4rem; }
-    .divider      { width: 260px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: .5; }
+    .divider { width: 260px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: .5; }
     .divider-wide { width: 100%; max-width: 660px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: .3; }
-
     .spell-wrap { display: flex; flex-direction: column; align-items: center; gap: .6rem; }
     .spell-main { font-family: 'Cinzel Decorative', serif; font-size: clamp(1.3rem,4vw,2rem); font-weight: 700; color: var(--gold-light); letter-spacing: .05em; line-height: 1.2; }
-    .spell-sub  { font-size: clamp(.75rem,2vw,.95rem); letter-spacing: .2em; text-transform: uppercase; color: rgba(201,168,76,.45); }
-    .tagline    { font-size: clamp(.82rem,2vw,1rem); color: rgba(232,208,138,.6); letter-spacing: .1em; line-height: 1.7; max-width: 480px; font-style: italic; text-align: center; }
-
+    .spell-sub { font-size: clamp(.75rem,2vw,.95rem); letter-spacing: .2em; text-transform: uppercase; color: rgba(201,168,76,.45); }
+    .tagline { font-size: clamp(.82rem,2vw,1rem); color: rgba(232,208,138,.6); letter-spacing: .1em; line-height: 1.7; max-width: 480px; font-style: italic; text-align: center; }
     .modules { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; max-width: 560px; }
     .module { border: 1px solid rgba(201,168,76,.22); border-radius: 999px; padding: .28rem .85rem; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: rgba(201,168,76,.45); background: rgba(201,168,76,.03); transition: all .28s; }
     .module:hover { border-color: rgba(201,168,76,.55); color: var(--gold-light); background: rgba(201,168,76,.07); }
-
-    .gh-link, .lancia-link {
-      display: inline-flex; align-items: center; gap: .5rem;
-      padding: .5rem 1.3rem;
-      border: 1px solid rgba(201,168,76,.32); border-radius: 999px;
-      text-decoration: none; font-size: .75rem; letter-spacing: .2em; text-transform: uppercase;
-      color: rgba(201,168,76,.55); transition: all .28s;
-    }
+    .gh-link, .lancia-link { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem 1.3rem; border: 1px solid rgba(201,168,76,.32); border-radius: 999px; text-decoration: none; font-size: .75rem; letter-spacing: .2em; text-transform: uppercase; color: rgba(201,168,76,.55); transition: all .28s; }
     .gh-link:hover, .lancia-link:hover { border-color: var(--gold); color: var(--gold-light); background: rgba(201,168,76,.06); }
     .link-group { display: flex; flex-direction: column; align-items: center; gap: .6rem; }
-
-    /* ── Grimoire ──────────────────────────────── */
     .grimoire { width: 100%; max-width: 680px; border: 1px solid var(--border); border-radius: 12px; background: rgba(201,168,76,.03); padding: 2rem 2rem 1.5rem; text-align: left; position: relative; }
     .grimoire::before { content: '\27E1  The Wizard\'s Grimoire  \27E1'; position: absolute; top: -.7rem; left: 50%; transform: translateX(-50%); font-size: .62rem; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); background: var(--ink); padding: 0 .8rem; white-space: nowrap; }
     .log-entry { display: grid; grid-template-columns: auto 1fr; gap: .4rem 1rem; padding: .9rem 0; border-bottom: 1px solid rgba(201,168,76,.08); align-items: start; }
     .log-entry:last-child { border-bottom: none; padding-bottom: 0; }
     .log-sigil { font-size: 1.35rem; line-height: 1; margin-top: .15rem; }
     .log-title { font-size: .8rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--gold-light); margin-bottom: .3rem; }
-    .log-date  { font-size: .58rem; letter-spacing: .18em; color: rgba(201,168,76,.32); text-transform: uppercase; margin-left: .5rem; }
-    .log-text  { font-size: .76rem; color: rgba(232,208,138,.58); line-height: 1.72; letter-spacing: .04em; font-style: italic; }
+    .log-date { font-size: .58rem; letter-spacing: .18em; color: rgba(201,168,76,.32); text-transform: uppercase; margin-left: .5rem; }
+    .log-text { font-size: .76rem; color: rgba(232,208,138,.58); line-height: 1.72; letter-spacing: .04em; font-style: italic; }
     .log-text code { font-style: normal; font-size: .7rem; color: rgba(201,168,76,.82); background: rgba(201,168,76,.07); padding: .1rem .32rem; border-radius: 4px; font-family: 'Courier New', monospace; }
     .log-pills { display: flex; flex-wrap: wrap; gap: .32rem; margin-top: .5rem; }
     .pill { font-size: .58rem; letter-spacing: .16em; text-transform: uppercase; padding: .12rem .5rem; border-radius: 999px; border: 1px solid rgba(201,168,76,.18); color: rgba(201,168,76,.4); }
     .pill.done { border-color: rgba(100,200,120,.32); color: rgba(140,220,150,.68); }
-    .pill.wip  { border-color: rgba(201,168,76,.38); color: rgba(201,168,76,.78); }
+    .pill.wip { border-color: rgba(201,168,76,.38); color: rgba(201,168,76,.78); }
     .pill.next { border-color: rgba(150,130,200,.32); color: rgba(180,160,220,.58); }
     .grimoire-footer { margin-top: 1.1rem; font-size: .6rem; letter-spacing: .18em; text-transform: uppercase; color: rgba(201,168,76,.18); text-align: center; }
-
     .footer { margin-top: 1rem; font-size: .62rem; letter-spacing: .14em; color: rgba(201,168,76,.2); text-transform: uppercase; text-align: center; }
     .footer a { color: inherit; text-decoration: none; }
     .footer a:hover { color: rgba(201,168,76,.42); }
@@ -118,9 +73,7 @@
 </nav>
 
 <div class="hero">
-  <img class="hero-img"
-       src="idylls_of_the_king_-merlin-and-vivien.jpg"
-       alt="Merlin and Vivien — Gustave Doré, Idylls of the King" />
+  <img class="hero-img" src="wizards.jpg" alt="Merlin and Vivien — Gustave Doré, Idylls of the King" />
   <div class="hero-veil"></div>
   <div class="hero-content">
     <div class="hero-rune">&#10022; &#10023; &#10022;</div>
@@ -132,58 +85,38 @@
 </div>
 
 <div class="container">
-
   <div class="spell-wrap">
     <div class="spell-main">The Spell is Being Cast</div>
     <div class="spell-sub">The ore is struck &mdash; the first block nears</div>
   </div>
-
-  <p class="tagline">
-    An offline-first, modular platform for local AI, wallet management,<br />
-    and distributed node operation. Built for those who own their intelligence stack.
-  </p>
-
+  <p class="tagline">An offline-first, modular platform for local AI, wallet management,<br />and distributed node operation. Built for those who own their intelligence stack.</p>
   <div class="divider"></div>
-
   <div class="modules">
     <span class="module">Core</span><span class="module">Forge</span>
     <span class="module">Vault</span><span class="module">Mesh</span>
     <span class="module">Ward</span><span class="module">Stream</span>
     <span class="module">Bridge</span><span class="module">Sigil</span>
   </div>
-
   <div class="link-group">
     <a class="gh-link" href="https://github.com/5mil/magofonte" target="_blank" rel="noopener">&#11041;&nbsp; github.com/5mil/magofonte</a>
     <a class="lancia-link" href="lancia.html">&#9741;&nbsp; Lancia</a>
   </div>
-
   <div class="divider-wide"></div>
-
   <div class="grimoire">
     <div class="log-entry"><div class="log-sigil">&#9935;</div><div class="log-body"><div class="log-title">The Mine Awakens <span class="log-date">June 2026</span></div><div class="log-text">The pool module now speaks fluent Stratum. Miners connect, subscribe, receive jobs, and submit shares &mdash; the full <code>mining.subscribe &rarr; authorize &rarr; notify &rarr; submit</code> handshake works end to end. VarDiff adjusts difficulty in real time.</div><div class="log-pills"><span class="pill done">Stratum V1</span><span class="pill done">VarDiff</span><span class="pill done">PPLNS Payout</span><span class="pill done">JobEngine</span></div></div></div>
-
-    <div class="log-entry"><div class="log-sigil">&#129689;</div><div class="log-body"><div class="log-title">Coins Go Somewhere Now <span class="log-date">June 2026</span></div><div class="log-text"><code>pool/address.js</code> now decodes real Base58Check addresses with full checksum verification. Every block found forwards its reward to the operator's actual DGB wallet.</div><div class="log-pills"><span class="pill done">Base58Check decode</span><span class="pill done">P2PKH script</span><span class="pill done">P2SH script</span><span class="pill done">Hot address update</span></div></div></div>
-
+    <div class="log-entry"><div class="log-sigil">&#129689;</div><div class="log-body"><div class="log-title">Coins Go Somewhere Now <span class="log-date">June 2026</span></div><div class="log-text"><code>pool/address.js</code> now decodes real Base58Check addresses with full checksum verification. Every block found forwards its reward to the operator’s actual DGB wallet.</div><div class="log-pills"><span class="pill done">Base58Check decode</span><span class="pill done">P2PKH script</span><span class="pill done">P2SH script</span><span class="pill done">Hot address update</span></div></div></div>
     <div class="log-entry"><div class="log-sigil">&#127744;</div><div class="log-body"><div class="log-title">Skein Woven In <span class="log-date">June 2026</span></div><div class="log-text"><code>pool/skein.js</code> is a full pure-JavaScript Threefish-512 implementation: 72 rounds, 8 MIX pairs per round, UBI chaining, zero native addons. A NIST known-answer vector validates on every startup.</div><div class="log-pills"><span class="pill done">Threefish-512</span><span class="pill done">UBI chaining</span><span class="pill done">Double-Skein</span><span class="pill done">NIST self-test</span></div></div></div>
-
     <div class="log-entry"><div class="log-sigil">&#128273;</div><div class="log-body"><div class="log-title">Modular Wallets <span class="log-date">June 2026</span></div><div class="log-text"><code>pool/walletManager.js</code> wraps key primitives in a per-coin registry with AES-256-GCM vault persistence, EventEmitter for hot address swaps, and a clean generate / import / export / delete / setActive API.</div><div class="log-pills"><span class="pill done">Key primitives</span><span class="pill done">WIF import/export</span><span class="pill done">AES-256-GCM vault</span><span class="pill done">Hot address swap</span></div></div></div>
-
     <div class="log-entry"><div class="log-sigil">&#128302;</div><div class="log-body"><div class="log-title">What the Orb Shows Next <span class="log-date">on the horizon</span></div><div class="log-text">Connect a real miner, watch the share validator accept a genuine Skein hash, and let <code>submitblock</code> carry it to the DGB network. Beyond that — the other four DGB algorithms await their scroll entries.</div><div class="log-pills"><span class="pill wip">First real block</span><span class="pill next">Scrypt algo</span><span class="pill next">Qubit algo</span><span class="pill next">OdoCrypt algo</span><span class="pill next">Dashboard UI</span></div></div></div>
-
-    <div class="grimoire-footer">Inscribed by the wizard's hand &nbsp;&middot;&nbsp; entries added as spells complete</div>
+    <div class="grimoire-footer">Inscribed by the wizard’s hand &nbsp;&middot;&nbsp; entries added as spells complete</div>
   </div>
-
-  <div class="footer">
-    Apache 2.0 &nbsp;&middot;&nbsp; Original concept inspired by Gustave Dor&eacute;, c.1868
-  </div>
-
+  <div class="footer">Apache 2.0 &nbsp;&middot;&nbsp; Original concept inspired by Gustave Dor&eacute;, c.1868</div>
 </div>
 
 <script>
 const starsEl = document.getElementById('stars');
 for (let i = 0; i < 150; i++) {
-  const s = document.createElement('div');
-  s.className = 'star';
+  const s = document.createElement('div'); s.className = 'star';
   const sz = Math.random() * 2.2 + 0.35;
   s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*5+3).toFixed(1)}s;--delay:${(Math.random()*6).toFixed(1)}s;--bright:${(Math.random()*.5+.28).toFixed(2)}`;
   starsEl.appendChild(s);
