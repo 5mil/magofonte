@@ -318,7 +318,7 @@ html,body{background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;ov
 
     <div class="section-title">&#9670; Identity</div>
     <div class="launch-form">
-      <div class="lf-group"><label class="lf-label">&#9672; Instance Name <span class="tip" data-tip="Unique slug used as the app/container name on the provider. Lowercase, hyphens only.">?</span></label><input class="lf-input" id="lf-name" placeholder="pool-skein-01"/><span class="lf-hint">Lowercase, hyphens only. Unique per provider.</span></div>
+      <div class="lf-group"><label class="lf-label">&#9672; Instance Name <span class="tip" data-tip="Unique slug used as the app/container name on the provider. Lowercase letters, numbers, hyphens. Min 4 chars. Must not be all-numeric.">?</span></label><input class="lf-input" id="lf-name" placeholder="pool-skein-01"/><span class="lf-hint">Lowercase, hyphens OK. Min 4 chars. Unique per provider.</span></div>
       <div class="lf-group"><label class="lf-label">&#9672; Provider <span class="tip" data-tip="Cloud platform for this instance. See the Provider Setup Guide above.">?</span></label><select class="lf-input" id="lf-provider" onchange="onProviderChange()"><option value="fly">Fly.io — free shared VMs, global edge</option><option value="railway">Railway — free hobby tier</option><option value="render">Render — free web service</option><option value="oracle">Oracle Cloud — always free ARM VMs</option><option value="custom">Custom / Self-hosted</option></select><div class="provider-badges" id="provider-badges"><span class="pbadge free">Free Tier</span><span class="pbadge">Global Regions</span><span class="pbadge">Docker Deploy</span></div></div>
       <div class="lf-group span2"><label class="lf-label">&#9672; Provider API Token <span class="tip" data-tip="See the Provider Setup Guide above. Stored in browser session memory only — never sent to any third-party server.">?</span></label><input class="lf-input" id="lf-token" type="password" placeholder="Paste provider token here — session memory only"/><span class="lf-hint">&#9888; Cleared on page close. Never persisted to any server.</span></div>
     </div>
@@ -441,6 +441,15 @@ function saveFleet(fleet){localStorage.setItem(STORE_KEY,JSON.stringify(fleet));
 function upsertInstance(inst){const fleet=loadFleet();const idx=fleet.findIndex(i=>i.id===inst.id);if(idx>=0)fleet[idx]={...fleet[idx],...inst};else fleet.push(inst);saveFleet(fleet);}
 function removeInstance(id){saveFleet(loadFleet().filter(i=>i.id!==id));}
 
+// ── name validation ──
+function validateName(name){
+  if(!name) return 'Instance name is required.';
+  if(name.length < 4) return 'Instance name must be at least 4 characters.';
+  if(/^\d+$/.test(name)) return 'Instance name cannot be all numbers — use a slug like "pool-01".';
+  if(!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(name)) return 'Instance name must be lowercase letters, numbers, and hyphens only (no leading/trailing hyphen).';
+  return null;
+}
+
 // ── Fly.io Machines API ──
 const FLY_API='https://api.machines.dev/v1';
 async function flyPost(path,body,token){
@@ -459,15 +468,11 @@ async function flyDelete(path,token){
 
 async function flyLaunch(cfg,token){
   log('Fly.io: creating app "'+cfg.name+'"…');
-  // 1. create app
   const appRes=await flyPost('/apps',{app_name:cfg.name,org_slug:'personal'},token);
   if(appRes.error)return{error:'App create: '+appRes.error};
   log('Fly.io: app created — allocating IP…');
-  // 2. allocate shared IPv4
   await flyPost(`/apps/${cfg.name}/allocate-ip`,{type:'shared_v4'},token);
-  // 3. build env
   const env=buildEnv(cfg);
-  // 4. create machine
   log('Fly.io: creating machine…');
   const machineRes=await flyPost(`/apps/${cfg.name}/machines`,{
     name:cfg.name+'-m1',
@@ -520,15 +525,13 @@ async function railwayLaunch(cfg,token){
   const projectId=proj.data.projectCreate.id;
   log('Railway: creating service…');
   const env=buildEnv(cfg);
-  const envVars=Object.entries(env).map(([k,v])=>`${k}: "${v}"`).join(', ');
   const svc=await railwayGql(`mutation{serviceCreate(input:{projectId:"${projectId}",name:"${cfg.name}",source:{image:"ghcr.io/5mil/magofonte:${cfg.image}"}}){id name}}`,{},token);
   if(svc.errors)return{error:svc.errors[0].message};
   const serviceId=svc.data.serviceCreate.id;
-  // set env vars via variables mutation
   await railwayGql(`mutation SetVars($projectId:String!,$serviceId:String!,$vars:EnvironmentVariablesInput!){variableCollectionUpsert(input:{projectId:$projectId,serviceId:$serviceId,variables:$vars})}`,
     {projectId,serviceId,vars:env},token);
   log('Railway: deploying…');
-  const dep=await railwayGql(`mutation{serviceInstanceDeploy(serviceId:"${serviceId}",environmentId:null){id}}`,{},token);
+  await railwayGql(`mutation{serviceInstanceDeploy(serviceId:"${serviceId}",environmentId:null){id}}`,{},token);
   return{id:serviceId,name:cfg.name,provider:'railway',region:cfg.region,algo:cfg.algo,status:'pending',railwayProjectId:projectId,token};
 }
 
@@ -545,26 +548,60 @@ async function railwayStatus(inst){
 // ── Render REST API ──
 const RENDER_API='https://api.render.com/v1';
 async function renderReq(method,path,body,token){
-  const r=await fetch(RENDER_API+path,{method,headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
-  const t=await r.text();try{return JSON.parse(t);}catch{return{error:t,status:r.status};}
+  const opts={method,headers:{'Authorization':'Bearer '+token,'Accept':'application/json','Content-Type':'application/json'}};
+  if(body) opts.body=JSON.stringify(body);
+  const r=await fetch(RENDER_API+path,opts);
+  const t=await r.text();
+  let parsed;
+  try{parsed=JSON.parse(t);}catch{return{_error:t,_status:r.status};}
+  if(!r.ok){
+    // Render error shape: {id, message} or array [{id,message}]
+    const msg=Array.isArray(parsed)?parsed.map(e=>e.message||JSON.stringify(e)).join('; '):(parsed.message||JSON.stringify(parsed));
+    return{_error:`HTTP ${r.status}: ${msg}`,_status:r.status};
+  }
+  return parsed;
 }
 
 async function renderLaunch(cfg,token){
-  log('Render: creating service…');
+  log('Render: creating service… (may take 10–20 s)');
   const env=buildEnv(cfg);
   const envVars=Object.entries(env).map(([k,v])=>({key:k,value:v}));
-  const body={type:'web_service',name:cfg.name,serviceDetails:{env:'docker',dockerImage:'ghcr.io/5mil/magofonte:'+cfg.image,region:cfg.region==='frankfurt'?'frankfurt':'oregon',plan:'free',envVars}};
+  const body={
+    type:'web_service',
+    name:cfg.name,
+    serviceDetails:{
+      env:'docker',
+      dockerImage:'ghcr.io/5mil/magofonte:'+cfg.image,
+      region:cfg.region==='frankfurt'?'frankfurt':'oregon',
+      plan:'free',
+      envVars
+    }
+  };
+  const heartbeat=setTimeout(()=>log('Render: still waiting for API response…'),8000);
   const res=await renderReq('POST','/services',body,token);
-  if(res.id===undefined&&res.service===undefined)return{error:JSON.stringify(res)};
-  const svcId=(res.service?.id||res.id);
-  return{id:svcId,name:cfg.name,provider:'render',region:cfg.region,algo:cfg.algo,status:'pending',token};
+  clearTimeout(heartbeat);
+  if(res._error) return{error:'Render API: '+res._error};
+  // Render returns {service:{id,name,...}, deployId} or just {id,name,...}
+  const svcId=res.service?.id||res.id;
+  if(!svcId) return{error:'Render: no service ID in response — '+JSON.stringify(res).slice(0,200)};
+  const svcName=res.service?.name||res.name||cfg.name;
+  log(`Render: service created — id=${svcId}`,'ok');
+  return{id:svcId,name:svcName,provider:'render',region:cfg.region,algo:cfg.algo,status:'pending',token};
 }
 
 async function renderStatus(inst){
   const res=await renderReq('GET',`/services/${inst.id}`,null,inst.token);
-  if(res.error)return{...inst,status:'unknown'};
-  const st=res.serviceDetails?.status==='live'?'running':res.serviceDetails?.status==='suspended'?'stopped':'pending';
-  return{...inst,status:st,url:res.serviceDetails?.url};
+  if(res._error) return{...inst,status:'unknown'};
+  // Render service shape: {id, name, suspended, serviceDetails:{url,...}, ...}
+  // "suspended" = true means the free-tier service has been spun down (not deleted)
+  // updatedStatus / serviceDetails.buildFilter etc. vary — use suspended + deploy check
+  const suspended=res.suspended===true;
+  const url=res.serviceDetails?.url||res.url;
+  // map to our status vocabulary
+  let st='pending';
+  if(suspended) st='stopped';
+  else if(url) st='running'; // once it has a URL it's live
+  return{...inst,status:st,url:url||inst.url};
 }
 
 // ── Custom agent ──
@@ -681,7 +718,8 @@ async function refresh(){
 async function launchInstance(){
   const name=document.getElementById('lf-name').value.trim();
   const token=document.getElementById('lf-token').value.trim();
-  if(!name){setMsg('launch-msg','◈ Instance name is required.','err');return;}
+  const nameErr=validateName(name);
+  if(nameErr){setMsg('launch-msg','◈ '+nameErr,'err');return;}
   if(!token){setMsg('launch-msg','◈ Provider token is required.','err');return;}
   const cfg={
     name,
@@ -701,7 +739,6 @@ async function launchInstance(){
     env:{},
     token
   };
-  // parse custom agent endpoint out of token field for custom provider
   if(cfg.provider==='custom'){
     const parts=token.split('|');
     cfg.agentEndpoint=parts[0];
@@ -713,7 +750,6 @@ async function launchInstance(){
   log(`Launching "${name}" on ${cfg.provider}/${cfg.region} (${cfg.size} · ${cfg.algo} · ${cfg.image})…`);
   const result=await dispatchLaunch(cfg,token);
   if(result.error){setMsg('launch-msg','Launch failed: '+result.error,'err');log('Launch failed: '+result.error,'err');return;}
-  // store token with instance so fleet refresh can re-query
   result.token=token;
   upsertInstance(result);
   setMsg('launch-msg',`✦ Instance "${result.name||name}" summoned`,'ok');
