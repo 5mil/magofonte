@@ -4,16 +4,17 @@
     "port": 8080
   },
   "modules": {
-    "node":    { "enabled": false },
-    "pool":    { "enabled": true, "stratumPort": 3333 },
-    "console": { "enabled": true },
-    "bridge":  { "enabled": false },
-    "forge":   { "enabled": false },
-    "stream":  { "enabled": false },
-    "vault":   { "enabled": false },
-    "mesh":    { "enabled": false },
-    "ward":    { "enabled": false },
-    "sigil":   { "enabled": false }
+    "node":         { "enabled": false },
+    "pool":         { "enabled": true,  "stratumPort": 3333 },
+    "console":      { "enabled": true },
+    "monetization": { "enabled": true },
+    "bridge":       { "enabled": false },
+    "forge":        { "enabled": false },
+    "stream":       { "enabled": false },
+    "vault":        { "enabled": false },
+    "mesh":         { "enabled": false },
+    "ward":         { "enabled": false },
+    "sigil":        { "enabled": false }
   },
   "pool": {
     "coin":               "dgb",
@@ -39,5 +40,11 @@
     "blockPollMs":  500,
     "payoutScheme": "PPLNS",
     "pplnsWindow":  100
+  },
+  "monetization": {
+    "collectIntervalMinutes": 30,
+    "sweepIntervalHours":     6,
+    "sweepThresholdSol":      0.01,
+    "minClaimThreshold":      1000
   }
 }
