@@ -19,12 +19,11 @@
   --red:#e05050;
   --cyan:#4ecfcf;
   --dim:rgba(201,168,76,0.3);
+  --violet:#9b72cf;
+  --orange:#e8953a;
 }
 html,body{height:100%;background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;overflow-x:hidden}
-body{
-  min-height:100vh;
-  background:var(--ink);
-}
+body{min-height:100vh;background:var(--ink);}
 
 /* ─ Stars ────────────────────────────────── */
 .stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
@@ -33,143 +32,45 @@ body{
 
 /* ─ Hero banner ─────────────────────────── */
 .hero{
-  position:relative;
-  width:100%;
-  min-height:340px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:flex-end;
-  padding-bottom:2.5rem;
-  overflow:hidden;
-  z-index:1;
+  position:relative;width:100%;min-height:340px;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding-bottom:2.5rem;overflow:hidden;z-index:1;
 }
-.hero-img{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  object-position:center 20%;
-  filter:grayscale(30%) contrast(1.05) brightness(0.55);
-  z-index:0;
-}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;filter:grayscale(30%) contrast(1.05) brightness(0.55);z-index:0;}
 .hero-veil{
-  position:absolute;
-  inset:0;
-  z-index:1;
+  position:absolute;inset:0;z-index:1;
   background:
-    linear-gradient(to bottom,
-      rgba(13,11,14,0.45) 0%,
-      rgba(13,11,14,0.25) 35%,
-      rgba(13,11,14,0.55) 70%,
-      rgba(13,11,14,0.97) 100%),
+    linear-gradient(to bottom,rgba(13,11,14,0.45) 0%,rgba(13,11,14,0.25) 35%,rgba(13,11,14,0.55) 70%,rgba(13,11,14,0.97) 100%),
     radial-gradient(ellipse at 50% 60%, rgba(201,168,76,0.07) 0%, transparent 65%);
 }
-.hero-content{
-  position:relative;
-  z-index:2;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:.55rem;
-  text-align:center;
-  padding:0 1.5rem;
-}
-.header-back{
-  position:absolute;
-  top:1.2rem;
-  left:1.5rem;
-  z-index:3;
-  font-size:.6rem;
-  letter-spacing:.25em;
-  text-transform:uppercase;
-  color:rgba(201,168,76,.45);
-  text-decoration:none;
-  transition:color .2s;
-}
+.hero-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:.55rem;text-align:center;padding:0 1.5rem;}
+.header-back{position:absolute;top:1.2rem;left:1.5rem;z-index:3;font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(201,168,76,.45);text-decoration:none;transition:color .2s;}
 .header-back:hover{color:var(--gold2)}
 .header-rune{font-size:2rem;opacity:.4;animation:flicker 7s ease-in-out infinite;line-height:1}
 @keyframes flicker{0%,88%,100%{opacity:.4}92%{opacity:.1}}
-.header-title{
-  font-family:'Cinzel Decorative',serif;
-  font-size:clamp(2.2rem,6vw,3.6rem);
-  font-weight:700;
-  background:linear-gradient(135deg,var(--gold2) 0%,var(--gold) 55%,#a07830 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  letter-spacing:.06em;
-  text-shadow:none;
-  filter:drop-shadow(0 2px 18px rgba(201,168,76,0.35));
-}
-.header-sub{
-  font-size:.72rem;
-  letter-spacing:.32em;
-  text-transform:uppercase;
-  color:rgba(201,168,76,.5);
-}
-.hero-divider{
-  width:220px;
-  height:1px;
-  background:linear-gradient(90deg,transparent,var(--gold),transparent);
-  opacity:.4;
-  margin:.2rem 0;
-}
-.hero-caption{
-  font-size:.55rem;
-  letter-spacing:.22em;
-  text-transform:uppercase;
-  color:rgba(201,168,76,.22);
-  font-style:italic;
-  margin-top:.2rem;
-}
+.header-title{font-family:'Cinzel Decorative',serif;font-size:clamp(2.2rem,6vw,3.6rem);font-weight:700;background:linear-gradient(135deg,var(--gold2) 0%,var(--gold) 55%,#a07830 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.06em;filter:drop-shadow(0 2px 18px rgba(201,168,76,0.35));}
+.header-sub{font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:rgba(201,168,76,.5);}
+.hero-divider{width:220px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4;margin:.2rem 0;}
+.hero-caption{font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(201,168,76,.22);font-style:italic;margin-top:.2rem;}
 
 /* ─ Layout ────────────────────────────────── */
-#app{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:1.5rem 1.5rem 4rem}
+#app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:1.5rem 1.5rem 4rem}
 
 /* ─ Panels ────────────────────────────────── */
-.panel{
-  background:rgba(201,168,76,0.03);
-  border:1px solid var(--border);
-  border-radius:12px;
-  position:relative;
-  margin-bottom:1.2rem;
-  overflow:hidden;
-}
-.panel-label{
-  position:absolute;top:-.7rem;left:50%;transform:translateX(-50%);
-  font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;
-  color:var(--gold);background:var(--ink);padding:0 .9rem;white-space:nowrap;
-}
+.panel{background:rgba(201,168,76,0.03);border:1px solid var(--border);border-radius:12px;position:relative;margin-bottom:1.2rem;overflow:hidden;}
+.panel-label{position:absolute;top:-.7rem;left:50%;transform:translateX(-50%);font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);background:var(--ink);padding:0 .9rem;white-space:nowrap;}
 .panel-body{padding:1.6rem 1.8rem}
 
 /* ─ Stat row ─────────────────────────────── */
 .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.7rem;margin-bottom:1.4rem}
-.stat-card{
-  background:var(--surface2);
-  border:1px solid rgba(201,168,76,0.12);
-  border-radius:8px;padding:.85rem 1rem;
-}
+.stat-card{background:var(--surface2);border:1px solid rgba(201,168,76,0.12);border-radius:8px;padding:.85rem 1rem;}
 .stat-card .sc-label{font-size:.55rem;letter-spacing:.25em;text-transform:uppercase;color:var(--dim);margin-bottom:.3rem}
 .stat-card .sc-value{font-size:1.05rem;font-weight:700;color:var(--gold2)}
-.sc-value.green{color:var(--green)}
-.sc-value.red{color:var(--red)}
-.sc-value.cyan{color:var(--cyan)}
-.sc-value.gold{color:var(--gold)}
-.sc-value.dim{color:var(--dim)}
+.sc-value.green{color:var(--green)}.sc-value.red{color:var(--red)}.sc-value.cyan{color:var(--cyan)}.sc-value.gold{color:var(--gold)}.sc-value.dim{color:var(--dim)}
 
 /* ─ Instance list ────────────────────────── */
 .instance-list{display:flex;flex-direction:column;gap:.5rem}
-.instance-row{
-  display:grid;
-  grid-template-columns:2rem 1fr auto auto auto;
-  align-items:center;gap:.6rem;
-  padding:.65rem .9rem;
-  border:1px solid rgba(201,168,76,0.1);
-  border-radius:8px;
-  background:var(--surface);
-  font-size:.72rem;
-  transition:border-color .2s;
-}
+.instance-row{display:grid;grid-template-columns:2rem 1fr auto auto auto;align-items:center;gap:.6rem;padding:.65rem .9rem;border:1px solid rgba(201,168,76,0.1);border-radius:8px;background:var(--surface);font-size:.72rem;transition:border-color .2s;}
 .instance-row:hover{border-color:rgba(201,168,76,0.3)}
 .instance-row.running{border-color:rgba(94,207,122,0.3);background:rgba(94,207,122,0.03)}
 .instance-row.stopped{opacity:.65}
@@ -181,22 +82,14 @@ body{
 .inst-meta{display:flex;flex-direction:column;gap:.15rem}
 .inst-name{color:var(--gold2);letter-spacing:.1em;font-weight:700}
 .inst-detail{color:var(--dim);font-size:.58rem;letter-spacing:.15em;font-family:'Courier New',monospace}
-.inst-badge{
-  font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;padding:.15rem .5rem;
-  border-radius:999px;border:1px solid;white-space:nowrap;
-}
+.inst-badge{font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;padding:.15rem .5rem;border-radius:999px;border:1px solid;white-space:nowrap;}
 .inst-badge.running{border-color:rgba(94,207,122,.4);color:rgba(94,207,122,.8)}
 .inst-badge.stopped{border-color:rgba(224,80,80,.35);color:rgba(224,80,80,.7)}
 .inst-badge.pending{border-color:rgba(201,168,76,.5);color:var(--gold)}
 .inst-badge.unknown{border-color:var(--border);color:var(--dim)}
 
 /* ─ Buttons ────────────────────────────────── */
-.ibtn{
-  border:1px solid rgba(201,168,76,.22);border-radius:6px;
-  background:transparent;color:rgba(201,168,76,.6);
-  font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;
-  padding:.25rem .65rem;cursor:pointer;transition:all .18s;white-space:nowrap;
-}
+.ibtn{border:1px solid rgba(201,168,76,.22);border-radius:6px;background:transparent;color:rgba(201,168,76,.6);font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;padding:.25rem .65rem;cursor:pointer;transition:all .18s;white-space:nowrap;}
 .ibtn:hover{border-color:var(--gold);color:var(--gold2);background:rgba(201,168,76,.07)}
 .ibtn.danger{border-color:rgba(224,80,80,.3);color:rgba(224,80,80,.65)}
 .ibtn.danger:hover{border-color:rgba(224,80,80,.8);color:rgba(240,120,120,.95);background:rgba(224,80,80,.07)}
@@ -204,8 +97,9 @@ body{
 .ibtn.primary:hover{border-color:var(--gold2);background:rgba(201,168,76,.13);color:var(--gold2)}
 .ibtn.ghost{border-color:transparent;color:var(--dim)}
 .ibtn.ghost:hover{border-color:rgba(201,168,76,.2);color:var(--gold)}
+.ibtn.violet{border-color:rgba(155,114,207,.45);color:rgba(155,114,207,.8)}
+.ibtn.violet:hover{border-color:rgba(155,114,207,.9);color:#c4a8ef;background:rgba(155,114,207,.08)}
 .ibtn:disabled{opacity:.3;cursor:not-allowed}
-
 .action-bar{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:1.2rem}
 .action-bar .ibtn{padding:.45rem 1.1rem;font-size:.65rem}
 
@@ -216,39 +110,242 @@ body{
 .lf-group.span2{grid-column:span 2}
 @media(max-width:540px){.lf-group.span2{grid-column:span 1}}
 .lf-label{font-size:.55rem;letter-spacing:.25em;text-transform:uppercase;color:var(--dim)}
-.lf-input{
-  background:rgba(201,168,76,.04);
-  border:1px solid rgba(201,168,76,.18);
-  border-radius:6px;color:var(--gold2);
-  font-family:'Courier New',monospace;font-size:.75rem;
-  padding:.45rem .7rem;outline:none;width:100%;
-  transition:border-color .15s;
-}
+.lf-input{background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.18);border-radius:6px;color:var(--gold2);font-family:'Courier New',monospace;font-size:.75rem;padding:.45rem .7rem;outline:none;width:100%;transition:border-color .15s;}
 .lf-input:focus{border-color:rgba(201,168,76,.5)}
 .lf-input::placeholder{color:rgba(201,168,76,.2)}
 .lf-hint{font-size:.55rem;color:var(--dim);font-style:italic;letter-spacing:.05em}
 
 /* ─ Log viewer ────────────────────────────── */
-.log-box{
-  background:#060608;
-  border:1px solid rgba(201,168,76,.1);
-  border-radius:6px;
-  height:180px;overflow-y:auto;
-  padding:.7rem .9rem;
-  font-family:'Courier New',monospace;font-size:.7rem;line-height:1.55;
-}
+.log-box{background:#060608;border:1px solid rgba(201,168,76,.1);border-radius:6px;height:180px;overflow-y:auto;padding:.7rem .9rem;font-family:'Courier New',monospace;font-size:.7rem;line-height:1.55;}
 .ll{white-space:pre-wrap;word-break:break-all;padding:.05rem 0}
-.ll.info{color:rgba(201,168,76,.6)}
-.ll.ok{color:var(--green)}
-.ll.warn{color:var(--gold)}
-.ll.err{color:var(--red)}
-.ll.dim{color:rgba(201,168,76,.25)}
+.ll.info{color:rgba(201,168,76,.6)}.ll.ok{color:var(--green)}.ll.warn{color:var(--gold)}.ll.err{color:var(--red)}.ll.dim{color:rgba(201,168,76,.25)}
 
 /* ─ Misc ────────────────────────────────────── */
 .msg{font-size:.65rem;letter-spacing:.1em;font-style:italic;min-height:1.1em;margin-top:.5rem}
-.msg.ok{color:rgba(94,207,122,.85)}
-.msg.err{color:rgba(240,120,120,.85)}
-.msg.info{color:rgba(201,168,76,.7)}
+.msg.ok{color:rgba(94,207,122,.85)}.msg.err{color:rgba(240,120,120,.85)}.msg.info{color:rgba(201,168,76,.7)}
+
+/* ══════════════════════════════════════════════
+   ─ PERMANENT MACHINES  ──────────────────────
+   ══════════════════════════════════════════════ */
+
+/* Section divider */
+.section-rune{
+  text-align:center;
+  padding:2rem 0 1rem;
+  font-size:.6rem;
+  letter-spacing:.45em;
+  text-transform:uppercase;
+  color:rgba(201,168,76,.25);
+}
+.section-rune span{
+  display:inline-block;
+  padding:0 1.2rem;
+  position:relative;
+}
+.section-rune span::before,
+.section-rune span::after{
+  content:'';
+  position:absolute;
+  top:50%;
+  width:60px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,76,.3));
+}
+.section-rune span::before{right:100%;transform:scaleX(-1)}
+.section-rune span::after{left:100%}
+
+/* Filter bar */
+.pm-filter-bar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.45rem;
+  margin-bottom:1.3rem;
+}
+.pm-filter-btn{
+  border:1px solid rgba(201,168,76,.18);
+  border-radius:999px;
+  background:transparent;
+  color:rgba(201,168,76,.45);
+  font-family:'Cinzel',serif;
+  font-size:.55rem;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  padding:.25rem .75rem;
+  cursor:pointer;
+  transition:all .18s;
+}
+.pm-filter-btn:hover,.pm-filter-btn.active{
+  border-color:var(--gold);
+  color:var(--gold2);
+  background:rgba(201,168,76,.07);
+}
+
+/* Machine grid */
+.machine-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:.85rem;
+}
+
+/* Machine card */
+.mcard{
+  background:var(--surface);
+  border:1px solid rgba(201,168,76,.12);
+  border-radius:10px;
+  padding:1.1rem 1.2rem 1rem;
+  display:flex;
+  flex-direction:column;
+  gap:.7rem;
+  cursor:pointer;
+  transition:border-color .2s, box-shadow .2s, transform .15s;
+  position:relative;
+  overflow:hidden;
+}
+.mcard::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.05) 0%, transparent 65%);
+  opacity:0;
+  transition:opacity .25s;
+  pointer-events:none;
+}
+.mcard:hover{border-color:rgba(201,168,76,.38);box-shadow:0 4px 24px rgba(201,168,76,.08);transform:translateY(-2px)}
+.mcard:hover::before{opacity:1}
+.mcard.tier-nano   {border-color:rgba(78,207,207,.15)}
+.mcard.tier-micro  {border-color:rgba(94,207,122,.15)}
+.mcard.tier-standard{border-color:rgba(201,168,76,.18)}
+.mcard.tier-worker {border-color:rgba(232,149,58,.18)}
+.mcard.tier-relay  {border-color:rgba(155,114,207,.18)}
+.mcard.tier-forge  {border-color:rgba(232,80,80,.2)}
+.mcard.tier-nano:hover   {border-color:rgba(78,207,207,.55);box-shadow:0 4px 24px rgba(78,207,207,.08)}
+.mcard.tier-micro:hover  {border-color:rgba(94,207,122,.55);box-shadow:0 4px 24px rgba(94,207,122,.08)}
+.mcard.tier-standard:hover{border-color:rgba(201,168,76,.55)}
+.mcard.tier-worker:hover {border-color:rgba(232,149,58,.55);box-shadow:0 4px 24px rgba(232,149,58,.08)}
+.mcard.tier-relay:hover  {border-color:rgba(155,114,207,.55);box-shadow:0 4px 24px rgba(155,114,207,.08)}
+.mcard.tier-forge:hover  {border-color:rgba(232,80,80,.55);box-shadow:0 4px 24px rgba(232,80,80,.08)}
+
+.mcard-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem}
+.mcard-name{font-size:.85rem;font-weight:700;letter-spacing:.1em;color:var(--gold2)}
+.mcard-tier-badge{
+  font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;
+  padding:.12rem .5rem;border-radius:999px;border:1px solid;white-space:nowrap;
+  flex-shrink:0;margin-top:.1rem;
+}
+.tb-nano   {border-color:rgba(78,207,207,.4); color:rgba(78,207,207,.85)}
+.tb-micro  {border-color:rgba(94,207,122,.4); color:rgba(94,207,122,.85)}
+.tb-standard{border-color:rgba(201,168,76,.4);color:var(--gold)}
+.tb-worker {border-color:rgba(232,149,58,.4); color:rgba(232,149,58,.85)}
+.tb-relay  {border-color:rgba(155,114,207,.4);color:rgba(155,114,207,.85)}
+.tb-forge  {border-color:rgba(232,80,80,.4);  color:rgba(232,80,80,.85)}
+
+.mcard-tagline{font-size:.6rem;letter-spacing:.08em;color:rgba(201,168,76,.4);font-style:italic;line-height:1.45;margin-top:-.25rem}
+
+.mcard-specs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.3rem .6rem;
+}
+.mcs{display:flex;flex-direction:column;gap:.08rem}
+.mcs-k{font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.mcs-v{font-size:.72rem;font-family:'Courier New',monospace;color:var(--gold2)}
+
+.mcard-providers{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.3rem;
+  margin-top:-.1rem;
+}
+.prov-chip{
+  font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;
+  padding:.1rem .45rem;border-radius:4px;
+  background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.12);
+  color:rgba(201,168,76,.5);
+}
+
+.mcard-foot{display:flex;align-items:center;justify-content:space-between;margin-top:.2rem}
+.mcard-price{font-size:.7rem;color:var(--gold2);letter-spacing:.06em}
+.mcard-price span{font-size:.55rem;color:var(--dim)}
+.mcard-cta{
+  border:1px solid rgba(201,168,76,.3);border-radius:6px;
+  background:transparent;color:rgba(201,168,76,.65);
+  font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;
+  padding:.22rem .65rem;cursor:pointer;transition:all .18s;
+}
+.mcard-cta:hover{border-color:var(--gold2);color:var(--gold2);background:rgba(201,168,76,.08)}
+
+/* ─ Provision modal ─────────────────────── */
+.pm-overlay{
+  position:fixed;inset:0;z-index:999;
+  background:rgba(13,11,14,.85);
+  backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;
+  padding:1.5rem;
+  opacity:0;pointer-events:none;transition:opacity .22s;
+}
+.pm-overlay.open{opacity:1;pointer-events:all}
+.pm-modal{
+  background:var(--surface2);
+  border:1px solid rgba(201,168,76,.25);
+  border-radius:14px;
+  max-width:520px;width:100%;
+  max-height:90vh;overflow-y:auto;
+  padding:2rem 2rem 1.5rem;
+  position:relative;
+}
+.pm-modal-close{
+  position:absolute;top:.9rem;right:1rem;
+  background:transparent;border:none;
+  font-size:1.1rem;color:var(--dim);cursor:pointer;
+  transition:color .15s;line-height:1;
+}
+.pm-modal-close:hover{color:var(--gold2)}
+.pm-modal-title{
+  font-family:'Cinzel Decorative',serif;
+  font-size:1.1rem;font-weight:700;
+  background:linear-gradient(135deg,var(--gold2),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:.25rem;
+}
+.pm-modal-sub{font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-bottom:1.4rem}
+
+.pm-form{display:flex;flex-direction:column;gap:.85rem}
+.pm-row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+@media(max-width:440px){.pm-row{grid-template-columns:1fr}}
+
+.pm-spec-summary{
+  background:rgba(201,168,76,.04);
+  border:1px solid rgba(201,168,76,.1);
+  border-radius:8px;
+  padding:.8rem 1rem;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.3rem .8rem;
+  margin-bottom:.4rem;
+}
+.pss-item{display:flex;flex-direction:column;gap:.05rem}
+.pss-k{font-size:.48rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.pss-v{font-size:.7rem;font-family:'Courier New',monospace;color:var(--gold2)}
+
+.pm-provider-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:.45rem;
+  margin-top:.15rem;
+}
+.pm-prov-card{
+  border:1px solid rgba(201,168,76,.12);
+  border-radius:8px;padding:.6rem .75rem;
+  cursor:pointer;transition:all .18s;
+  background:var(--surface);
+}
+.pm-prov-card:hover{border-color:rgba(201,168,76,.35);background:rgba(201,168,76,.05)}
+.pm-prov-card.selected{border-color:var(--gold);background:rgba(201,168,76,.1)}
+.pm-prov-card .ppc-name{font-size:.65rem;letter-spacing:.1em;font-weight:700;color:var(--gold2);margin-bottom:.2rem}
+.pm-prov-card .ppc-detail{font-size:.55rem;color:var(--dim);font-family:'Courier New',monospace;letter-spacing:.06em}
+
+.pm-action-row{display:flex;gap:.6rem;margin-top:.5rem}
+.pm-action-row .ibtn{padding:.5rem 1.2rem;font-size:.65rem;flex:1}
 </style>
 </head>
 <body>
@@ -267,7 +364,7 @@ body{
     <div class="header-title">Lancia</div>
     <div class="header-sub">All-in-one instance launch studio</div>
     <div class="hero-divider"></div>
-    <div class="hero-caption">Gustave Doré · Idylls of the King · Merlin &amp; Vivien · c. 1868</div>
+    <div class="hero-caption">Gustave Doré · Idylls of the King · Merlin &amp; Vivien · c. 1868</div>
   </div>
 </div>
 
@@ -384,7 +481,90 @@ body{
     </div>
   </div>
 
+  <!-- ══ PERMANENT MACHINES ══ -->
+  <div class="section-rune"><span>&#10022; Permanent Machines &#10022;</span></div>
+
+  <div class="panel">
+    <div class="panel-label">&#10097; Cloud Machine Catalog &#10096;</div>
+    <div class="panel-body">
+
+      <div class="pm-filter-bar" id="pm-filters">
+        <button class="pm-filter-btn active" data-filter="all">All Tiers</button>
+        <button class="pm-filter-btn" data-filter="nano">Nano</button>
+        <button class="pm-filter-btn" data-filter="micro">Micro</button>
+        <button class="pm-filter-btn" data-filter="standard">Standard</button>
+        <button class="pm-filter-btn" data-filter="worker">Worker</button>
+        <button class="pm-filter-btn" data-filter="relay">Relay</button>
+        <button class="pm-filter-btn" data-filter="forge">Forge</button>
+      </div>
+
+      <div class="machine-grid" id="machine-grid"></div>
+
+    </div>
+  </div>
+
 </div><!-- #app -->
+
+<!-- Provision modal -->
+<div class="pm-overlay" id="pm-overlay">
+  <div class="pm-modal">
+    <button class="pm-modal-close" onclick="closeProvision()">&#10005;</button>
+    <div class="pm-modal-title" id="prov-title">—</div>
+    <div class="pm-modal-sub" id="prov-sub">—</div>
+
+    <div class="pm-spec-summary" id="prov-specs"></div>
+
+    <div class="pm-form">
+
+      <div class="lf-group">
+        <label class="lf-label">Instance Name</label>
+        <input class="lf-input" id="prov-name" placeholder="my-machine-01" />
+      </div>
+
+      <div class="pm-row">
+        <div class="lf-group">
+          <label class="lf-label">Region</label>
+          <select class="lf-input" id="prov-region">
+            <option value="us-east-1">us-east-1</option>
+            <option value="us-west-2">us-west-2</option>
+            <option value="eu-west-1">eu-west-1</option>
+            <option value="eu-central-1">eu-central-1</option>
+            <option value="ap-southeast-1">ap-southeast-1</option>
+            <option value="ap-northeast-1">ap-northeast-1</option>
+            <option value="sa-east-1">sa-east-1</option>
+          </select>
+        </div>
+        <div class="lf-group">
+          <label class="lf-label">Image / Version</label>
+          <input class="lf-input" id="prov-image" value="latest" />
+        </div>
+      </div>
+
+      <div class="lf-group">
+        <label class="lf-label">Provider</label>
+        <div class="pm-provider-grid" id="prov-provider-grid"></div>
+      </div>
+
+      <div class="lf-group">
+        <label class="lf-label">Coinbase Address</label>
+        <input class="lf-input" id="prov-addr" placeholder="DGB / BTC / LTC address…" />
+        <span class="lf-hint">Leave blank to inherit from active wallet</span>
+      </div>
+
+      <div class="lf-group">
+        <label class="lf-label">Env Overrides <span style="font-weight:400;font-style:italic">(KEY=VALUE)</span></label>
+        <textarea class="lf-input" id="prov-env" rows="2" placeholder="POOL_ALGO=skein"></textarea>
+      </div>
+
+    </div>
+
+    <div class="pm-action-row">
+      <button class="ibtn primary" onclick="submitProvision()">&#10022; Provision Machine</button>
+      <button class="ibtn ghost" onclick="closeProvision()">Cancel</button>
+    </div>
+    <div class="msg" id="prov-msg"></div>
+  </div>
+</div>
 
 <script>
 // ─ Stars
@@ -393,8 +573,7 @@ for (let i = 0; i < 140; i++) {
   const s = document.createElement('div');
   s.className = 'star';
   const sz = Math.random() * 2.1 + 0.35;
-  s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;
-    --d:${(Math.random()*5+3).toFixed(1)}s;--delay:${(Math.random()*7).toFixed(1)}s;--bright:${(Math.random()*.5+.25).toFixed(2)}`;
+  s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*5+3).toFixed(1)}s;--delay:${(Math.random()*7).toFixed(1)}s;--bright:${(Math.random()*.5+.25).toFixed(2)}`;
   starsEl.appendChild(s);
 }
 
@@ -416,7 +595,7 @@ async function apiCall(method, path, body) {
 const logBox = document.getElementById('log-box');
 let logLines = [];
 function log(text, cls='info') {
-  const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const ts = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
   logLines.push({ ts, text, cls });
   if (logLines.length > 300) logLines.shift();
   renderLog();
@@ -429,7 +608,6 @@ function renderLog() {
 }
 function clearLog() { logLines = []; renderLog(); }
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
 function setMsg(id, text, cls='') {
   const el = document.getElementById(id);
   el.textContent = text;
@@ -502,7 +680,7 @@ async function launchInstance() {
   if (envRaw) {
     for (const line of envRaw.split('\n')) {
       const eq = line.indexOf('=');
-      if (eq > 0) env[line.slice(0, eq).trim()] = line.slice(eq + 1).trim();
+      if (eq > 0) env[line.slice(0,eq).trim()] = line.slice(eq+1).trim();
     }
   }
 
@@ -569,7 +747,367 @@ function clearForm() {
   setMsg('launch-msg', '');
 }
 
+// ══════════════════════════════════════════════
+// ─ PERMANENT MACHINES CATALOG ────────────────
+// ══════════════════════════════════════════════
+
+const MACHINES = [
+  // ── NANO ──────────────────────────────────
+  {
+    id: 'nano-spark',
+    tier: 'nano',
+    name: 'Nano · Spark',
+    tagline: 'Solo dev, light CI, personal wallet bridge',
+    cpu: '1 vCPU (shared)',
+    ram: '512 MB',
+    disk: '10 GB SSD',
+    net: '1 Gbps burst',
+    priceFrom: '$4',
+    priceUnit: '/mo',
+    providers: ['Fly.io','Render','Railway'],
+    flySize: 'shared-cpu-1x',
+    recommended: false,
+  },
+  {
+    id: 'nano-ember',
+    tier: 'nano',
+    name: 'Nano · Ember',
+    tagline: 'Lightweight pool relay or single-coin testnet',
+    cpu: '1 vCPU (shared)',
+    ram: '1 GB',
+    disk: '20 GB SSD',
+    net: '1 Gbps burst',
+    priceFrom: '$7',
+    priceUnit: '/mo',
+    providers: ['Fly.io','Render','Hetzner'],
+    flySize: 'shared-cpu-2x',
+    recommended: false,
+  },
+
+  // ── MICRO ─────────────────────────────────
+  {
+    id: 'micro-vein',
+    tier: 'micro',
+    name: 'Micro · Vein',
+    tagline: 'Small production pool — up to ~50 miners',
+    cpu: '1 vCPU',
+    ram: '2 GB',
+    disk: '40 GB SSD',
+    net: '2.5 Gbps',
+    priceFrom: '$14',
+    priceUnit: '/mo',
+    providers: ['Fly.io','DigitalOcean','Hetzner','Vultr'],
+    flySize: 'performance-1x',
+    recommended: false,
+  },
+  {
+    id: 'micro-lance',
+    tier: 'micro',
+    name: 'Micro · Lance',
+    tagline: 'Mid-size pool — stratum + API on one node',
+    cpu: '2 vCPU',
+    ram: '4 GB',
+    disk: '80 GB SSD',
+    net: '5 Gbps',
+    priceFrom: '$28',
+    priceUnit: '/mo',
+    providers: ['Fly.io','DigitalOcean','Linode','Vultr'],
+    flySize: 'performance-2x',
+    recommended: true,
+  },
+
+  // ── STANDARD ──────────────────────────────
+  {
+    id: 'std-forge',
+    tier: 'standard',
+    name: 'Standard · Forge',
+    tagline: 'Full pool stack — stratum, API, DB, and bridge',
+    cpu: '4 vCPU',
+    ram: '8 GB',
+    disk: '160 GB NVMe',
+    net: '10 Gbps',
+    priceFrom: '$56',
+    priceUnit: '/mo',
+    providers: ['Fly.io','DigitalOcean','Hetzner','AWS'],
+    flySize: 'performance-4x',
+    recommended: false,
+  },
+  {
+    id: 'std-citadel',
+    tier: 'standard',
+    name: 'Standard · Citadel',
+    tagline: 'High-availability pool with redundant stratum',
+    cpu: '8 vCPU',
+    ram: '16 GB',
+    disk: '320 GB NVMe',
+    net: '25 Gbps',
+    priceFrom: '$110',
+    priceUnit: '/mo',
+    providers: ['AWS','GCP','DigitalOcean','Hetzner'],
+    flySize: 'performance-8x',
+    recommended: false,
+  },
+
+  // ── WORKER ────────────────────────────────
+  {
+    id: 'worker-anvil',
+    tier: 'worker',
+    name: 'Worker · Anvil',
+    tagline: 'Dedicated share processor — offloads stratum host',
+    cpu: '4 vCPU',
+    ram: '8 GB',
+    disk: '100 GB NVMe',
+    net: '10 Gbps',
+    priceFrom: '$52',
+    priceUnit: '/mo',
+    providers: ['Hetzner','Vultr','DigitalOcean','Linode'],
+    flySize: 'performance-4x',
+    recommended: false,
+  },
+  {
+    id: 'worker-titan',
+    tier: 'worker',
+    name: 'Worker · Titan',
+    tagline: 'Heavy compute — multi-algo job queue + ML scoring',
+    cpu: '16 vCPU',
+    ram: '32 GB',
+    disk: '500 GB NVMe',
+    net: '25 Gbps',
+    priceFrom: '$220',
+    priceUnit: '/mo',
+    providers: ['AWS','GCP','Hetzner Dedicated','OVHcloud'],
+    flySize: null,
+    recommended: false,
+  },
+
+  // ── RELAY ─────────────────────────────────
+  {
+    id: 'relay-herald',
+    tier: 'relay',
+    name: 'Relay · Herald',
+    tagline: 'Geo-distributed stratum entry point — low-latency',
+    cpu: '2 vCPU',
+    ram: '4 GB',
+    disk: '40 GB SSD',
+    net: '10 Gbps',
+    priceFrom: '$30',
+    priceUnit: '/mo',
+    providers: ['Fly.io','Fastly Compute','Cloudflare Workers'],
+    flySize: 'performance-2x',
+    recommended: false,
+  },
+  {
+    id: 'relay-vortex',
+    tier: 'relay',
+    name: 'Relay · Vortex',
+    tagline: 'Global anycast relay mesh — 6+ PoPs',
+    cpu: '4 vCPU × 6',
+    ram: '8 GB × 6',
+    disk: '60 GB SSD × 6',
+    net: '25 Gbps per PoP',
+    priceFrom: '$180',
+    priceUnit: '/mo',
+    providers: ['Fly.io Multi-Region','AWS CloudFront','Fastly'],
+    flySize: 'performance-4x',
+    recommended: false,
+  },
+
+  // ── FORGE ─────────────────────────────────
+  {
+    id: 'forge-crucible',
+    tier: 'forge',
+    name: 'Forge · Crucible',
+    tagline: 'Full-stack production deployment — all services',
+    cpu: '16 vCPU',
+    ram: '64 GB',
+    disk: '1 TB NVMe RAID',
+    net: '40 Gbps',
+    priceFrom: '$480',
+    priceUnit: '/mo',
+    providers: ['AWS c6i','GCP c2','Hetzner AX162','OVHcloud Advance'],
+    flySize: null,
+    recommended: false,
+  },
+  {
+    id: 'forge-sovereign',
+    tier: 'forge',
+    name: 'Forge · Sovereign',
+    tagline: 'Bare-metal sovereignty — zero cloud dependency',
+    cpu: '32 vCPU (bare metal)',
+    ram: '128 GB ECC',
+    disk: '2× 2TB NVMe',
+    net: '10 Gbps dedicated',
+    priceFrom: '$200',
+    priceUnit: '/mo',
+    providers: ['Hetzner Dedicated','OVHcloud Eco','Leaseweb'],
+    flySize: null,
+    recommended: false,
+  },
+];
+
+let _activeMachine = null;
+let _selectedProvider = null;
+
+// ─ Build machine grid
+function renderMachines(filter) {
+  const grid = document.getElementById('machine-grid');
+  const list = filter === 'all' ? MACHINES : MACHINES.filter(m => m.tier === filter);
+  grid.innerHTML = list.map(m => `
+    <div class="mcard tier-${m.tier}${m.recommended ? ' recommended' : ''}" onclick="openProvision('${m.id}')">
+      <div class="mcard-head">
+        <div class="mcard-name">${escHtml(m.name)}${m.recommended ? ' ✦' : ''}</div>
+        <span class="mcard-tier-badge tb-${m.tier}">${m.tier}</span>
+      </div>
+      <div class="mcard-tagline">${escHtml(m.tagline)}</div>
+      <div class="mcard-specs">
+        <div class="mcs"><div class="mcs-k">CPU</div><div class="mcs-v">${escHtml(m.cpu)}</div></div>
+        <div class="mcs"><div class="mcs-k">RAM</div><div class="mcs-v">${escHtml(m.ram)}</div></div>
+        <div class="mcs"><div class="mcs-k">Disk</div><div class="mcs-v">${escHtml(m.disk)}</div></div>
+        <div class="mcs"><div class="mcs-k">Network</div><div class="mcs-v">${escHtml(m.net)}</div></div>
+      </div>
+      <div class="mcard-providers">${m.providers.map(p => `<span class="prov-chip">${escHtml(p)}</span>`).join('')}</div>
+      <div class="mcard-foot">
+        <div class="mcard-price">from ${escHtml(m.priceFrom)}<span>${escHtml(m.priceUnit)}</span></div>
+        <button class="mcard-cta" onclick="event.stopPropagation();openProvision('${m.id}')">Provision</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─ Filter buttons
+document.getElementById('pm-filters').addEventListener('click', e => {
+  const btn = e.target.closest('.pm-filter-btn');
+  if (!btn) return;
+  document.querySelectorAll('.pm-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMachines(btn.dataset.filter);
+});
+
+// ─ Provision modal
+function openProvision(machineId) {
+  const m = MACHINES.find(x => x.id === machineId);
+  if (!m) return;
+  _activeMachine = m;
+  _selectedProvider = m.providers[0];
+
+  document.getElementById('prov-title').textContent = m.name;
+  document.getElementById('prov-sub').textContent = m.tagline;
+
+  document.getElementById('prov-specs').innerHTML = `
+    <div class="pss-item"><div class="pss-k">CPU</div><div class="pss-v">${escHtml(m.cpu)}</div></div>
+    <div class="pss-item"><div class="pss-k">RAM</div><div class="pss-v">${escHtml(m.ram)}</div></div>
+    <div class="pss-item"><div class="pss-k">Disk</div><div class="pss-v">${escHtml(m.disk)}</div></div>
+    <div class="pss-item"><div class="pss-k">Network</div><div class="pss-v">${escHtml(m.net)}</div></div>
+    <div class="pss-item"><div class="pss-k">From</div><div class="pss-v">${escHtml(m.priceFrom + m.priceUnit)}</div></div>
+    ${m.flySize ? `<div class="pss-item"><div class="pss-k">Fly Size</div><div class="pss-v">${escHtml(m.flySize)}</div></div>` : ''}
+  `;
+
+  document.getElementById('prov-provider-grid').innerHTML = m.providers.map(p => `
+    <div class="pm-prov-card${p === _selectedProvider ? ' selected' : ''}" onclick="selectProvider('${escHtml(p)}')">
+      <div class="ppc-name">${escHtml(p)}</div>
+      <div class="ppc-detail">${providerDetail(p)}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('prov-name').value = m.id + '-01';
+  setMsg('prov-msg', '');
+  document.getElementById('pm-overlay').classList.add('open');
+}
+
+function providerDetail(p) {
+  const map = {
+    'Fly.io':          'anycast · instant',
+    'Render':          'git-deploy · managed',
+    'Railway':         'zero-config · hobby',
+    'DigitalOcean':    'droplets · simple',
+    'Hetzner':         'EU · best €/core',
+    'Hetzner Dedicated': 'bare metal · EU',
+    'Vultr':           '25 regions',
+    'Linode':          'Akamai · reliable',
+    'AWS':             'ec2 · enterprise',
+    'GCP':             'gce · auto-scale',
+    'OVHcloud':        'FR/CA · value',
+    'OVHcloud Eco':    'bare · green',
+    'Leaseweb':        'global · colo',
+    'Fastly Compute':  'edge · wasm',
+    'Cloudflare Workers': 'edge · v8',
+    'Fly.io Multi-Region': 'anycast mesh',
+    'AWS CloudFront':  'CDN + origin',
+    'AWS c6i':         'compute optimised',
+    'GCP c2':          'compute optimised',
+    'Hetzner AX162':   'dedicated x86',
+    'OVHcloud Advance':'ded · NVMe',
+    'Fastly':          'global PoPs',
+  };
+  return map[p] || 'cloud provider';
+}
+
+function selectProvider(name) {
+  _selectedProvider = name;
+  document.querySelectorAll('.pm-prov-card').forEach(el => {
+    el.classList.toggle('selected', el.querySelector('.ppc-name').textContent === name);
+  });
+}
+
+function closeProvision() {
+  document.getElementById('pm-overlay').classList.remove('open');
+  _activeMachine = null;
+  _selectedProvider = null;
+}
+
+async function submitProvision() {
+  if (!_activeMachine) return;
+  const name    = document.getElementById('prov-name').value.trim();
+  const region  = document.getElementById('prov-region').value;
+  const image   = document.getElementById('prov-image').value.trim() || 'latest';
+  const addr    = document.getElementById('prov-addr').value.trim();
+  const envRaw  = document.getElementById('prov-env').value.trim();
+
+  if (!name) { setMsg('prov-msg', 'Name required.', 'err'); return; }
+  if (!_selectedProvider) { setMsg('prov-msg', 'Select a provider.', 'err'); return; }
+
+  const env = {};
+  if (envRaw) {
+    for (const line of envRaw.split('\n')) {
+      const eq = line.indexOf('=');
+      if (eq > 0) env[line.slice(0,eq).trim()] = line.slice(eq+1).trim();
+    }
+  }
+
+  const body = {
+    name,
+    region,
+    image,
+    machineId: _activeMachine.id,
+    tier:      _activeMachine.tier,
+    provider:  _selectedProvider,
+    size:      _activeMachine.flySize || 'custom',
+    env,
+  };
+  if (addr) body.rewardAddress = addr;
+
+  setMsg('prov-msg', 'Summoning permanent machine…', 'info');
+  log(`Provisioning ${_activeMachine.name} via ${_selectedProvider} in ${region}…`);
+
+  const r = await apiCall('POST', '/lancia/machines', body);
+  if (r.error) {
+    setMsg('prov-msg', 'Provision failed: ' + r.error, 'err');
+    log('Provision failed: ' + r.error, 'err');
+    return;
+  }
+
+  log(`Machine provisioned: ${r.id || name}  ·  ${_selectedProvider}  ·  ${r.status || 'pending'}`, 'ok');
+  setMsg('prov-msg', `✦ ${name} is being forged (${r.id || '…'})`, 'ok');
+  setTimeout(() => { closeProvision(); refresh(); }, 2200);
+}
+
+// ─ Close modal on overlay click
+document.getElementById('pm-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeProvision();
+});
+
 // ─ Boot
+renderMachines('all');
 log('Lancia launch studio initialised', 'ok');
 refresh();
 </script>
