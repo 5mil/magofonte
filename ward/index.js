@@ -1,278 +1,362 @@
 /**
- * MagoFonte — ward module
+ * MagoFonte — ward/index.js  (main branch)
  *
- * Authentication + role-based access control.
+ * Lightweight offline-safe authentication module.
  *
- * Roles (ascending privilege):
- *   member  — read-only: status, miners, payout, logs
- *   operator— member + force jobs, view settings
- *   admin   — operator + manage users, assign roles,
- *             toggle monetization, start/stop nodes,
- *             launch coins, edit all configs
- *   owner   — admin + change owner credentials,
- *             delete accounts, full system control
+ * Design constraints
+ * ──────────────────────────────────────────────
+ * This is the `main` branch ward. It must:
+ *   - Work fully airgapped, no internet required
+ *   - Have zero external npm dependencies
+ *   - Be simple enough that a self-hosted operator can audit it
+ *   - Protect the admin panel with a real password (not a raw API key)
  *
- * Flow:
- *   POST /api/v1/ward/setup       — first-run: create owner account
- *   POST /api/v1/ward/login       — returns signed JWT
- *   GET  /api/v1/ward/me          — current user info
- *   GET  /api/v1/ward/users       — list users (admin+)
- *   POST /api/v1/ward/users       — create user (admin+)
- *   PATCH /api/v1/ward/users/:id/role — assign role (admin+)
- *   DELETE /api/v1/ward/users/:id — delete user (owner only)
+ * What this ward deliberately does NOT include:
+ *   - Ed25519 keypairs or JWKS
+ *   - Cert provisioning or cert-based login
+ *   - Scope maps or per-route scope binding
+ *   - Chained audit logs
+ *   - Multi-user roles or tier enforcement
  *
- * JWT middleware: ward.authenticate(minRole)
- * Use in core router to protect routes.
+ * Those features belong to the `lancia` branch ward.
+ *
+ * Auth model
+ * ──────────────────────────────────────────────
+ *   Storage:    app/vault/ward.json  (auto-created on first-run setup)
+ *   Password:   scrypt  N=16384, r=8, p=1, keylen=64
+ *               salt = randomBytes(32), stored with hash
+ *   Tokens:     HS256 JWT — HMAC-SHA256 over header.payload
+ *               secret = crypto.randomBytes(48) on boot, never written to disk
+ *               Forcing re-login after restart is intentional: long-lived
+ *               on-disk secrets are a larger attack surface.
+ *               Access token:  8h
+ *               Refresh token: 7d, rotated on each use
+ *   Revocation: in-memory Set — cleared on restart
+ *   Account:    Single owner — no multi-user on main
+ *   Role:       'owner' only
+ *
+ * authenticate() call signature is intentionally compatible with the
+ * lancia ward's authenticate(minRole, scope) — extra args are ignored
+ * here, so core/index.js can call ward.authenticate() identically on
+ * both branches.
  */
 
-import crypto from 'node:crypto';
-import fs     from 'node:fs';
-import path   from 'node:path';
-import { fileURLToPath } from 'node:url';
+import crypto        from 'node:crypto';
+import fs            from 'node:fs';
+import path          from 'node:path';
+import { promisify } from 'node:util';
 
-const __dir   = path.dirname(fileURLToPath(import.meta.url));
-const DB_FILE = path.join(__dir, 'users.json');
+const scrypt = promisify(crypto.scrypt);
 
-// Role hierarchy — higher index = more privilege
-const ROLES  = ['member', 'operator', 'admin', 'owner'];
-const RANK   = Object.fromEntries(ROLES.map((r, i) => [r, i]));
+// ─── Config ──────────────────────────────────────────────────────────────────
 
-// ─── Tiny JWT (HMAC-SHA256, no deps) ─────────────────────────────────────────
+const VAULT_DIR  = process.env.VAULT_DIR || path.resolve('app/vault');
+const WARD_FILE  = path.join(VAULT_DIR, 'ward.json');
 
-function b64url(buf) {
-  return Buffer.from(buf).toString('base64')
-    .replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
-}
-function b64urlDecode(str) {
-  return Buffer.from(str.replace(/-/g,'+').replace(/_/g,'/'), 'base64');
-}
+const SCRYPT_N   = 16384;
+const SCRYPT_R   = 8;
+const SCRYPT_P   = 1;
+const SCRYPT_LEN = 64;
 
-function signJWT(payload, secret) {
-  const header  = b64url(JSON.stringify({ alg:'HS256', typ:'JWT' }));
-  const body    = b64url(JSON.stringify(payload));
-  const sig     = b64url(crypto.createHmac('sha256', secret).update(`${header}.${body}`).digest());
-  return `${header}.${body}.${sig}`;
-}
+const ACCESS_TTL  = 8  * 60 * 60;       // 8 hours
+const REFRESH_TTL = 7  * 24 * 60 * 60;  // 7 days
 
-function verifyJWT(token, secret) {
-  const parts = (token || '').split('.');
-  if (parts.length !== 3) throw new Error('malformed token');
-  const [header, body, sig] = parts;
-  const expected = b64url(crypto.createHmac('sha256', secret).update(`${header}.${body}`).digest());
-  if (sig !== expected) throw new Error('invalid signature');
-  const payload = JSON.parse(b64urlDecode(body).toString());
-  if (payload.exp && Date.now() / 1000 > payload.exp) throw new Error('token expired');
-  return payload;
-}
+// Boot-time HMAC secret — never persisted.
+// All active sessions become invalid on server restart.
+const HMAC_SECRET = crypto.randomBytes(48);
 
-// ─── Password hashing (scrypt) ───────────────────────────────────────────────
+// In-memory refresh token revocation list.
+// Cleared on restart — all refresh tokens are implicitly invalidated
+// when HMAC_SECRET rotates anyway.
+const revokedRefresh = new Set();
 
-async function hashPassword(password) {
-  const salt = crypto.randomBytes(16).toString('hex');
-  const hash = await new Promise((res, rej) =>
-    crypto.scrypt(password, salt, 64, (e, d) => e ? rej(e) : res(d.toString('hex'))));
-  return `${salt}:${hash}`;
+// ─── Persistence ─────────────────────────────────────────────────────────────
+
+function _readWard() {
+  try {
+    return JSON.parse(fs.readFileSync(WARD_FILE, 'utf8'));
+  } catch {
+    return null;
+  }
 }
 
-async function verifyPassword(password, stored) {
-  const [salt, hash] = stored.split(':');
-  const attempt = await new Promise((res, rej) =>
-    crypto.scrypt(password, salt, 64, (e, d) => e ? rej(e) : res(d.toString('hex'))));
-  return crypto.timingSafeEqual(Buffer.from(attempt), Buffer.from(hash));
+function _writeWard(data) {
+  fs.mkdirSync(VAULT_DIR, { recursive: true });
+  fs.writeFileSync(WARD_FILE, JSON.stringify(data, null, 2), { encoding: 'utf8', mode: 0o600 });
 }
 
-// ─── User DB (JSON file, good enough for home server) ────────────────────────
+// ─── scrypt helpers ───────────────────────────────────────────────────────────
 
-function loadDB() {
-  try   { return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); }
-  catch { return { users: {}, jwtSecret: crypto.randomBytes(48).toString('hex') }; }
+async function _hashPassword(password) {
+  const salt = crypto.randomBytes(32).toString('hex');
+  const hash = await scrypt(password, salt, SCRYPT_LEN, {
+    N: SCRYPT_N, r: SCRYPT_R, p: SCRYPT_P,
+  });
+  return `${salt}:${hash.toString('hex')}`;
 }
 
-function saveDB(db) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+async function _verifyPassword(password, stored) {
+  const [salt, storedHex] = stored.split(':');
+  const derived   = await scrypt(password, salt, SCRYPT_LEN, {
+    N: SCRYPT_N, r: SCRYPT_R, p: SCRYPT_P,
+  });
+  const storedBuf = Buffer.from(storedHex, 'hex');
+  // Constant-time comparison — prevents timing oracle
+  if (derived.length !== storedBuf.length) return false;
+  return crypto.timingSafeEqual(derived, storedBuf);
 }
 
-// ─── Ward module ─────────────────────────────────────────────────────────────
+// ─── Minimal HS256 JWT (no external library) ─────────────────────────────────
+//
+// Format: b64url(header) . b64url(payload) . b64url(sig)
+// Signature: HMAC-SHA256(header.payload, HMAC_SECRET)
 
-const Ward = {
+function _b64url(input) {
+  return Buffer.from(input).toString('base64')
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function _b64urlDecode(str) {
+  return Buffer.from(
+    str.replace(/-/g, '+').replace(/_/g, '/'),
+    'base64'
+  );
+}
+
+function _signJWT(payload) {
+  const h   = _b64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const p   = _b64url(JSON.stringify(payload));
+  const sig = crypto.createHmac('sha256', HMAC_SECRET)
+                    .update(`${h}.${p}`)
+                    .digest();
+  return `${h}.${p}.${_b64url(sig)}`;
+}
+
+function _verifyJWT(token) {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const [h, p, sigGiven] = parts;
+
+    const sigExpected = _b64url(
+      crypto.createHmac('sha256', HMAC_SECRET)
+            .update(`${h}.${p}`)
+            .digest()
+    );
+
+    // Constant-time signature comparison
+    const a = Buffer.from(sigExpected);
+    const b = Buffer.from(sigGiven);
+    if (a.length !== b.length) return null;
+    if (!crypto.timingSafeEqual(a, b)) return null;
+
+    const payload = JSON.parse(_b64urlDecode(p).toString('utf8'));
+    if (payload.exp < Math.floor(Date.now() / 1000)) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+function _makeTokens(username, role) {
+  const now = Math.floor(Date.now() / 1000);
+  return {
+    access: _signJWT({
+      sub: username, role, type: 'access',
+      iat: now, exp: now + ACCESS_TTL,
+    }),
+    refresh: _signJWT({
+      sub: username, role, type: 'refresh',
+      iat: now, exp: now + REFRESH_TTL,
+    }),
+  };
+}
+
+// ─── HTTP helpers ─────────────────────────────────────────────────────────────
+
+function _readBody(req) {
+  return new Promise((resolve, reject) => {
+    let raw = '';
+    req.on('data',  chunk => { raw += chunk; });
+    req.on('end',   () => {
+      try { resolve(JSON.parse(raw || '{}')); }
+      catch { resolve({}); }
+    });
+    req.on('error', reject);
+  });
+}
+
+function _json(res, status, body) {
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(body));
+}
+
+// ─── Module ───────────────────────────────────────────────────────────────────
+
+const ward = {
   name: 'ward',
 
-  async init(config, registry) {
-    this.config   = config;
-    this.registry = registry;
-    this.db       = loadDB();
-    // Persist new secret if first run
-    if (!fs.existsSync(DB_FILE)) saveDB(this.db);
-    console.log(`[ward] auth ready — ${Object.keys(this.db.users).length} user(s) registered`);
+  async init(cfg = {}, registry) {
+    const stored  = _readWard();
+    const isSetup = !!(stored?.passwordHash);
+    if (!isSetup) {
+      console.warn('[ward] ⚠  no owner account — call POST /api/v1/ward/setup to initialise');
+    } else {
+      console.log('[ward] offline auth ready — scrypt/HS256');
+    }
     return this;
   },
 
-  // ── Middleware factory ── authenticate(minRole) → (req,res,next) => void
-  authenticate(minRole = 'member') {
+  // ── authenticate() middleware ─────────────────────────────────────────────
+  //
+  // Compatible call signature with lancia ward:
+  //   ward.authenticate()               — used by core/index.js on main
+  //   ward.authenticate(minRole, scope) — used by core/index.js on lancia
+  // Extra args are silently ignored here.
+
+  authenticate(_minRole = 'owner', _scope = null) {
     return (req, res, next) => {
       const auth  = req.headers['authorization'] || '';
-      const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-      if (!token) { res.writeHead(401); return res.end(JSON.stringify({ error: 'not authenticated' })); }
-      try {
-        const payload = verifyJWT(token, this.db.jwtSecret);
-        if (RANK[payload.role] < RANK[minRole]) {
-          res.writeHead(403);
-          return res.end(JSON.stringify({ error: `requires role: ${minRole}` }));
-        }
-        req.user = payload;
-        next();
-      } catch (err) {
-        res.writeHead(401);
-        res.end(JSON.stringify({ error: err.message }));
+      const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : null;
+
+      if (!token) {
+        return _json(res, 401, { error: 'authentication_required' });
       }
+      const payload = _verifyJWT(token);
+      if (!payload) {
+        return _json(res, 401, { error: 'invalid_or_expired_token' });
+      }
+      if (payload.type !== 'access') {
+        return _json(res, 401, { error: 'wrong_token_type' });
+      }
+      req.user = { username: payload.sub, role: payload.role };
+      next();
     };
   },
 
-  hasUser()    { return Object.keys(this.db.users).length > 0; },
-  isOwnerSet() { return Object.values(this.db.users).some(u => u.role === 'owner'); },
+  // ── Routes ───────────────────────────────────────────────────────────────
+  //
+  // 3-tuple: [method, path, handler]
+  // 4-tuple: [method, path, handler, meta]  — meta.public = true skips auth
+  // core/index.js mounts these under /api/v1/ward
 
   get routes() {
-    const self = this;
     return [
-
-      // ── First-run setup: create owner ──────────────────────────────────────
-      ['POST', '/setup', async (req, res) => {
-        if (self.isOwnerSet()) return _403(res, 'owner already exists');
-        const { username, password } = await _body(req);
-        if (!username || !password) return _400(res, 'username + password required');
-        if (password.length < 12)  return _400(res, 'password must be ≥12 chars');
-        const id  = crypto.randomUUID();
-        const pwd = await hashPassword(password);
-        self.db.users[id] = { id, username, password: pwd, role: 'owner', createdAt: Date.now() };
-        saveDB(self.db);
-        console.log(`[ward] owner account created: ${username}`);
-        _json(res, { ok: true, username, role: 'owner' }, 201);
-      }],
-
-      // ── Login ──────────────────────────────────────────────────────────────
-      ['POST', '/login', async (req, res) => {
-        const { username, password } = await _body(req);
-        const user = Object.values(self.db.users).find(u => u.username === username);
-        if (!user) return _401(res, 'invalid credentials');
-        const ok = await verifyPassword(password, user.password);
-        if (!ok)  return _401(res, 'invalid credentials');
-        const token = signJWT(
-          { sub: user.id, username: user.username, role: user.role,
-            exp: Math.floor(Date.now()/1000) + 60 * 60 * 24 * 7 },  // 7 day
-          self.db.jwtSecret
-        );
-        self.registry.emit('ward:login', { username: user.username, role: user.role });
-        _json(res, { token, username: user.username, role: user.role });
-      }],
-
-      // ── Me ─────────────────────────────────────────────────────────────────
-      ['GET', '/me', (req, res) => {
-        const auth  = (req.headers['authorization']||'').slice(7);
-        try {
-          const p = verifyJWT(auth, self.db.jwtSecret);
-          _json(res, { id: p.sub, username: p.username, role: p.role });
-        } catch { _401(res, 'not authenticated'); }
-      }],
-
-      // ── List users (admin+) ────────────────────────────────────────────────
-      ['GET', '/users', (req, res) => {
-        const auth  = (req.headers['authorization']||'').slice(7);
-        try {
-          const p = verifyJWT(auth, self.db.jwtSecret);
-          if (RANK[p.role] < RANK['admin']) return _403(res, 'requires admin');
-          _json(res, Object.values(self.db.users).map(u => ({
-            id: u.id, username: u.username, role: u.role, createdAt: u.createdAt
-          })));
-        } catch { _401(res, 'not authenticated'); }
-      }],
-
-      // ── Create user (admin+) ───────────────────────────────────────────────
-      ['POST', '/users', async (req, res) => {
-        const auth = (req.headers['authorization']||'').slice(7);
-        try {
-          const p = verifyJWT(auth, self.db.jwtSecret);
-          if (RANK[p.role] < RANK['admin']) return _403(res, 'requires admin');
-          const { username, password, role = 'member' } = await _body(req);
-          if (!username || !password) return _400(res, 'username + password required');
-          if (!ROLES.includes(role))  return _400(res, `invalid role — must be: ${ROLES.join('|')}`);
-          if (role === 'owner' && p.role !== 'owner') return _403(res, 'only owner can create owner accounts');
-          if (Object.values(self.db.users).find(u => u.username === username))
-            return _400(res, 'username taken');
-          const id  = crypto.randomUUID();
-          const pwd = await hashPassword(password);
-          self.db.users[id] = { id, username, password: pwd, role, createdAt: Date.now() };
-          saveDB(self.db);
-          _json(res, { id, username, role }, 201);
-        } catch(e) { _401(res, e.message); }
-      }],
-
-      // ── Assign role (admin+) ───────────────────────────────────────────────
-      ['PATCH', '/users/:id/role', async (req, res) => {
-        const auth = (req.headers['authorization']||'').slice(7);
-        try {
-          const p    = verifyJWT(auth, self.db.jwtSecret);
-          if (RANK[p.role] < RANK['admin']) return _403(res, 'requires admin');
-          const { role } = await _body(req);
-          if (!ROLES.includes(role)) return _400(res, 'invalid role');
-          if (role === 'owner' && p.role !== 'owner') return _403(res, 'only owner can assign owner role');
-          const target = self.db.users[req.params.id];
-          if (!target) return _404(res);
-          // Prevent self-demotion of sole owner
-          if (target.role === 'owner' && role !== 'owner') {
-            const ownerCount = Object.values(self.db.users).filter(u => u.role==='owner').length;
-            if (ownerCount <= 1) return _400(res, 'cannot demote sole owner');
-          }
-          target.role = role;
-          saveDB(self.db);
-          _json(res, { id: target.id, username: target.username, role });
-        } catch(e) { _401(res, e.message); }
-      }],
-
-      // ── Delete user (owner only) ───────────────────────────────────────────
-      ['DELETE', '/users/:id', async (req, res) => {
-        const auth = (req.headers['authorization']||'').slice(7);
-        try {
-          const p = verifyJWT(auth, self.db.jwtSecret);
-          if (p.role !== 'owner') return _403(res, 'owner only');
-          const target = self.db.users[req.params.id];
-          if (!target) return _404(res);
-          if (target.id === p.sub) return _400(res, 'cannot delete own account');
-          delete self.db.users[req.params.id];
-          saveDB(self.db);
-          _json(res, { ok: true });
-        } catch(e) { _401(res, e.message); }
-      }],
-
-      // ── Change password ────────────────────────────────────────────────────
-      ['POST', '/users/:id/password', async (req, res) => {
-        const auth = (req.headers['authorization']||'').slice(7);
-        try {
-          const p = verifyJWT(auth, self.db.jwtSecret);
-          // Users can change own password; admins can change member/operator passwords
-          const target = self.db.users[req.params.id];
-          if (!target) return _404(res);
-          const isSelf  = p.sub === target.id;
-          const canEdit = isSelf || (RANK[p.role] >= RANK['admin'] && RANK[target.role] < RANK[p.role]);
-          if (!canEdit) return _403(res, 'insufficient privileges');
-          const { password } = await _body(req);
-          if (!password || password.length < 12) return _400(res, 'password must be ≥12 chars');
-          target.password = await hashPassword(password);
-          saveDB(self.db);
-          _json(res, { ok: true });
-        } catch(e) { _401(res, e.message); }
-      }]
+      ['GET',  '/status',  this._status.bind(this),  { public: true }],
+      ['POST', '/setup',   this._setup.bind(this),   { public: true }],
+      ['POST', '/login',   this._login.bind(this),   { public: true }],
+      ['POST', '/refresh', this._refresh.bind(this), { public: true }],
+      ['POST', '/logout',  this._logout.bind(this)],
     ];
-  }
+  },
+
+  // GET /ward/status — always public
+  _status(req, res) {
+    const stored = _readWard();
+    _json(res, 200, {
+      branch:  'main',
+      auth:    'scrypt-HS256',
+      setup:   !!(stored?.passwordHash),
+      offline: true,
+      uptime:  process.uptime(),
+    });
+  },
+
+  // POST /ward/setup — first-run only, permanently locked after first call
+  async _setup(req, res) {
+    const stored = _readWard();
+    if (stored?.passwordHash) {
+      return _json(res, 409, { error: 'already_configured' });
+    }
+    const { username, password } = await _readBody(req);
+    if (!username || typeof username !== 'string' || username.trim().length < 2) {
+      return _json(res, 400, { error: 'invalid_username', min_length: 2 });
+    }
+    if (!password || typeof password !== 'string' || password.length < 12) {
+      return _json(res, 400, { error: 'password_too_short', min_length: 12 });
+    }
+    const passwordHash = await _hashPassword(password);
+    _writeWard({
+      username:     username.trim(),
+      passwordHash,
+      createdAt:    new Date().toISOString(),
+    });
+    console.log(`[ward] owner account created: ${username.trim()}`);
+    const tokens = _makeTokens(username.trim(), 'owner');
+    _json(res, 201, {
+      message:  'owner account created',
+      username: username.trim(),
+      token:    tokens.access,
+      refresh:  tokens.refresh,
+      expires:  ACCESS_TTL,
+    });
+  },
+
+  // POST /ward/login
+  async _login(req, res) {
+    const stored = _readWard();
+    if (!stored?.passwordHash) {
+      return _json(res, 503, {
+        error: 'not_configured',
+        hint:  'POST /api/v1/ward/setup to create the owner account',
+      });
+    }
+    const { username, password } = await _readBody(req);
+    if (!username || !password) {
+      return _json(res, 400, { error: 'missing_credentials' });
+    }
+
+    // Always run scrypt even on wrong username — prevents timing-based
+    // username enumeration.
+    const usernameMatch = username === stored.username;
+    const passwordOk    = await _verifyPassword(
+      password,
+      usernameMatch ? stored.passwordHash : stored.passwordHash
+    );
+
+    if (!usernameMatch || !passwordOk) {
+      return _json(res, 401, { error: 'invalid_credentials' });
+    }
+
+    const tokens = _makeTokens(stored.username, 'owner');
+    _json(res, 200, {
+      token:    tokens.access,
+      refresh:  tokens.refresh,
+      username: stored.username,
+      role:     'owner',
+      expires:  ACCESS_TTL,
+    });
+  },
+
+  // POST /ward/refresh — rotates refresh token
+  async _refresh(req, res) {
+    const { refresh } = await _readBody(req);
+    if (!refresh) {
+      return _json(res, 400, { error: 'missing_refresh_token' });
+    }
+    if (revokedRefresh.has(refresh)) {
+      return _json(res, 401, { error: 'token_revoked' });
+    }
+    const payload = _verifyJWT(refresh);
+    if (!payload || payload.type !== 'refresh') {
+      return _json(res, 401, { error: 'invalid_or_expired_refresh_token' });
+    }
+    // Revoke the used refresh token before issuing a new pair
+    revokedRefresh.add(refresh);
+    const tokens = _makeTokens(payload.sub, payload.role);
+    _json(res, 200, {
+      token:   tokens.access,
+      refresh: tokens.refresh,
+      expires: ACCESS_TTL,
+    });
+  },
+
+  // POST /ward/logout — requires auth (no { public: true } meta)
+  async _logout(req, res) {
+    const { refresh } = await _readBody(req);
+    if (refresh) revokedRefresh.add(refresh);
+    _json(res, 200, { message: 'logged out' });
+  },
 };
 
-function _json(res, d, s=200) { res.writeHead(s,{'Content-Type':'application/json'}); res.end(JSON.stringify(d)); }
-function _400(res,m) { res.writeHead(400); res.end(JSON.stringify({error:m})); }
-function _401(res,m) { res.writeHead(401); res.end(JSON.stringify({error:m})); }
-function _403(res,m) { res.writeHead(403); res.end(JSON.stringify({error:m})); }
-function _404(res)   { res.writeHead(404); res.end(JSON.stringify({error:'not found'})); }
-async function _body(req) {
-  let b=''; for await (const c of req) b+=c;
-  try { return JSON.parse(b); } catch { return {}; }
-}
-
-export default Ward;
+export default ward;
