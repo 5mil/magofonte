@@ -114,7 +114,7 @@ input:focus{border-color:var(--gold);}
     <h2>Cert-based Login</h2>
     <p class="step-desc">
       Upload your <code>.lancia</code> cert file. Your Ed25519 private key
-      (stored in this browser’s IndexedDB) signs a server challenge to
+      (stored in this browser's IndexedDB) signs a server challenge to
       authenticate. The private key never leaves the browser.
     </p>
 
@@ -161,8 +161,8 @@ input:focus{border-color:var(--gold);}
       This generates an Ed25519 keypair in your browser (private key stored
       in IndexedDB, <em>never extractable</em>) and provisions a signed
       <code>.lancia</code> cert file. You must be authenticated as the owner
-      to provision. If you already have a cert and key, signing in first will
-      allow you to re-provision.
+      to provision. If you already have a keypair, <strong>generating a new
+      one will permanently replace it</strong>.
     </p>
 
     <div class="keypair-status" id="kp-status-prov">
@@ -170,253 +170,174 @@ input:focus{border-color:var(--gold);}
       <span id="kp-label-prov">Checking for keypair…</span>
     </div>
 
-    <!-- Step 1: Password login (setup token to authorize provision) -->
-    <div id="prov-step1">
-      <h3 style="color:var(--gold);font-size:0.75rem;margin-bottom:10px">Step 1 — Authenticate</h3>
-      <div class="form-group">
-        <label>Username</label>
-        <input type="text" id="prov-username" autocomplete="username" />
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="prov-password" autocomplete="current-password"
-               onkeydown="if(event.key==='Enter')doProvAuth()" />
-      </div>
-      <button class="btn primary" onclick="doProvAuth()">Authenticate</button>
-      <div class="msg" id="prov-auth-msg"></div>
+    <div class="form-group">
+      <label>Owner Bearer Token (from initial setup)</label>
+      <input type="password" id="prov-token" placeholder="Bearer token…" />
     </div>
-
-    <!-- Step 2: Configure and provision cert (visible after auth) -->
-    <div id="prov-step2" style="display:none">
-      <div class="ok" style="font-size:11px;margin-bottom:16px">✓ Authenticated</div>
-      <h3 style="color:var(--gold);font-size:0.75rem;margin-bottom:10px">Step 2 — Generate & Download Cert</h3>
-      <div class="form-group">
-        <label>Tier</label>
-        <select id="prov-tier">
-          <option value="hearth">hearth</option>
-          <option value="forge" selected>forge</option>
-          <option value="foundry">foundry</option>
-          <option value="citadel">citadel</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Term (months)</label>
-        <select id="prov-term">
-          <option value="1">1 month</option>
-          <option value="6">6 months</option>
-          <option value="12" selected>12 months</option>
-          <option value="24">24 months</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Instance ID (optional)</label>
-        <input type="text" id="prov-instance" placeholder="e.g. prod-01" />
-      </div>
-      <button class="btn primary" id="btn-provision" onclick="doProvision()">
-        ⚙️ Generate Keypair &amp; Download Cert
-      </button>
-      <div class="msg" id="prov-cert-msg"></div>
+    <div class="form-group">
+      <label>Username</label>
+      <input id="prov-username" placeholder="owner" />
     </div>
+    <div class="form-group">
+      <label>Instance ID (leave blank for default)</label>
+      <input id="prov-instance" placeholder="leave blank" />
+    </div>
+    <button class="btn primary" id="btn-provision" onclick="doProvision()">
+      Generate &amp; Download Cert
+    </button>
+    <div class="msg" id="prov-msg"></div>
   </div>
 
-</div><!-- .card -->
+</div>
 
 <script type="module">
-import {
-  generateKeypair, hasKeypair, signChallenge, signCert, downloadCert,
-  parseCertFile, certLogin, provisionCert, exportPublicKey
-} from '/ward/certEngine.browser.js';
+import { parseCertFile, certLogin, provisionCert, hasKeypair } from '/ward/certEngine.browser.js';
 
-// ── State ──────────────────────────────────────────────────────────────
-let _loadedCert    = null;   // parsed cert object from file
-let _provAuthToken = null;   // short-lived token from password login
+// ── Helpers ──────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-// ── Tab switching ─────────────────────────────────────────────────────
-window.showTab = function(tab) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('screen-' + tab).classList.add('active');
-  document.getElementById('tab-' + tab).classList.add('active');
-};
+function showTab(tab) {
+  document.getElementById('screen-login').classList.toggle('active', tab === 'login');
+  document.getElementById('screen-provision').classList.toggle('active', tab === 'provision');
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-provision').classList.toggle('active', tab === 'provision');
+}
+window.showTab = showTab;
 
-// ── Keypair status badges ─────────────────────────────────────────────
+// ── Keypair status banner ────────────────────────────────────────────────
 async function refreshKeypairStatus() {
   const has = await hasKeypair();
-  ['login', 'prov'].forEach(id => {
-    const el    = document.getElementById(`kp-status-${id}`);
-    const icon  = document.getElementById(`kp-icon-${id}`);
-    const label = document.getElementById(`kp-label-${id}`);
-    if (has) {
-      el.classList.add('has-key');
-      icon.textContent  = '✓';
-      label.textContent = 'Ed25519 keypair found in this browser (IndexedDB)';
-    } else {
-      el.classList.remove('has-key');
-      icon.textContent  = '●';
-      label.textContent = 'No keypair in this browser — provision to generate one';
-    }
-  });
+  // Login screen
+  const loginEl = document.getElementById('kp-status-login');
+  document.getElementById('kp-icon-login').textContent = has ? '●' : '○';
+  document.getElementById('kp-label-login').textContent = has ? 'Keypair found in IndexedDB' : 'No keypair — provision one first';
+  loginEl.classList.toggle('has-key', has);
+  // Provision screen
+  const provEl = document.getElementById('kp-status-prov');
+  document.getElementById('kp-icon-prov').textContent = has ? '●' : '○';
+  document.getElementById('kp-label-prov').textContent = has
+    ? '⚠ Keypair exists — generating a new one will destroy it'
+    : 'No keypair — will be generated on provision';
+  provEl.classList.toggle('has-key', has);
 }
 
-// ── Cert file drag/drop ─────────────────────────────────────────────
-window.onDragOver = function(e) {
-  e.preventDefault();
-  document.getElementById('cert-drop').classList.add('dragover');
-};
-window.onDragLeave = function() {
-  document.getElementById('cert-drop').classList.remove('dragover');
-};
-window.onDrop = async function(e) {
-  e.preventDefault();
-  document.getElementById('cert-drop').classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (file) await loadCertFile(file);
-};
-window.onCertFileSelect = async function(e) {
-  const file = e.target.files[0];
-  if (file) await loadCertFile(file);
-};
+// ── Cert file loading ────────────────────────────────────────────────────
+let _loadedCert = null;
 
-async function loadCertFile(file) {
-  const msg = document.getElementById('login-msg');
-  try {
-    _loadedCert = await parseCertFile(file);
-    const drop = document.getElementById('cert-drop');
-    drop.classList.add('loaded');
-    document.getElementById('cert-drop-label').textContent = `✓ ${file.name}`;
-
-    // Populate cert summary
-    document.getElementById('cs-id').textContent    = _loadedCert.cert_id || '—';
-    document.getElementById('cs-sub').textContent   = _loadedCert.sub     || '—';
-    document.getElementById('cs-role').textContent  = _loadedCert.role    || '—';
-    document.getElementById('cs-tier').textContent  = _loadedCert.env?.tier || '—';
-    const exp = _loadedCert.exp
-      ? new Date(_loadedCert.exp * 1000).toLocaleDateString()
-      : '—';
-    document.getElementById('cs-exp').textContent = exp;
-    document.getElementById('cs-scope').innerHTML =
-      (_loadedCert.scope || []).map(s =>
-        `<span class="scope-chip">${s}</span>`
-      ).join(' ');
-    document.getElementById('cert-summary').classList.add('visible');
-
-    document.getElementById('btn-certlogin').disabled = false;
-    msg.className = 'msg ok';
-    msg.textContent = 'Cert loaded — click Sign In with Cert to authenticate';
-  } catch (err) {
-    _loadedCert = null;
-    document.getElementById('btn-certlogin').disabled = true;
-    document.getElementById('cert-drop').classList.remove('loaded');
-    document.getElementById('cert-summary').classList.remove('visible');
-    msg.className = 'msg err';
-    msg.textContent = err.message;
+function loadCertFile(file) {
+  // Guard: reject suspiciously large files before reading
+  if (file.size > 65536) {
+    setMsg('login-msg', 'err', 'Cert file too large (max 64 KB)');
+    return;
   }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const cert = parseCertFile(e.target.result);
+      _loadedCert = cert;
+      // Populate summary (all via textContent — XSS-safe)
+      document.getElementById('cs-id').textContent   = cert.cert_id || '—';
+      document.getElementById('cs-sub').textContent  = cert.sub     || '—';
+      document.getElementById('cs-role').textContent = cert.role    || '—';
+      document.getElementById('cs-tier').textContent = cert.env?.tier || '—';
+      document.getElementById('cs-exp').textContent  =
+        cert.exp ? new Date(cert.exp * 1000).toLocaleDateString() : '—';
+      // Scope chips — escHtml() prevents XSS from crafted cert files
+      document.getElementById('cs-scope').innerHTML =
+        (cert.scope || []).map(s => `<span class="scope-chip">${escHtml(s)}</span>`).join(' ');
+      document.getElementById('cert-summary').classList.add('visible');
+      document.getElementById('cert-drop').classList.add('loaded');
+      document.getElementById('cert-drop-label').textContent = '✓ ' + file.name;
+      document.getElementById('btn-certlogin').disabled = false;
+      setMsg('login-msg', 'info', 'Cert loaded — click Sign In to authenticate');
+    } catch (err) {
+      // Hint at clock skew for expiry errors
+      let msg = err.message || String(err);
+      if (msg.includes('expired')) msg += ' — check your system clock';
+      setMsg('login-msg', 'err', msg);
+      document.getElementById('btn-certlogin').disabled = true;
+      _loadedCert = null;
+    }
+  };
+  reader.readAsText(file);
 }
 
-// ── Cert login ─────────────────────────────────────────────────────────
+window.onCertFileSelect = e => { if (e.target.files[0]) loadCertFile(e.target.files[0]); };
+window.onDragOver  = e => { e.preventDefault(); document.getElementById('cert-drop').classList.add('dragover'); };
+window.onDragLeave = ()  => document.getElementById('cert-drop').classList.remove('dragover');
+window.onDrop = e => {
+  e.preventDefault();
+  document.getElementById('cert-drop').classList.remove('dragover');
+  if (e.dataTransfer.files[0]) loadCertFile(e.dataTransfer.files[0]);
+};
+
+// ── Cert login ───────────────────────────────────────────────────────────
 window.doCertLogin = async function() {
-  const btn = document.getElementById('btn-certlogin');
-  const msg = document.getElementById('login-msg');
   if (!_loadedCert) return;
-
+  const btn = document.getElementById('btn-certlogin');
   btn.disabled = true;
-  msg.className = 'msg info';
-  msg.textContent = 'Signing challenge…';
-
+  setMsg('login-msg', 'info', 'Authenticating…');
   try {
     const result = await certLogin(_loadedCert);
-    // Store in sessionStorage only — cleared on tab close
+    // result = { token, username, role, scope, ...}
     sessionStorage.setItem('mf_token',    result.token);
     sessionStorage.setItem('mf_username', result.username);
     sessionStorage.setItem('mf_role',     result.role);
     sessionStorage.setItem('mf_scope',    JSON.stringify(result.scope || []));
-    msg.className = 'msg ok';
-    msg.textContent = `✓ Authenticated as ${result.username} (${result.role})`;
-    setTimeout(() => { window.location.href = '/sigil/app.html'; }, 600);
+    // Store the full cert object so app.html cert info panel can display it
+    sessionStorage.setItem('mf_cert',     JSON.stringify(_loadedCert));
+    window.location = '/sigil/app.html';
   } catch (err) {
+    let msg = err.message || String(err);
+    if (msg.includes('expired')) msg += ' — check your system clock';
+    setMsg('login-msg', 'err', msg);
     btn.disabled = false;
-    msg.className = 'msg err';
-    msg.textContent = err.message;
   }
 };
 
-// ── Provision: Step 1 password auth ───────────────────────────────────
-window.doProvAuth = async function() {
-  const username = document.getElementById('prov-username').value.trim();
-  const password = document.getElementById('prov-password').value;
-  const msg      = document.getElementById('prov-auth-msg');
+// ── Provision ────────────────────────────────────────────────────────────
+window.doProvision = async function() {
+  const bearerToken = document.getElementById('prov-token').value.trim();
+  const username    = document.getElementById('prov-username').value.trim();
+  const instanceId  = document.getElementById('prov-instance').value.trim() || undefined;
 
-  if (!username || !password) {
-    msg.className = 'msg err';
-    msg.textContent = 'Username and password required';
-    return;
-  }
-  msg.className = 'msg info';
-  msg.textContent = 'Authenticating…';
+  if (!bearerToken) { setMsg('prov-msg','err','Bearer token required'); return; }
+  if (!username)    { setMsg('prov-msg','err','Username required'); return; }
 
-  try {
-    const res = await fetch('/api/v1/ward/login', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ username, password })
-    });
-    const data = await res.json();
-    if (!res.ok || !data.token) {
-      msg.className = 'msg err';
-      msg.textContent = data.error || 'Login failed';
+  // Guard: warn if an existing keypair will be clobbered
+  if (await hasKeypair()) {
+    if (!confirm('A keypair already exists in this browser.\nGenerating a new one will permanently destroy the existing private key — your current cert will become invalid.\n\nContinue?')) {
       return;
     }
-    _provAuthToken = data.token;
-    msg.className = 'msg ok';
-    msg.textContent = '✓ Authenticated';
-    document.getElementById('prov-step1').style.display = 'none';
-    document.getElementById('prov-step2').style.display = 'block';
-  } catch (err) {
-    msg.className = 'msg err';
-    msg.textContent = err.message;
   }
-};
 
-// ── Provision: Step 2 generate + download ─────────────────────────────
-window.doProvision = async function() {
   const btn = document.getElementById('btn-provision');
-  const msg = document.getElementById('prov-cert-msg');
-  if (!_provAuthToken) {
-    msg.className = 'msg err';
-    msg.textContent = 'Not authenticated — complete Step 1 first';
-    return;
-  }
   btn.disabled = true;
-  msg.className = 'msg info';
-  msg.textContent = 'Generating keypair…';
-
+  setMsg('prov-msg','info','Generating keypair and provisioning cert…');
   try {
-    const tier        = document.getElementById('prov-tier').value;
-    const termMonths  = parseInt(document.getElementById('prov-term').value, 10);
-    const instanceId  = document.getElementById('prov-instance').value.trim() || undefined;
-
-    msg.textContent = 'Requesting cert from server…';
-    const cert = await provisionCert(_provAuthToken, { tier, termMonths, instanceId });
-    // provisionCert triggers download automatically
-    msg.className = 'msg ok';
-    msg.textContent = `✓ Cert provisioned: ${cert.cert_id} (${tier}, ${termMonths}mo). File downloaded.`;
+    const cert = await provisionCert(bearerToken, { username, instanceId });
+    setMsg('prov-msg','ok','✓ Cert provisioned — cert file downloading now. Switch to Sign In tab to log in.');
     await refreshKeypairStatus();
-    setTimeout(() => showTab('login'), 1800);
   } catch (err) {
+    setMsg('prov-msg','err', err.message || String(err));
+  } finally {
     btn.disabled = false;
-    msg.className = 'msg err';
-    msg.textContent = err.message;
   }
 };
 
-// ── Boot ─────────────────────────────────────────────────────────────
+// ── Utilities ────────────────────────────────────────────────────────────
+function setMsg(id, cls, text) {
+  const el = document.getElementById(id);
+  el.className = 'msg ' + cls;
+  el.textContent = text;
+}
+
+// ── Boot ─────────────────────────────────────────────────────────────────
 (async () => {
-  // If already authenticated, skip straight to the app
-  const existing = sessionStorage.getItem('mf_token');
-  if (existing) {
-    window.location.href = '/sigil/app.html';
-    return;
-  }
   await refreshKeypairStatus();
 })();
 </script>

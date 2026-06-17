@@ -470,7 +470,36 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
 </div>
 
 <script>
-// ── Auth (sessionStorage only — cleared on tab close) ──────────────────
+// ── Utils (defined first — used throughout) ───────────────────────────────
+function escHtml(s){
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function stat(label,value,color=''){
+  return `<div class="stat-card"><div class="label">${escHtml(String(label))}</div><div class="value ${color}">${escHtml(String(value))}</div></div>`;
+}
+function fmtH(h){
+  if(h>=1e12)return(h/1e12).toFixed(2)+'TH/s';
+  if(h>=1e9)return(h/1e9).toFixed(2)+'GH/s';
+  if(h>=1e6)return(h/1e6).toFixed(2)+'MH/s';
+  if(h>=1e3)return(h/1e3).toFixed(2)+'KH/s';
+  return Math.round(h)+'H/s';
+}
+function fmtTs(ts){
+  if(!ts)return '—';
+  const d=new Date(ts);
+  return d.toLocaleDateString()+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+function timeSince(ms){
+  const s=Math.floor((Date.now()-ms)/1000);
+  if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';return Math.floor(s/3600)+'h';
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────
+// NOTE: token is stored in sessionStorage (cleared on tab close).
+// certEngine.browser.js recommends memory-only storage, but sessionStorage
+// is a deliberate trade-off: memory-only doesn't survive SPA navigation.
 function token()    { return sessionStorage.getItem('mf_token'); }
 function myScope()  { try { return JSON.parse(sessionStorage.getItem('mf_scope') || '[]'); } catch { return []; } }
 function hasScope(s){ const sc = myScope(); return sc.includes('*') || sc.includes(s); }
@@ -497,17 +526,14 @@ async function logout() {
 
 // ── Scope-aware nav gating ───────────────────────────────────────────────
 function applyScope() {
-  // Hide nav items whose data-scope the session cert doesn’t cover
   document.querySelectorAll('.nav-item[data-scope]').forEach(el => {
     const required = el.getAttribute('data-scope');
     if (!hasScope(required)) el.style.display = 'none';
   });
-  // Hide action buttons whose data-scope is not covered
   document.querySelectorAll('button[data-scope],a[data-scope]').forEach(el => {
     const required = el.getAttribute('data-scope');
     if (!hasScope(required)) el.style.display = 'none';
   });
-  // Admin nav sections
   const hasAdminAny = hasScope('ward:users:read') || hasScope('ward:permissions:read');
   if (!hasAdminAny) {
     const sec = document.getElementById('nav-admin-section');
@@ -565,7 +591,7 @@ async function loadDashboard() {
   document.getElementById('tb-coin').textContent     = (status.coin ?? '') + ' ' + (status.algo ?? '');
   document.getElementById('miners-table').innerHTML =
     (status.miners_list || []).map(m =>
-      `<tr><td style="color:var(--cyan)">${m.user ?? m.id.slice(0,8)}</td>
+      `<tr><td style="color:var(--cyan)">${escHtml(m.user ?? m.id.slice(0,8))}</td>
        <td>${m.difficulty?.toFixed(4)}</td>
        <td class="on">${m.accepted}</td><td class="off">${m.rejected}</td>
        <td style="color:var(--cyan)">${fmtH(m.hashrate)}</td>
@@ -577,7 +603,7 @@ async function loadDashboard() {
       ? '<span style="color:var(--dim)">No earnings yet</span>'
       : '<table><thead><tr><th>Worker</th><th>Pending (sat)</th></tr></thead><tbody>' +
         Object.entries(earn).map(([u,e]) =>
-          `<tr><td style="color:var(--cyan)">${u}</td><td style="color:var(--gold)">${Math.round(e)}</td></tr>`
+          `<tr><td style="color:var(--cyan)">${escHtml(u)}</td><td style="color:var(--gold)">${Math.round(e)}</td></tr>`
         ).join('') + '</tbody></table>';
 }
 
@@ -589,13 +615,13 @@ async function loadPools() {
   const activeId = active?.active;
   document.getElementById('pools-table').innerHTML = pools.map(p =>
     `<tr>
-      <td style="color:var(--cyan)">${p.id}</td>
-      <td>${p.coin?.toUpperCase()}</td><td>${p.algo}</td>
-      <td>${p.stratumPort}</td><td>${p.payoutScheme}</td>
+      <td style="color:var(--cyan)">${escHtml(p.id)}</td>
+      <td>${escHtml(p.coin?.toUpperCase())}</td><td>${escHtml(p.algo)}</td>
+      <td>${p.stratumPort}</td><td>${escHtml(p.payoutScheme)}</td>
       <td>${p.id === activeId ? '<span class="on">● active</span>' : '<span class="off">○ idle</span>'}</td>
       <td>
-        ${hasScope('pool:settings:write') ? `<button class="btn" onclick="setActivePool('${p.id}')">Set Active</button>
-        <button class="btn danger" onclick="deletePool('${p.id}')">Delete</button>` : ''}
+        ${hasScope('pool:settings:write') ? `<button class="btn" onclick="setActivePool('${escHtml(p.id)')">Set Active</button>
+        <button class="btn danger" onclick="deletePool('${escHtml(p.id)')">Delete</button>` : ''}
       </td>
     </tr>`
   ).join('') || '<tr><td colspan="7" style="color:var(--dim);text-align:center">No pools configured</td></tr>';
@@ -624,7 +650,7 @@ async function loadMonetizationPage() {
   const pools = await api('GET', '/pool/settings/pools');
   if (!pools) return;
   const sel = document.getElementById('mon-pool-select');
-  sel.innerHTML = pools.map(p => `<option value="${p.id}">${p.coin?.toUpperCase()} — ${p.id}</option>`).join('');
+  sel.innerHTML = pools.map(p => `<option value="${escHtml(p.id)}">${escHtml(p.coin?.toUpperCase())} — ${escHtml(p.id)}</option>`).join('');
   loadMonetization();
 }
 async function loadMonetization() {
@@ -642,23 +668,23 @@ function monCard(poolId, opt) {
   const enabled  = opt.enabled ? 'enabled' : '';
   const canWrite = hasScope('pool:monetization:write');
   const cfgRows  = Object.entries(opt.settings || {}).slice(0, 6).map(([k, s]) =>
-    `<div class="cfg-row"><label>${k}</label>
-     <input id="cfg-${poolId}-${opt.id}-${k}" value="${opt.config[k] ?? s.default ?? ''}" ${canWrite ? '' : 'disabled'} /></div>`
+    `<div class="cfg-row"><label>${escHtml(k)}</label>
+     <input id="cfg-${escHtml(poolId)}-${escHtml(opt.id)}-${escHtml(k)}" value="${escHtml(opt.config[k] ?? s.default ?? '')}" ${canWrite ? '' : 'disabled'} /></div>`
   ).join('');
   return `
-  <div class="mon-card ${disabled} ${enabled}" id="mc-${opt.id}">
+  <div class="mon-card ${disabled} ${enabled}" id="mc-${escHtml(opt.id)}">
     <div class="mc-header">
-      <div class="mc-title">${icon} ${opt.label}</div>
+      <div class="mc-title">${icon} ${escHtml(opt.label)}</div>
       ${opt.available && canWrite
         ? `<label class="toggle"><input type="checkbox" ${opt.enabled ? 'checked' : ''}
-             onchange="toggleMon('${poolId}','${opt.id}',this.checked)">
+             onchange="toggleMon('${escHtml(poolId)}','${escHtml(opt.id)}',this.checked)">
            <span class="slider"></span></label>`
         : opt.available ? '<span style="color:var(--dim);font-size:10px">read-only</span>'
         : '<span style="color:var(--dim);font-size:10px">unavailable</span>'}
     </div>
-    <div class="mc-desc">${opt.description ?? ''}</div>
+    <div class="mc-desc">${escHtml(opt.description ?? '')}</div>
     ${cfgRows ? `<button class="btn" style="font-size:10px;padding:3px 8px" onclick="this.closest('.mon-card').classList.toggle('expanded')">Config ▾</button>
-    <div class="mc-config">${cfgRows}${canWrite ? `<button class="btn primary cfg-save" onclick="saveMon('${poolId}','${opt.id}')">Save</button>` : ''}</div>` : ''}
+    <div class="mc-config">${cfgRows}${canWrite ? `<button class="btn primary cfg-save" onclick="saveMon('${escHtml(poolId)}','${escHtml(opt.id)')">Save</button>` : ''}</div>` : ''}
   </div>`;
 }
 async function toggleMon(poolId, typeId, enabled) {
@@ -689,11 +715,11 @@ async function loadTreasury() {
   ];
   document.getElementById('treasury-grid').innerHTML = cards.map(c => `
     <div class="tnet-card ${c.hasPending?'has-pending':''}">
-      <div class="tnet-label">${c.label}</div>
-      <div class="tnet-addr">${c.addr}</div>
-      <div class="tnet-pending">${c.pending}</div>
-      <div class="tnet-sub">${c.sub}</div>
-      ${c.sweepId && canSweep ? `<button class="btn" style="font-size:10px;padding:3px 10px" onclick="sweepNetwork('${c.sweepId}')">Sweep ${c.label}</button>` : ''}
+      <div class="tnet-label">${escHtml(c.label)}</div>
+      <div class="tnet-addr">${escHtml(c.addr)}</div>
+      <div class="tnet-pending">${escHtml(c.pending)}</div>
+      <div class="tnet-sub">${escHtml(c.sub)}</div>
+      ${c.sweepId && canSweep ? `<button class="btn" style="font-size:10px;padding:3px 10px" onclick="sweepNetwork('${c.sweepId}')">Sweep ${escHtml(c.label)}</button>` : ''}
     </div>
   `).join('');
   const recent = data.recentSweeps || [];
@@ -706,10 +732,10 @@ async function loadSources() {
   if (!data?.sources) return;
   document.getElementById('sources-table').innerHTML = data.sources.map(s => `
     <tr>
-      <td style="color:var(--cyan)">${s.id}</td><td>${s.name}</td>
-      <td>${s.status==='active'?'<span class="on">● active</span>':'<span class="off">○ '+s.status+'</span>'}</td>
+      <td style="color:var(--cyan)">${escHtml(s.id)}</td><td>${escHtml(s.name)}</td>
+      <td>${s.status==='active'?'<span class="on">● active</span>':'<span class="off">○ '+escHtml(s.status)+'</span>'}</td>
       <td style="color:var(--gold)">${s.feePct!=null?(s.feePct*100).toFixed(2)+'%':'—'}</td>
-      <td style="color:var(--dim);font-size:10px">${(s.listening||[]).join(', ')||'—'}</td>
+      <td style="color:var(--dim);font-size:10px">${(s.listening||[]).map(escHtml).join(', ')||'—'}</td>
     </tr>`).join('');
 }
 let _ledgerTotal = 0;
@@ -730,11 +756,11 @@ async function loadLedger(offset) {
         const detail=meta.height?`h=${meta.height}`:(meta.events?`${meta.events} events`:'');
         return `<tr>
           <td style="color:var(--dim);font-size:10px">${fmtTs(e.created_at)}</td>
-          <td style="color:var(--cyan);font-size:10px">${e.source||'—'}</td>
-          <td><span class="event-type ${tclass}">${e.type||'—'}</span></td>
+          <td style="color:var(--cyan);font-size:10px">${escHtml(e.source||'—')}</td>
+          <td><span class="event-type ${tclass}">${escHtml(e.type||'—')}</span></td>
           <td style="color:var(--gold)">${amtStr}</td>
-          <td style="font-size:10px">${e.status==='swept'?'<span class="on">swept</span>':'<span style="color:var(--dim)">'+(e.status||'—')+'</span>'}</td>
-          <td style="color:var(--dim);font-size:10px">${detail}</td></tr>`;
+          <td style="font-size:10px">${e.status==='swept'?'<span class="on">swept</span>':'<span style="color:var(--dim)">'+escHtml(e.status||'—')+'</span>'}</td>
+          <td style="color:var(--dim);font-size:10px">${escHtml(detail)}</td></tr>`;
       }).join('');
   const pageNum=Math.floor(LEDGER_OFFSET/LEDGER_LIMIT)+1;
   const pageTotal=Math.max(1,Math.ceil((_ledgerTotal||arr.length+LEDGER_OFFSET)/LEDGER_LIMIT));
@@ -751,8 +777,8 @@ async function sweepNetwork(network){
   const path=network==='dgb'?'/monetization/sweep-dgb':'/monetization/sweep';
   const r=await api('POST',path);
   if(!r)return;
-  if(r.error){msg.innerHTML=`<span class="err">${r.error}</span>`;}
-  else{msg.innerHTML=`<span class="ok">✓ Swept ${r.swept} event(s) (${network.toUpperCase()})</span>`;loadTreasury();loadLedger(0);}
+  if(r.error){msg.textContent=r.error;msg.className='err';}
+  else{msg.innerHTML=`<span class="ok">✓ Swept ${r.swept} event(s) (${escHtml(network.toUpperCase())})</span>`;loadTreasury();loadLedger(0);}
 }
 
 // ── Nodes ────────────────────────────────────────────────────────────────
@@ -761,10 +787,10 @@ async function loadNodes(){
   if(!data)return;
   const nodes=Array.isArray(data)?data:Object.values(data);
   document.getElementById('nodes-table').innerHTML=nodes.map(n=>
-    `<tr><td style="color:var(--gold)">${n.coin?.toUpperCase?.()??n.coin??'—'}</td>
-     <td>${n.status==='ready'?'<span class="on">● ready</span>':'<span class="off">○ '+(n.status||'—')+'</span>'}</td>
+    `<tr><td style="color:var(--gold)">${escHtml(n.coin?.toUpperCase?.()??n.coin??'—')}</td>
+     <td>${n.status==='ready'?'<span class="on">● ready</span>':'<span class="off">○ '+escHtml(n.status||'—')+'</span>'}</td>
      <td style="color:var(--cyan)">${n.height??'—'}</td><td style="color:var(--dim)">${n.pid??'—'}</td>
-     <td>${hasScope('node:stop')?`<button class="btn danger" onclick="stopNode('${n.coin}')">Stop</button>`:''}</td></tr>`
+     <td>${hasScope('node:stop')?`<button class="btn danger" onclick="stopNode('${escHtml(n.coin)}')">Stop</button>`:''}</td></tr>`
   ).join('')||'<tr><td colspan="5" style="color:var(--dim);text-align:center">No nodes running</td></tr>';
 }
 async function stopNode(coin){
@@ -785,10 +811,10 @@ async function loadAccounts(){
   if(!users)return;
   USERS_CACHE=users;
   document.getElementById('accounts-table').innerHTML=users.map(u=>
-    `<tr><td style="color:var(--cyan)">${u.username}</td>
-     <td><span class="badge ${u.role}">${u.role}</span></td>
+    `<tr><td style="color:var(--cyan)">${escHtml(u.username)}</td>
+     <td><span class="badge ${escHtml(u.role)}">${escHtml(u.role)}</span></td>
      <td style="color:var(--dim)">${u.lastLogin?fmtTs(u.lastLogin):'Never'}</td>
-     <td>${hasScope('ward:users:delete')?`<button class="btn danger" onclick="deleteUser('${u.id}')">Delete</button>`:''}</td></tr>`
+     <td>${hasScope('ward:users:delete')?`<button class="btn danger" onclick="deleteUser('${escHtml(u.id)}')">Delete</button>`:''}</td></tr>`
   ).join('');
 }
 async function createUser(){
@@ -806,7 +832,7 @@ async function loadPermissionsPage(){
   const[schema,users]=await Promise.all([api('GET','/ward/permissions/schema'),api('GET','/ward/users')]);
   PERMISSIONS_SCHEMA=schema;USERS_CACHE=users||[];
   const sel=document.getElementById('perm-user-select');
-  sel.innerHTML=USERS_CACHE.map(u=>`<option value="${u.id}">${u.username} (${u.role})</option>`).join('');
+  sel.innerHTML=USERS_CACHE.map(u=>`<option value="${escHtml(u.id)}">${escHtml(u.username)} (${escHtml(u.role)})</option>`).join('');
   loadUserPerms();
 }
 async function loadUserPerms(){
@@ -818,7 +844,7 @@ async function loadUserPerms(){
   const allPerms=PERMISSIONS_SCHEMA.permissions||[];
   document.getElementById('perm-editor').innerHTML=
     '<div class="perm-grid">'+
-    allPerms.map(p=>`<span class="perm-chip ${granted.has(p)?'granted':'revoked'}" onclick="togglePerm('${userId}','${p}',this)">${p}</span>`).join('')+'</div>';
+    allPerms.map(p=>`<span class="perm-chip ${granted.has(p)?'granted':'revoked'}" onclick="togglePerm('${escHtml(userId)}','${escHtml(p)}',this)">${escHtml(p)}</span>`).join('')+'</div>';
 }
 async function togglePerm(userId,perm,el){
   const isGranted=el.classList.contains('granted');
@@ -830,9 +856,9 @@ async function togglePerm(userId,perm,el){
 function loadMyAccount(){
   if(!ME)return;
   document.getElementById('account-info').innerHTML=
-    `<div style="margin-bottom:6px"><span style="color:var(--dim)">Username: </span><span style="color:var(--cyan)">${ME.username}</span></div>`+
-    `<div><span style="color:var(--dim)">Role: </span><span class="badge ${ME.role}">${ME.role}</span></div>`;
-  // Populate cert info from sessionStorage
+    `<div style="margin-bottom:6px"><span style="color:var(--dim)">Username: </span><span style="color:var(--cyan)">${escHtml(ME.username)}</span></div>`+
+    `<div><span style="color:var(--dim)">Role: </span><span class="badge ${escHtml(ME.role)}">${escHtml(ME.role)}</span></div>`;
+  // Populate cert info from sessionStorage (written by login.html doCertLogin)
   const certRaw = sessionStorage.getItem('mf_cert');
   if (certRaw) {
     try {
@@ -840,7 +866,9 @@ function loadMyAccount(){
       document.getElementById('ci-id').textContent   = cert.cert_id || '—';
       document.getElementById('ci-tier').textContent = cert.env?.tier || '—';
       document.getElementById('ci-exp').textContent  = cert.exp ? new Date(cert.exp*1000).toLocaleDateString() : '—';
-      document.getElementById('ci-scope').innerHTML  = (cert.scope||[]).map(s=>`<span class="scope-chip">${s}</span>`).join(' ');
+      // Scope chips — escHtml() to prevent XSS from stored cert data
+      document.getElementById('ci-scope').innerHTML  =
+        (cert.scope||[]).map(s=>`<span class="scope-chip">${escHtml(s)}</span>`).join(' ');
     } catch {}
   }
 }
@@ -850,8 +878,10 @@ async function changePassword(){
   const conf=document.getElementById('pw-confirm').value;
   const msg=document.getElementById('pw-msg');
   if(nw!==conf){msg.innerHTML='<span class="err">Passwords do not match</span>';return;}
-  const r=await api('POST','/ward/change-password',{currentPassword:cur,newPassword:nw});
-  msg.innerHTML=r?.ok?'<span class="ok">✓ Password updated</span>':`<span class="err">${r?.error||'Failed'}</span>`;
+  if(!ME?.id){msg.innerHTML='<span class="err">Session error — please sign in again</span>';return;}
+  // Route: POST /ward/users/:id/password
+  const r=await api('POST',`/ward/users/${ME.id}/password`,{currentPassword:cur,newPassword:nw});
+  msg.innerHTML=r?.ok?'<span class="ok">✓ Password updated</span>':`<span class="err">${escHtml(r?.error||'Failed')}</span>`;
 }
 
 // ── Logs ─────────────────────────────────────────────────────────────────
@@ -872,44 +902,20 @@ function showLaunchCoinModal(){openModal('modal-launchcoin');}
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
-// ── Utils ─────────────────────────────────────────────────────────────────
-function stat(label,value,color=''){
-  return `<div class="stat-card"><div class="label">${label}</div><div class="value ${color}">${value}</div></div>`;
-}
-function fmtH(h){
-  if(h>=1e12)return(h/1e12).toFixed(2)+'TH/s';
-  if(h>=1e9)return(h/1e9).toFixed(2)+'GH/s';
-  if(h>=1e6)return(h/1e6).toFixed(2)+'MH/s';
-  if(h>=1e3)return(h/1e3).toFixed(2)+'KH/s';
-  return Math.round(h)+'H/s';
-}
-function fmtTs(ts){
-  if(!ts)return '—';
-  const d=new Date(ts);
-  return d.toLocaleDateString()+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-}
-function timeSince(ms){
-  const s=Math.floor((Date.now()-ms)/1000);
-  if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';return Math.floor(s/3600)+'h';
-}
-function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
 // ── Boot ──────────────────────────────────────────────────────────────────
 (async () => {
-  // Guard: redirect to login if no session token
   if (!token()) {
     window.location = '/sigil/login.html';
     return;
   }
 
-  // Verify session is still valid server-side
+  // Verify session server-side and refresh scope
   const me = await api('GET', '/ward/me');
   if (!me) return;  // api() redirects on 401
 
   ME = me;
   sessionStorage.setItem('mf_username', me.username);
   sessionStorage.setItem('mf_role',     me.role);
-  // Merge server-confirmed scope into sessionStorage
   if (me.scope) sessionStorage.setItem('mf_scope', JSON.stringify(me.scope));
 
   document.getElementById('tb-user').textContent = me.username;
@@ -919,10 +925,14 @@ function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(
   applyScope();
   loadDashboard();
 
-  // WebSocket — token from sessionStorage
+  // WebSocket — token sent in first message after connect (not in URL)
+  // Sending JWT as a ?token= query param would expose it in server access logs.
   try {
     const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${wsProto}//${location.host}/ws?token=${token()}`);
+    const ws = new WebSocket(`${wsProto}//${location.host}/ws`);
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ type: 'auth', token: token() }));
+    };
     ws.onmessage = ({ data }) => {
       try {
         const ev = JSON.parse(data);
@@ -933,6 +943,11 @@ function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(
         }
         if (ev.type === 'block:found' && CURRENT_PAGE === 'treasury') {
           loadTreasury(); loadLedger(0);
+        }
+        // Token expired while WS was open — force re-login
+        if (ev.type === 'auth_expired') {
+          sessionStorage.clear();
+          window.location = '/sigil/login.html';
         }
       } catch {}
     };
