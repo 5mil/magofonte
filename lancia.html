@@ -8,69 +8,45 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --gold:#c9a84c;
-  --gold2:#e8d08a;
-  --ink:#0d0b0e;
-  --surface:#100e18;
-  --surface2:#17142a;
-  --border:rgba(201,168,76,0.2);
-  --glow:rgba(201,168,76,0.12);
-  --green:#5ecf7a;
-  --red:#e05050;
-  --cyan:#4ecfcf;
-  --dim:rgba(201,168,76,0.3);
-  --violet:#9b72cf;
-  --orange:#e8953a;
+  --gold:#c9a84c;--gold2:#e8d08a;--ink:#0d0b0e;--surface:#100e18;--surface2:#17142a;
+  --border:rgba(201,168,76,0.2);--glow:rgba(201,168,76,0.12);
+  --green:#5ecf7a;--red:#e05050;--cyan:#4ecfcf;--dim:rgba(201,168,76,0.3);
+  --violet:#9b72cf;--orange:#e8953a;
 }
 html,body{height:100%;background:var(--ink);color:var(--gold2);font-family:'Cinzel',serif;overflow-x:hidden}
-body{min-height:100vh;background:var(--ink);}
+body{min-height:100vh;background:var(--ink)}
 
-/* ─ Stars ────────────────────────────────── */
 .stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
 .star{position:absolute;border-radius:50%;background:white;opacity:0;animation:twinkle var(--d,4s) var(--delay,0s) infinite ease-in-out}
 @keyframes twinkle{0%,100%{opacity:0}50%{opacity:var(--bright,.6)}}
 
-/* ─ Hero banner ─────────────────────────── */
-.hero{
-  position:relative;width:100%;min-height:340px;
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
-  padding-bottom:2.5rem;overflow:hidden;z-index:1;
-}
-.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;filter:grayscale(30%) contrast(1.05) brightness(0.55);z-index:0;}
-.hero-veil{
-  position:absolute;inset:0;z-index:1;
-  background:
-    linear-gradient(to bottom,rgba(13,11,14,0.45) 0%,rgba(13,11,14,0.25) 35%,rgba(13,11,14,0.55) 70%,rgba(13,11,14,0.97) 100%),
-    radial-gradient(ellipse at 50% 60%, rgba(201,168,76,0.07) 0%, transparent 65%);
-}
-.hero-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:.55rem;text-align:center;padding:0 1.5rem;}
-.header-back{position:absolute;top:1.2rem;left:1.5rem;z-index:3;font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(201,168,76,.45);text-decoration:none;transition:color .2s;}
+.hero{position:relative;width:100%;min-height:340px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:2.5rem;overflow:hidden;z-index:1}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;filter:grayscale(30%) contrast(1.05) brightness(0.55);z-index:0}
+.hero-veil{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(13,11,14,0.45) 0%,rgba(13,11,14,0.25) 35%,rgba(13,11,14,0.55) 70%,rgba(13,11,14,0.97) 100%),radial-gradient(ellipse at 50% 60%,rgba(201,168,76,0.07) 0%,transparent 65%)}
+.hero-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:.55rem;text-align:center;padding:0 1.5rem}
+.header-back{position:absolute;top:1.2rem;left:1.5rem;z-index:3;font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(201,168,76,.45);text-decoration:none;transition:color .2s}
 .header-back:hover{color:var(--gold2)}
 .header-rune{font-size:2rem;opacity:.4;animation:flicker 7s ease-in-out infinite;line-height:1}
 @keyframes flicker{0%,88%,100%{opacity:.4}92%{opacity:.1}}
-.header-title{font-family:'Cinzel Decorative',serif;font-size:clamp(2.2rem,6vw,3.6rem);font-weight:700;background:linear-gradient(135deg,var(--gold2) 0%,var(--gold) 55%,#a07830 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.06em;filter:drop-shadow(0 2px 18px rgba(201,168,76,0.35));}
-.header-sub{font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:rgba(201,168,76,.5);}
-.hero-divider{width:220px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4;margin:.2rem 0;}
-.hero-caption{font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(201,168,76,.22);font-style:italic;margin-top:.2rem;}
+.header-title{font-family:'Cinzel Decorative',serif;font-size:clamp(2.2rem,6vw,3.6rem);font-weight:700;background:linear-gradient(135deg,var(--gold2) 0%,var(--gold) 55%,#a07830 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.06em;filter:drop-shadow(0 2px 18px rgba(201,168,76,0.35))}
+.header-sub{font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:rgba(201,168,76,.5)}
+.hero-divider{width:220px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4;margin:.2rem 0}
+.hero-caption{font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(201,168,76,.22);font-style:italic;margin-top:.2rem}
 
-/* ─ Layout ────────────────────────────────── */
 #app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:1.5rem 1.5rem 4rem}
 
-/* ─ Panels ────────────────────────────────── */
-.panel{background:rgba(201,168,76,0.03);border:1px solid var(--border);border-radius:12px;position:relative;margin-bottom:1.2rem;overflow:hidden;}
-.panel-label{position:absolute;top:-.7rem;left:50%;transform:translateX(-50%);font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);background:var(--ink);padding:0 .9rem;white-space:nowrap;}
+.panel{background:rgba(201,168,76,0.03);border:1px solid var(--border);border-radius:12px;position:relative;margin-bottom:1.2rem;overflow:hidden}
+.panel-label{position:absolute;top:-.7rem;left:50%;transform:translateX(-50%);font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);background:var(--ink);padding:0 .9rem;white-space:nowrap}
 .panel-body{padding:1.6rem 1.8rem}
 
-/* ─ Stat row ─────────────────────────────── */
 .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.7rem;margin-bottom:1.4rem}
-.stat-card{background:var(--surface2);border:1px solid rgba(201,168,76,0.12);border-radius:8px;padding:.85rem 1rem;}
+.stat-card{background:var(--surface2);border:1px solid rgba(201,168,76,0.12);border-radius:8px;padding:.85rem 1rem}
 .stat-card .sc-label{font-size:.55rem;letter-spacing:.25em;text-transform:uppercase;color:var(--dim);margin-bottom:.3rem}
 .stat-card .sc-value{font-size:1.05rem;font-weight:700;color:var(--gold2)}
 .sc-value.green{color:var(--green)}.sc-value.red{color:var(--red)}.sc-value.cyan{color:var(--cyan)}.sc-value.gold{color:var(--gold)}.sc-value.dim{color:var(--dim)}
 
-/* ─ Instance list ────────────────────────── */
 .instance-list{display:flex;flex-direction:column;gap:.5rem}
-.instance-row{display:grid;grid-template-columns:2rem 1fr auto auto auto;align-items:center;gap:.6rem;padding:.65rem .9rem;border:1px solid rgba(201,168,76,0.1);border-radius:8px;background:var(--surface);font-size:.72rem;transition:border-color .2s;}
+.instance-row{display:grid;grid-template-columns:2rem 1fr auto auto auto;align-items:center;gap:.6rem;padding:.65rem .9rem;border:1px solid rgba(201,168,76,0.1);border-radius:8px;background:var(--surface);font-size:.72rem;transition:border-color .2s}
 .instance-row:hover{border-color:rgba(201,168,76,0.3)}
 .instance-row.running{border-color:rgba(94,207,122,0.3);background:rgba(94,207,122,0.03)}
 .instance-row.stopped{opacity:.65}
@@ -82,14 +58,13 @@ body{min-height:100vh;background:var(--ink);}
 .inst-meta{display:flex;flex-direction:column;gap:.15rem}
 .inst-name{color:var(--gold2);letter-spacing:.1em;font-weight:700}
 .inst-detail{color:var(--dim);font-size:.58rem;letter-spacing:.15em;font-family:'Courier New',monospace}
-.inst-badge{font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;padding:.15rem .5rem;border-radius:999px;border:1px solid;white-space:nowrap;}
+.inst-badge{font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;padding:.15rem .5rem;border-radius:999px;border:1px solid;white-space:nowrap}
 .inst-badge.running{border-color:rgba(94,207,122,.4);color:rgba(94,207,122,.8)}
 .inst-badge.stopped{border-color:rgba(224,80,80,.35);color:rgba(224,80,80,.7)}
 .inst-badge.pending{border-color:rgba(201,168,76,.5);color:var(--gold)}
 .inst-badge.unknown{border-color:var(--border);color:var(--dim)}
 
-/* ─ Buttons ────────────────────────────────── */
-.ibtn{border:1px solid rgba(201,168,76,.22);border-radius:6px;background:transparent;color:rgba(201,168,76,.6);font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;padding:.25rem .65rem;cursor:pointer;transition:all .18s;white-space:nowrap;}
+.ibtn{border:1px solid rgba(201,168,76,.22);border-radius:6px;background:transparent;color:rgba(201,168,76,.6);font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;padding:.25rem .65rem;cursor:pointer;transition:all .18s;white-space:nowrap}
 .ibtn:hover{border-color:var(--gold);color:var(--gold2);background:rgba(201,168,76,.07)}
 .ibtn.danger{border-color:rgba(224,80,80,.3);color:rgba(224,80,80,.65)}
 .ibtn.danger:hover{border-color:rgba(224,80,80,.8);color:rgba(240,120,120,.95);background:rgba(224,80,80,.07)}
@@ -97,253 +72,116 @@ body{min-height:100vh;background:var(--ink);}
 .ibtn.primary:hover{border-color:var(--gold2);background:rgba(201,168,76,.13);color:var(--gold2)}
 .ibtn.ghost{border-color:transparent;color:var(--dim)}
 .ibtn.ghost:hover{border-color:rgba(201,168,76,.2);color:var(--gold)}
-.ibtn.violet{border-color:rgba(155,114,207,.45);color:rgba(155,114,207,.8)}
-.ibtn.violet:hover{border-color:rgba(155,114,207,.9);color:#c4a8ef;background:rgba(155,114,207,.08)}
 .ibtn:disabled{opacity:.3;cursor:not-allowed}
 .action-bar{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:1.2rem}
 .action-bar .ibtn{padding:.45rem 1.1rem;font-size:.65rem}
 
-/* ─ Launch form ───────────────────────────── */
 .launch-form{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
 @media(max-width:540px){.launch-form{grid-template-columns:1fr}}
 .lf-group{display:flex;flex-direction:column;gap:.35rem}
 .lf-group.span2{grid-column:span 2}
 @media(max-width:540px){.lf-group.span2{grid-column:span 1}}
 .lf-label{font-size:.55rem;letter-spacing:.25em;text-transform:uppercase;color:var(--dim)}
-.lf-input{background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.18);border-radius:6px;color:var(--gold2);font-family:'Courier New',monospace;font-size:.75rem;padding:.45rem .7rem;outline:none;width:100%;transition:border-color .15s;}
+.lf-input{background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.18);border-radius:6px;color:var(--gold2);font-family:'Courier New',monospace;font-size:.75rem;padding:.45rem .7rem;outline:none;width:100%;transition:border-color .15s}
 .lf-input:focus{border-color:rgba(201,168,76,.5)}
 .lf-input::placeholder{color:rgba(201,168,76,.2)}
 .lf-hint{font-size:.55rem;color:var(--dim);font-style:italic;letter-spacing:.05em}
 
-/* ─ Log viewer ────────────────────────────── */
-.log-box{background:#060608;border:1px solid rgba(201,168,76,.1);border-radius:6px;height:180px;overflow-y:auto;padding:.7rem .9rem;font-family:'Courier New',monospace;font-size:.7rem;line-height:1.55;}
+.log-box{background:#060608;border:1px solid rgba(201,168,76,.1);border-radius:6px;height:180px;overflow-y:auto;padding:.7rem .9rem;font-family:'Courier New',monospace;font-size:.7rem;line-height:1.55}
 .ll{white-space:pre-wrap;word-break:break-all;padding:.05rem 0}
 .ll.info{color:rgba(201,168,76,.6)}.ll.ok{color:var(--green)}.ll.warn{color:var(--gold)}.ll.err{color:var(--red)}.ll.dim{color:rgba(201,168,76,.25)}
 
-/* ─ Misc ────────────────────────────────────── */
 .msg{font-size:.65rem;letter-spacing:.1em;font-style:italic;min-height:1.1em;margin-top:.5rem}
 .msg.ok{color:rgba(94,207,122,.85)}.msg.err{color:rgba(240,120,120,.85)}.msg.info{color:rgba(201,168,76,.7)}
 
-/* ══════════════════════════════════════════════
-   ─ PERMANENT MACHINES  ──────────────────────
-   ══════════════════════════════════════════════ */
+/* ═══ PERMANENT MACHINES ═══ */
 
-/* Section divider */
-.section-rune{
-  text-align:center;
-  padding:2rem 0 1rem;
-  font-size:.6rem;
-  letter-spacing:.45em;
-  text-transform:uppercase;
-  color:rgba(201,168,76,.25);
-}
-.section-rune span{
-  display:inline-block;
-  padding:0 1.2rem;
-  position:relative;
-}
-.section-rune span::before,
-.section-rune span::after{
-  content:'';
-  position:absolute;
-  top:50%;
-  width:60px;
-  height:1px;
-  background:linear-gradient(90deg,transparent,rgba(201,168,76,.3));
-}
+.section-rune{text-align:center;padding:2rem 0 1rem;font-size:.6rem;letter-spacing:.45em;text-transform:uppercase;color:rgba(201,168,76,.25)}
+.section-rune span{display:inline-block;padding:0 1.2rem;position:relative}
+.section-rune span::before,.section-rune span::after{content:'';position:absolute;top:50%;width:60px;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.3))}
 .section-rune span::before{right:100%;transform:scaleX(-1)}
 .section-rune span::after{left:100%}
 
-/* Filter bar */
-.pm-filter-bar{
-  display:flex;
-  flex-wrap:wrap;
-  gap:.45rem;
-  margin-bottom:1.3rem;
-}
-.pm-filter-btn{
-  border:1px solid rgba(201,168,76,.18);
-  border-radius:999px;
-  background:transparent;
-  color:rgba(201,168,76,.45);
-  font-family:'Cinzel',serif;
-  font-size:.55rem;
-  letter-spacing:.2em;
-  text-transform:uppercase;
-  padding:.25rem .75rem;
-  cursor:pointer;
-  transition:all .18s;
-}
-.pm-filter-btn:hover,.pm-filter-btn.active{
-  border-color:var(--gold);
-  color:var(--gold2);
-  background:rgba(201,168,76,.07);
-}
+.pm-filter-bar{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:1.3rem}
+.pm-filter-btn{border:1px solid rgba(201,168,76,.18);border-radius:999px;background:transparent;color:rgba(201,168,76,.45);font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;padding:.25rem .75rem;cursor:pointer;transition:all .18s}
+.pm-filter-btn:hover,.pm-filter-btn.active{border-color:var(--gold);color:var(--gold2);background:rgba(201,168,76,.07)}
 
-/* Machine grid */
-.machine-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:.85rem;
-}
+.machine-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:.9rem}
 
-/* Machine card */
-.mcard{
-  background:var(--surface);
-  border:1px solid rgba(201,168,76,.12);
-  border-radius:10px;
-  padding:1.1rem 1.2rem 1rem;
-  display:flex;
-  flex-direction:column;
-  gap:.7rem;
-  cursor:pointer;
-  transition:border-color .2s, box-shadow .2s, transform .15s;
-  position:relative;
-  overflow:hidden;
-}
-.mcard::before{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.05) 0%, transparent 65%);
-  opacity:0;
-  transition:opacity .25s;
-  pointer-events:none;
-}
-.mcard:hover{border-color:rgba(201,168,76,.38);box-shadow:0 4px 24px rgba(201,168,76,.08);transform:translateY(-2px)}
+.mcard{background:var(--surface);border:1px solid rgba(201,168,76,.12);border-radius:10px;padding:1.1rem 1.2rem 1rem;display:flex;flex-direction:column;gap:.65rem;cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .15s;position:relative;overflow:hidden}
+.mcard::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(201,168,76,0.05) 0%,transparent 65%);opacity:0;transition:opacity .25s;pointer-events:none}
+.mcard:hover{transform:translateY(-2px)}
 .mcard:hover::before{opacity:1}
-.mcard.tier-nano   {border-color:rgba(78,207,207,.15)}
-.mcard.tier-micro  {border-color:rgba(94,207,122,.15)}
-.mcard.tier-standard{border-color:rgba(201,168,76,.18)}
-.mcard.tier-worker {border-color:rgba(232,149,58,.18)}
-.mcard.tier-relay  {border-color:rgba(155,114,207,.18)}
-.mcard.tier-forge  {border-color:rgba(232,80,80,.2)}
-.mcard.tier-nano:hover   {border-color:rgba(78,207,207,.55);box-shadow:0 4px 24px rgba(78,207,207,.08)}
-.mcard.tier-micro:hover  {border-color:rgba(94,207,122,.55);box-shadow:0 4px 24px rgba(94,207,122,.08)}
-.mcard.tier-standard:hover{border-color:rgba(201,168,76,.55)}
-.mcard.tier-worker:hover {border-color:rgba(232,149,58,.55);box-shadow:0 4px 24px rgba(232,149,58,.08)}
-.mcard.tier-relay:hover  {border-color:rgba(155,114,207,.55);box-shadow:0 4px 24px rgba(155,114,207,.08)}
-.mcard.tier-forge:hover  {border-color:rgba(232,80,80,.55);box-shadow:0 4px 24px rgba(232,80,80,.08)}
+
+/* tier colors */
+.mcard.tier-free    {border-color:rgba(78,207,207,.18)}
+.mcard.tier-nano    {border-color:rgba(94,207,122,.15)}
+.mcard.tier-micro   {border-color:rgba(201,168,76,.2)}
+.mcard.tier-standard{border-color:rgba(232,149,58,.2)}
+.mcard.tier-worker  {border-color:rgba(155,114,207,.2)}
+.mcard.tier-forge   {border-color:rgba(232,80,80,.22)}
+.mcard.tier-free:hover    {border-color:rgba(78,207,207,.6);box-shadow:0 4px 24px rgba(78,207,207,.09)}
+.mcard.tier-nano:hover    {border-color:rgba(94,207,122,.55);box-shadow:0 4px 24px rgba(94,207,122,.09)}
+.mcard.tier-micro:hover   {border-color:rgba(201,168,76,.55)}
+.mcard.tier-standard:hover{border-color:rgba(232,149,58,.55);box-shadow:0 4px 24px rgba(232,149,58,.09)}
+.mcard.tier-worker:hover  {border-color:rgba(155,114,207,.55);box-shadow:0 4px 24px rgba(155,114,207,.09)}
+.mcard.tier-forge:hover   {border-color:rgba(232,80,80,.55);box-shadow:0 4px 24px rgba(232,80,80,.09)}
 
 .mcard-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem}
-.mcard-name{font-size:.85rem;font-weight:700;letter-spacing:.1em;color:var(--gold2)}
-.mcard-tier-badge{
-  font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;
-  padding:.12rem .5rem;border-radius:999px;border:1px solid;white-space:nowrap;
-  flex-shrink:0;margin-top:.1rem;
-}
-.tb-nano   {border-color:rgba(78,207,207,.4); color:rgba(78,207,207,.85)}
-.tb-micro  {border-color:rgba(94,207,122,.4); color:rgba(94,207,122,.85)}
-.tb-standard{border-color:rgba(201,168,76,.4);color:var(--gold)}
-.tb-worker {border-color:rgba(232,149,58,.4); color:rgba(232,149,58,.85)}
-.tb-relay  {border-color:rgba(155,114,207,.4);color:rgba(155,114,207,.85)}
-.tb-forge  {border-color:rgba(232,80,80,.4);  color:rgba(232,80,80,.85)}
+.mcard-name{font-size:.82rem;font-weight:700;letter-spacing:.08em;color:var(--gold2);line-height:1.3}
+.mcard-tier-badge{font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;padding:.12rem .5rem;border-radius:999px;border:1px solid;white-space:nowrap;flex-shrink:0;margin-top:.15rem}
+.tb-free    {border-color:rgba(78,207,207,.45); color:rgba(78,207,207,.9)}
+.tb-nano    {border-color:rgba(94,207,122,.45); color:rgba(94,207,122,.9)}
+.tb-micro   {border-color:rgba(201,168,76,.45); color:var(--gold)}
+.tb-standard{border-color:rgba(232,149,58,.45); color:rgba(232,149,58,.9)}
+.tb-worker  {border-color:rgba(155,114,207,.45);color:rgba(155,114,207,.9)}
+.tb-forge   {border-color:rgba(232,80,80,.45);  color:rgba(232,80,80,.9)}
 
-.mcard-tagline{font-size:.6rem;letter-spacing:.08em;color:rgba(201,168,76,.4);font-style:italic;line-height:1.45;margin-top:-.25rem}
+.mcard-tagline{font-size:.58rem;letter-spacing:.07em;color:rgba(201,168,76,.38);font-style:italic;line-height:1.5;margin-top:-.2rem}
 
-.mcard-specs{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:.3rem .6rem;
-}
-.mcs{display:flex;flex-direction:column;gap:.08rem}
-.mcs-k{font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
-.mcs-v{font-size:.72rem;font-family:'Courier New',monospace;color:var(--gold2)}
+.mcard-specs{display:grid;grid-template-columns:1fr 1fr;gap:.28rem .6rem}
+.mcs{display:flex;flex-direction:column;gap:.06rem}
+.mcs-k{font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.mcs-v{font-size:.7rem;font-family:'Courier New',monospace;color:var(--gold2)}
 
-.mcard-providers{
-  display:flex;
-  flex-wrap:wrap;
-  gap:.3rem;
-  margin-top:-.1rem;
-}
-.prov-chip{
-  font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;
-  padding:.1rem .45rem;border-radius:4px;
-  background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.12);
-  color:rgba(201,168,76,.5);
-}
+.mcard-sku{font-size:.56rem;font-family:'Courier New',monospace;color:rgba(201,168,76,.32);letter-spacing:.06em;margin-top:-.1rem}
 
-.mcard-foot{display:flex;align-items:center;justify-content:space-between;margin-top:.2rem}
-.mcard-price{font-size:.7rem;color:var(--gold2);letter-spacing:.06em}
-.mcard-price span{font-size:.55rem;color:var(--dim)}
-.mcard-cta{
-  border:1px solid rgba(201,168,76,.3);border-radius:6px;
-  background:transparent;color:rgba(201,168,76,.65);
-  font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;
-  padding:.22rem .65rem;cursor:pointer;transition:all .18s;
-}
+.mcard-providers{display:flex;flex-wrap:wrap;gap:.28rem;margin-top:.05rem}
+.prov-chip{font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;padding:.1rem .42rem;border-radius:4px;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.1);color:rgba(201,168,76,.45)}
+
+.mcard-foot{display:flex;align-items:center;justify-content:space-between;margin-top:.15rem}
+.mcard-price{font-size:.75rem;color:var(--gold2);letter-spacing:.04em}
+.mcard-price span{font-size:.52rem;color:var(--dim)}
+.mcard-price.free-tag{color:var(--cyan);font-size:.7rem}
+.mcard-cta{border:1px solid rgba(201,168,76,.28);border-radius:6px;background:transparent;color:rgba(201,168,76,.6);font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;padding:.22rem .65rem;cursor:pointer;transition:all .18s}
 .mcard-cta:hover{border-color:var(--gold2);color:var(--gold2);background:rgba(201,168,76,.08)}
+.mcard-rec{font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(94,207,122,.7);border:1px solid rgba(94,207,122,.3);border-radius:999px;padding:.1rem .45rem;white-space:nowrap}
 
-/* ─ Provision modal ─────────────────────── */
-.pm-overlay{
-  position:fixed;inset:0;z-index:999;
-  background:rgba(13,11,14,.85);
-  backdrop-filter:blur(6px);
-  display:flex;align-items:center;justify-content:center;
-  padding:1.5rem;
-  opacity:0;pointer-events:none;transition:opacity .22s;
-}
+/* ─ Provision modal */
+.pm-overlay{position:fixed;inset:0;z-index:999;background:rgba(13,11,14,.88);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;pointer-events:none;transition:opacity .22s}
 .pm-overlay.open{opacity:1;pointer-events:all}
-.pm-modal{
-  background:var(--surface2);
-  border:1px solid rgba(201,168,76,.25);
-  border-radius:14px;
-  max-width:520px;width:100%;
-  max-height:90vh;overflow-y:auto;
-  padding:2rem 2rem 1.5rem;
-  position:relative;
-}
-.pm-modal-close{
-  position:absolute;top:.9rem;right:1rem;
-  background:transparent;border:none;
-  font-size:1.1rem;color:var(--dim);cursor:pointer;
-  transition:color .15s;line-height:1;
-}
+.pm-modal{background:var(--surface2);border:1px solid rgba(201,168,76,.28);border-radius:14px;max-width:530px;width:100%;max-height:90vh;overflow-y:auto;padding:2rem 2rem 1.6rem;position:relative}
+.pm-modal-close{position:absolute;top:.9rem;right:1rem;background:transparent;border:none;font-size:1.1rem;color:var(--dim);cursor:pointer;transition:color .15s;line-height:1}
 .pm-modal-close:hover{color:var(--gold2)}
-.pm-modal-title{
-  font-family:'Cinzel Decorative',serif;
-  font-size:1.1rem;font-weight:700;
-  background:linear-gradient(135deg,var(--gold2),var(--gold));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  margin-bottom:.25rem;
-}
-.pm-modal-sub{font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-bottom:1.4rem}
-
-.pm-form{display:flex;flex-direction:column;gap:.85rem}
+.pm-modal-title{font-family:'Cinzel Decorative',serif;font-size:1.05rem;font-weight:700;background:linear-gradient(135deg,var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.2rem}
+.pm-modal-sub{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:1.3rem}
+.pm-form{display:flex;flex-direction:column;gap:.8rem}
 .pm-row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
 @media(max-width:440px){.pm-row{grid-template-columns:1fr}}
-
-.pm-spec-summary{
-  background:rgba(201,168,76,.04);
-  border:1px solid rgba(201,168,76,.1);
-  border-radius:8px;
-  padding:.8rem 1rem;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:.3rem .8rem;
-  margin-bottom:.4rem;
-}
-.pss-item{display:flex;flex-direction:column;gap:.05rem}
-.pss-k{font-size:.48rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
-.pss-v{font-size:.7rem;font-family:'Courier New',monospace;color:var(--gold2)}
-
-.pm-provider-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-  gap:.45rem;
-  margin-top:.15rem;
-}
-.pm-prov-card{
-  border:1px solid rgba(201,168,76,.12);
-  border-radius:8px;padding:.6rem .75rem;
-  cursor:pointer;transition:all .18s;
-  background:var(--surface);
-}
+.pm-spec-summary{background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.1);border-radius:8px;padding:.8rem 1rem;display:grid;grid-template-columns:1fr 1fr;gap:.28rem .8rem;margin-bottom:.3rem}
+.pss-item{display:flex;flex-direction:column;gap:.04rem}
+.pss-k{font-size:.46rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.pss-v{font-size:.68rem;font-family:'Courier New',monospace;color:var(--gold2)}
+.pm-provider-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.42rem;margin-top:.15rem}
+.pm-prov-card{border:1px solid rgba(201,168,76,.12);border-radius:8px;padding:.55rem .75rem;cursor:pointer;transition:all .18s;background:var(--surface)}
 .pm-prov-card:hover{border-color:rgba(201,168,76,.35);background:rgba(201,168,76,.05)}
-.pm-prov-card.selected{border-color:var(--gold);background:rgba(201,168,76,.1)}
-.pm-prov-card .ppc-name{font-size:.65rem;letter-spacing:.1em;font-weight:700;color:var(--gold2);margin-bottom:.2rem}
-.pm-prov-card .ppc-detail{font-size:.55rem;color:var(--dim);font-family:'Courier New',monospace;letter-spacing:.06em}
-
+.pm-prov-card.selected{border-color:var(--gold);background:rgba(201,168,76,.09)}
+.pm-prov-card .ppc-name{font-size:.63rem;letter-spacing:.08em;font-weight:700;color:var(--gold2);margin-bottom:.15rem}
+.pm-prov-card .ppc-sku{font-size:.52rem;font-family:'Courier New',monospace;color:rgba(201,168,76,.45);letter-spacing:.05em;margin-bottom:.08rem}
+.pm-prov-card .ppc-price{font-size:.6rem;color:var(--green);letter-spacing:.04em}
+.pm-prov-card .ppc-note{font-size:.48rem;color:var(--dim);letter-spacing:.05em;margin-top:.08rem}
+.pm-prov-card a.ppc-link{display:block;font-size:.46rem;color:rgba(78,207,207,.5);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;margin-top:.2rem;transition:color .15s}
+.pm-prov-card a.ppc-link:hover{color:var(--cyan)}
 .pm-action-row{display:flex;gap:.6rem;margin-top:.5rem}
 .pm-action-row .ibtn{padding:.5rem 1.2rem;font-size:.65rem;flex:1}
 </style>
@@ -352,12 +190,9 @@ body{min-height:100vh;background:var(--ink);}
 
 <div class="stars" id="stars"></div>
 
-<!-- Hero -->
 <div class="hero">
   <a class="header-back" href="/">&#8592; return to the source</a>
-  <img class="hero-img"
-       src="idylls_of_the_king_-merlin-and-vivien.jpg"
-       alt="Merlin and Vivien — Gustave Doré, Idylls of the King" />
+  <img class="hero-img" src="idylls_of_the_king_-merlin-and-vivien.jpg" alt="Merlin and Vivien — Gustave Doré" />
   <div class="hero-veil"></div>
   <div class="hero-content">
     <div class="header-rune">&#10022; &#8962; &#10022;</div>
@@ -370,7 +205,6 @@ body{min-height:100vh;background:var(--ink);}
 
 <div id="app">
 
-  <!-- Status overview -->
   <div class="panel">
     <div class="panel-label">&#10097; Fleet Status &#10096;</div>
     <div class="panel-body">
@@ -384,7 +218,6 @@ body{min-height:100vh;background:var(--ink);}
     </div>
   </div>
 
-  <!-- Instance list -->
   <div class="panel">
     <div class="panel-label">&#10097; Active Instances &#10096;</div>
     <div class="panel-body">
@@ -399,17 +232,11 @@ body{min-height:100vh;background:var(--ink);}
     </div>
   </div>
 
-  <!-- Launch wizard -->
   <div class="panel">
     <div class="panel-label">&#10097; Launch New Instance &#10096;</div>
     <div class="panel-body">
       <div class="launch-form">
-
-        <div class="lf-group">
-          <label class="lf-label">Instance Name</label>
-          <input class="lf-input" id="lf-name" placeholder="my-lancia-01" />
-        </div>
-
+        <div class="lf-group"><label class="lf-label">Instance Name</label><input class="lf-input" id="lf-name" placeholder="my-lancia-01" /></div>
         <div class="lf-group">
           <label class="lf-label">Region</label>
           <select class="lf-input" id="lf-region">
@@ -422,12 +249,7 @@ body{min-height:100vh;background:var(--ink);}
             <option value="sa-east-1">sa-east-1 (São Paulo)</option>
           </select>
         </div>
-
-        <div class="lf-group">
-          <label class="lf-label">Image / Version</label>
-          <input class="lf-input" id="lf-image" placeholder="latest" value="latest" />
-        </div>
-
+        <div class="lf-group"><label class="lf-label">Image / Version</label><input class="lf-input" id="lf-image" placeholder="latest" value="latest" /></div>
         <div class="lf-group">
           <label class="lf-label">Instance Size</label>
           <select class="lf-input" id="lf-size">
@@ -438,30 +260,14 @@ body{min-height:100vh;background:var(--ink);}
             <option value="performance-4x">performance-4x &mdash; heavy</option>
           </select>
         </div>
-
-        <div class="lf-group">
-          <label class="lf-label">Stratum Port</label>
-          <input class="lf-input" id="lf-stratum" type="number" value="3333" />
-        </div>
-
-        <div class="lf-group">
-          <label class="lf-label">API Port</label>
-          <input class="lf-input" id="lf-apiport" type="number" value="3000" />
-        </div>
-
-        <div class="lf-group span2">
-          <label class="lf-label">Coinbase Reward Address</label>
-          <input class="lf-input" id="lf-addr" placeholder="DGB / BTC / LTC address&hellip;" />
-          <span class="lf-hint">Leave blank to inherit from active wallet</span>
-        </div>
-
+        <div class="lf-group"><label class="lf-label">Stratum Port</label><input class="lf-input" id="lf-stratum" type="number" value="3333" /></div>
+        <div class="lf-group"><label class="lf-label">API Port</label><input class="lf-input" id="lf-apiport" type="number" value="3000" /></div>
+        <div class="lf-group span2"><label class="lf-label">Coinbase Reward Address</label><input class="lf-input" id="lf-addr" placeholder="DGB / BTC / LTC address…" /><span class="lf-hint">Leave blank to inherit from active wallet</span></div>
         <div class="lf-group span2">
           <label class="lf-label">Environment Overrides <span style="font-weight:400;font-style:italic">(KEY=VALUE, one per line)</span></label>
           <textarea class="lf-input" id="lf-env" rows="3" placeholder="POOL_ALGO=skein&#10;PPLNS_WINDOW=2048"></textarea>
         </div>
-
       </div>
-
       <div class="action-bar">
         <button class="ibtn primary" onclick="launchInstance()">&#10022; Launch Instance</button>
         <button class="ibtn ghost" onclick="clearForm()">Clear</button>
@@ -470,7 +276,6 @@ body{min-height:100vh;background:var(--ink);}
     </div>
   </div>
 
-  <!-- Live launch log -->
   <div class="panel">
     <div class="panel-label">&#10097; Launch Log &#10096;</div>
     <div class="panel-body" style="padding-top:1.2rem">
@@ -487,23 +292,20 @@ body{min-height:100vh;background:var(--ink);}
   <div class="panel">
     <div class="panel-label">&#10097; Cloud Machine Catalog &#10096;</div>
     <div class="panel-body">
-
       <div class="pm-filter-bar" id="pm-filters">
-        <button class="pm-filter-btn active" data-filter="all">All Tiers</button>
+        <button class="pm-filter-btn active" data-filter="all">All</button>
+        <button class="pm-filter-btn" data-filter="free">Free</button>
         <button class="pm-filter-btn" data-filter="nano">Nano</button>
         <button class="pm-filter-btn" data-filter="micro">Micro</button>
         <button class="pm-filter-btn" data-filter="standard">Standard</button>
         <button class="pm-filter-btn" data-filter="worker">Worker</button>
-        <button class="pm-filter-btn" data-filter="relay">Relay</button>
         <button class="pm-filter-btn" data-filter="forge">Forge</button>
       </div>
-
       <div class="machine-grid" id="machine-grid"></div>
-
     </div>
   </div>
 
-</div><!-- #app -->
+</div>
 
 <!-- Provision modal -->
 <div class="pm-overlay" id="pm-overlay">
@@ -511,53 +313,33 @@ body{min-height:100vh;background:var(--ink);}
     <button class="pm-modal-close" onclick="closeProvision()">&#10005;</button>
     <div class="pm-modal-title" id="prov-title">—</div>
     <div class="pm-modal-sub" id="prov-sub">—</div>
-
     <div class="pm-spec-summary" id="prov-specs"></div>
-
     <div class="pm-form">
-
-      <div class="lf-group">
-        <label class="lf-label">Instance Name</label>
-        <input class="lf-input" id="prov-name" placeholder="my-machine-01" />
-      </div>
-
+      <div class="lf-group"><label class="lf-label">Instance Name</label><input class="lf-input" id="prov-name" placeholder="my-machine-01" /></div>
       <div class="pm-row">
         <div class="lf-group">
           <label class="lf-label">Region</label>
           <select class="lf-input" id="prov-region">
-            <option value="us-east-1">us-east-1</option>
-            <option value="us-west-2">us-west-2</option>
-            <option value="eu-west-1">eu-west-1</option>
-            <option value="eu-central-1">eu-central-1</option>
-            <option value="ap-southeast-1">ap-southeast-1</option>
-            <option value="ap-northeast-1">ap-northeast-1</option>
-            <option value="sa-east-1">sa-east-1</option>
+            <option value="us-east-1">us-east-1 (N. Virginia)</option>
+            <option value="us-east-2">us-east-2 (Ohio)</option>
+            <option value="us-west-2">us-west-2 (Oregon)</option>
+            <option value="eu-west-1">eu-west-1 (Ireland)</option>
+            <option value="eu-central-1">eu-central-1 (Frankfurt)</option>
+            <option value="eu-north-1">eu-north-1 (Helsinki)</option>
+            <option value="ap-southeast-1">ap-southeast-1 (Singapore)</option>
+            <option value="ap-northeast-1">ap-northeast-1 (Tokyo)</option>
+            <option value="sa-east-1">sa-east-1 (São Paulo)</option>
           </select>
         </div>
-        <div class="lf-group">
-          <label class="lf-label">Image / Version</label>
-          <input class="lf-input" id="prov-image" value="latest" />
-        </div>
+        <div class="lf-group"><label class="lf-label">Image / Version</label><input class="lf-input" id="prov-image" value="latest" /></div>
       </div>
-
       <div class="lf-group">
-        <label class="lf-label">Provider</label>
+        <label class="lf-label">Provider &amp; Plan</label>
         <div class="pm-provider-grid" id="prov-provider-grid"></div>
       </div>
-
-      <div class="lf-group">
-        <label class="lf-label">Coinbase Address</label>
-        <input class="lf-input" id="prov-addr" placeholder="DGB / BTC / LTC address…" />
-        <span class="lf-hint">Leave blank to inherit from active wallet</span>
-      </div>
-
-      <div class="lf-group">
-        <label class="lf-label">Env Overrides <span style="font-weight:400;font-style:italic">(KEY=VALUE)</span></label>
-        <textarea class="lf-input" id="prov-env" rows="2" placeholder="POOL_ALGO=skein"></textarea>
-      </div>
-
+      <div class="lf-group"><label class="lf-label">Coinbase Address</label><input class="lf-input" id="prov-addr" placeholder="DGB / BTC / LTC address…" /><span class="lf-hint">Leave blank to inherit from active wallet</span></div>
+      <div class="lf-group"><label class="lf-label">Env Overrides <span style="font-weight:400;font-style:italic">(KEY=VALUE)</span></label><textarea class="lf-input" id="prov-env" rows="2" placeholder="POOL_ALGO=skein"></textarea></div>
     </div>
-
     <div class="pm-action-row">
       <button class="ibtn primary" onclick="submitProvision()">&#10022; Provision Machine</button>
       <button class="ibtn ghost" onclick="closeProvision()">Cancel</button>
@@ -570,392 +352,404 @@ body{min-height:100vh;background:var(--ink);}
 // ─ Stars
 const starsEl = document.getElementById('stars');
 for (let i = 0; i < 140; i++) {
-  const s = document.createElement('div');
-  s.className = 'star';
-  const sz = Math.random() * 2.1 + 0.35;
-  s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*5+3).toFixed(1)}s;--delay:${(Math.random()*7).toFixed(1)}s;--bright:${(Math.random()*.5+.25).toFixed(2)}`;
+  const s = document.createElement('div'); s.className = 'star';
+  const sz = Math.random()*2.1+.35;
+  s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*5+3).toFixed(1)}s;--delay:${(Math.random()*7).toFixed(1)}s;--bright:${(Math.random()*.5+.25).toFixed(2)}`;
   starsEl.appendChild(s);
 }
 
-// ─ API helpers
-const BASE = '/api/v1';
-async function apiCall(method, path, body) {
-  try {
-    const r = await fetch(BASE + path, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: body ? JSON.stringify(body) : undefined
-    });
-    const text = await r.text();
-    try { return JSON.parse(text); } catch { return { error: text }; }
-  } catch (e) { return { error: e.message }; }
+// ─ API
+const BASE='/api/v1';
+async function apiCall(method,path,body){
+  try{
+    const r=await fetch(BASE+path,{method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+    const t=await r.text(); try{return JSON.parse(t);}catch{return{error:t};}
+  }catch(e){return{error:e.message};}
 }
 
 // ─ Log
-const logBox = document.getElementById('log-box');
-let logLines = [];
-function log(text, cls='info') {
-  const ts = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-  logLines.push({ ts, text, cls });
-  if (logLines.length > 300) logLines.shift();
-  renderLog();
+const logBox=document.getElementById('log-box');
+let logLines=[];
+function log(text,cls='info'){
+  const ts=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  logLines.push({ts,text,cls}); if(logLines.length>300)logLines.shift(); renderLog();
 }
-function renderLog() {
-  logBox.innerHTML = logLines.map(l =>
-    `<div class="ll ${l.cls}">[${l.ts}] ${escHtml(l.text)}</div>`
-  ).join('');
-  logBox.scrollTop = logBox.scrollHeight;
+function renderLog(){
+  logBox.innerHTML=logLines.map(l=>`<div class="ll ${l.cls}">[${l.ts}] ${escHtml(l.text)}</div>`).join('');
+  logBox.scrollTop=logBox.scrollHeight;
 }
-function clearLog() { logLines = []; renderLog(); }
-function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function setMsg(id, text, cls='') {
-  const el = document.getElementById(id);
-  el.textContent = text;
-  el.className = 'msg ' + cls;
-}
+function clearLog(){logLines=[];renderLog();}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function setMsg(id,text,cls=''){const el=document.getElementById(id);el.textContent=text;el.className='msg '+cls;}
 
 // ─ Instance rendering
-function instanceRow(inst) {
-  const st = inst.status || 'unknown';
-  const dotCls = st === 'running' ? 'on' : st === 'stopped' || st === 'destroyed' ? 'off' : 'pending';
-  const badgeCls = ['running','stopped','pending'].includes(st) ? st : 'unknown';
-  return `
-  <div class="instance-row ${dotCls === 'on' ? 'running' : st === 'off' ? 'stopped' : ''}">
-    <div class="inst-dot ${dotCls}"></div>
-    <div class="inst-meta">
-      <div class="inst-name">${escHtml(inst.name || inst.id)}</div>
-      <div class="inst-detail">${escHtml(inst.region || '')}${inst.image ? '  ·  ' + inst.image : ''}${inst.url ? '  ·  ' + inst.url : ''}</div>
-    </div>
-    <span class="inst-badge ${badgeCls}">${st}</span>
-    <button class="ibtn" onclick="openShell('${inst.id}')" title="Open sigil">&#9741; Sigil</button>
-    <button class="ibtn" onclick="restartInst('${inst.id}')">&#8635;</button>
-    <button class="ibtn danger" onclick="destroyInst('${inst.id}')">&#9632;</button>
-  </div>`;
+function instanceRow(inst){
+  const st=inst.status||'unknown';
+  const dotCls=st==='running'?'on':st==='stopped'||st==='destroyed'?'off':'pending';
+  const badgeCls=['running','stopped','pending'].includes(st)?st:'unknown';
+  return`<div class="instance-row ${dotCls==='on'?'running':st==='off'?'stopped':''}"><div class="inst-dot ${dotCls}"></div><div class="inst-meta"><div class="inst-name">${escHtml(inst.name||inst.id)}</div><div class="inst-detail">${escHtml(inst.region||'')}${inst.image?'  ·  '+inst.image:''}${inst.url?'  ·  '+inst.url:''}</div></div><span class="inst-badge ${badgeCls}">${st}</span><button class="ibtn" onclick="openShell('${inst.id}')">&#9741; Sigil</button><button class="ibtn" onclick="restartInst('${inst.id}')">&#8635;</button><button class="ibtn danger" onclick="destroyInst('${inst.id}')">&#9632;</button></div>`;
 }
 
-// ─ Refresh fleet
-async function refresh() {
+// ─ Fleet
+async function refresh(){
   log('Fetching instance fleet…');
-  const data = await apiCall('GET', '/lancia/instances');
-  if (data.error) {
-    log('Fleet fetch failed: ' + data.error, 'err');
-    document.getElementById('instance-list').innerHTML =
-      '<div class="ll err" style="padding:.5rem 0">Could not reach Lancia API — ' + escHtml(data.error) + '</div>';
-    return;
-  }
-  const instances = Array.isArray(data) ? data : (data.instances || []);
-  const running = instances.filter(i => i.status === 'running').length;
-  const stopped = instances.filter(i => ['stopped','destroyed'].includes(i.status)).length;
-  const pending = instances.filter(i => !['running','stopped','destroyed'].includes(i.status)).length;
-  const regions = [...new Set(instances.map(i => i.region).filter(Boolean))];
-
-  document.getElementById('s-total').textContent   = instances.length;
-  document.getElementById('s-running').textContent = running;
-  document.getElementById('s-stopped').textContent = stopped;
-  document.getElementById('s-pending').textContent = pending;
-  document.getElementById('s-region').textContent  = regions.join(', ') || '—';
-
-  document.getElementById('instance-list').innerHTML =
-    instances.length === 0
-      ? '<div class="ll dim" style="padding:.5rem 0">No instances found. Cast the first launch below.</div>'
-      : instances.map(instanceRow).join('');
-
-  log(`Fleet: ${instances.length} instance(s) — ${running} running, ${stopped} stopped, ${pending} pending`, 'ok');
+  const data=await apiCall('GET','/lancia/instances');
+  if(data.error){log('Fleet fetch failed: '+data.error,'err');document.getElementById('instance-list').innerHTML='<div class="ll err" style="padding:.5rem 0">Could not reach Lancia API — '+escHtml(data.error)+'</div>';return;}
+  const instances=Array.isArray(data)?data:(data.instances||[]);
+  const running=instances.filter(i=>i.status==='running').length;
+  const stopped=instances.filter(i=>['stopped','destroyed'].includes(i.status)).length;
+  const pending=instances.filter(i=>!['running','stopped','destroyed'].includes(i.status)).length;
+  const regions=[...new Set(instances.map(i=>i.region).filter(Boolean))];
+  document.getElementById('s-total').textContent=instances.length;
+  document.getElementById('s-running').textContent=running;
+  document.getElementById('s-stopped').textContent=stopped;
+  document.getElementById('s-pending').textContent=pending;
+  document.getElementById('s-region').textContent=regions.join(', ')||'—';
+  document.getElementById('instance-list').innerHTML=instances.length===0?'<div class="ll dim" style="padding:.5rem 0">No instances found. Cast the first launch below.</div>':instances.map(instanceRow).join('');
+  log(`Fleet: ${instances.length} instance(s) — ${running} running, ${stopped} stopped, ${pending} pending`,'ok');
 }
 
-// ─ Launch
-async function launchInstance() {
-  const name    = document.getElementById('lf-name').value.trim();
-  const region  = document.getElementById('lf-region').value;
-  const image   = document.getElementById('lf-image').value.trim() || 'latest';
-  const size    = document.getElementById('lf-size').value;
-  const stratum = parseInt(document.getElementById('lf-stratum').value) || 3333;
-  const apiPort = parseInt(document.getElementById('lf-apiport').value) || 3000;
-  const addr    = document.getElementById('lf-addr').value.trim();
-  const envRaw  = document.getElementById('lf-env').value.trim();
-
-  if (!name) { setMsg('launch-msg', 'Name the instance first.', 'err'); return; }
-
-  const env = {};
-  if (envRaw) {
-    for (const line of envRaw.split('\n')) {
-      const eq = line.indexOf('=');
-      if (eq > 0) env[line.slice(0,eq).trim()] = line.slice(eq+1).trim();
-    }
-  }
-
-  const body = { name, region, image, size, stratumPort: stratum, apiPort, env };
-  if (addr) body.rewardAddress = addr;
-
-  setMsg('launch-msg', 'Casting the spell…', 'info');
+async function launchInstance(){
+  const name=document.getElementById('lf-name').value.trim();
+  const region=document.getElementById('lf-region').value;
+  const image=document.getElementById('lf-image').value.trim()||'latest';
+  const size=document.getElementById('lf-size').value;
+  const stratum=parseInt(document.getElementById('lf-stratum').value)||3333;
+  const apiPort=parseInt(document.getElementById('lf-apiport').value)||3000;
+  const addr=document.getElementById('lf-addr').value.trim();
+  const envRaw=document.getElementById('lf-env').value.trim();
+  if(!name){setMsg('launch-msg','Name the instance first.','err');return;}
+  const env={};
+  if(envRaw)for(const line of envRaw.split('\n')){const eq=line.indexOf('=');if(eq>0)env[line.slice(0,eq).trim()]=line.slice(eq+1).trim();}
+  const body={name,region,image,size,stratumPort:stratum,apiPort,env};
+  if(addr)body.rewardAddress=addr;
+  setMsg('launch-msg','Casting the spell…','info');
   log(`Launching "${name}" in ${region} (${size} · ${image})…`);
+  const r=await apiCall('POST','/lancia/instances',body);
+  if(r.error){setMsg('launch-msg','Launch failed: '+r.error,'err');log('Launch failed: '+r.error,'err');return;}
+  setMsg('launch-msg',`✦ Instance "${r.name||name}" is being summoned (${r.id||'…'})`,'ok');
+  log(`Summoned: ${r.id||name}  ·  status: ${r.status||'pending'}`,'ok');
+  setTimeout(refresh,1800);
+}
+async function restartInst(id){log(`Restarting ${id}…`);const r=await apiCall('POST',`/lancia/instances/${id}/restart`);if(r.error){log('Restart failed: '+r.error,'err');return;}log(`Restarted: ${id}`,'ok');setTimeout(refresh,2000);}
+async function destroyInst(id){if(!confirm(`Destroy instance ${id}? This is irreversible.`))return;log(`Destroying ${id}…`,'warn');const r=await apiCall('DELETE',`/lancia/instances/${id}`);if(r.error){log('Destroy failed: '+r.error,'err');return;}log(`Destroyed: ${id}`,'warn');setTimeout(refresh,1500);}
+async function startAll(){log('Starting all stopped instances…');const r=await apiCall('POST','/lancia/instances/start-all');if(r.error){log('Start-all failed: '+r.error,'err');return;}log(`Started ${r.started??'?'} instance(s)`,'ok');setTimeout(refresh,2200);}
+async function stopAll(){if(!confirm('Stop all running instances?'))return;log('Stopping all instances…','warn');const r=await apiCall('POST','/lancia/instances/stop-all');if(r.error){log('Stop-all failed: '+r.error,'err');return;}log(`Stopped ${r.stopped??'?'} instance(s)`,'warn');setTimeout(refresh,2200);}
+function openShell(id){log(`Opening sigil for ${id}…`);window.open(`/sigil?instance=${encodeURIComponent(id)}`,'_blank');}
+function clearForm(){['lf-name','lf-image','lf-addr','lf-env'].forEach(id=>{const el=document.getElementById(id);if(el.tagName==='TEXTAREA')el.value='';else el.value=id==='lf-image'?'latest':'';});document.getElementById('lf-stratum').value='3333';document.getElementById('lf-apiport').value='3000';setMsg('launch-msg','');}
 
-  const r = await apiCall('POST', '/lancia/instances', body);
-  if (r.error) {
-    setMsg('launch-msg', 'Launch failed: ' + r.error, 'err');
-    log('Launch failed: ' + r.error, 'err');
-    return;
-  }
-  setMsg('launch-msg', `✦ Instance "${r.name || name}" is being summoned (${r.id || '…'})`, 'ok');
-  log(`Summoned: ${r.id || name}  ·  status: ${r.status || 'pending'}`, 'ok');
-  setTimeout(refresh, 1800);
-}
-
-// ─ Instance actions
-async function restartInst(id) {
-  log(`Restarting ${id}…`);
-  const r = await apiCall('POST', `/lancia/instances/${id}/restart`);
-  if (r.error) { log('Restart failed: ' + r.error, 'err'); return; }
-  log(`Restarted: ${id}`, 'ok');
-  setTimeout(refresh, 2000);
-}
-async function destroyInst(id) {
-  if (!confirm(`Destroy instance ${id}? This is irreversible.`)) return;
-  log(`Destroying ${id}…`, 'warn');
-  const r = await apiCall('DELETE', `/lancia/instances/${id}`);
-  if (r.error) { log('Destroy failed: ' + r.error, 'err'); return; }
-  log(`Destroyed: ${id}`, 'warn');
-  setTimeout(refresh, 1500);
-}
-async function startAll() {
-  log('Starting all stopped instances…');
-  const r = await apiCall('POST', '/lancia/instances/start-all');
-  if (r.error) { log('Start-all failed: ' + r.error, 'err'); return; }
-  log(`Started ${r.started ?? '?'} instance(s)`, 'ok');
-  setTimeout(refresh, 2200);
-}
-async function stopAll() {
-  if (!confirm('Stop all running instances?')) return;
-  log('Stopping all instances…', 'warn');
-  const r = await apiCall('POST', '/lancia/instances/stop-all');
-  if (r.error) { log('Stop-all failed: ' + r.error, 'err'); return; }
-  log(`Stopped ${r.stopped ?? '?'} instance(s)`, 'warn');
-  setTimeout(refresh, 2200);
-}
-function openShell(id) {
-  log(`Opening sigil for ${id}…`);
-  window.open(`/sigil?instance=${encodeURIComponent(id)}`, '_blank');
-}
-function clearForm() {
-  ['lf-name','lf-image','lf-addr','lf-env'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el.tagName === 'TEXTAREA') el.value = '';
-    else el.value = id === 'lf-image' ? 'latest' : '';
-  });
-  document.getElementById('lf-stratum').value = '3333';
-  document.getElementById('lf-apiport').value = '3000';
-  setMsg('launch-msg', '');
-}
-
-// ══════════════════════════════════════════════
-// ─ PERMANENT MACHINES CATALOG ────────────────
-// ══════════════════════════════════════════════
+// ════════════════════════════════════════════
+// PERMANENT MACHINES ─ real providers, real SKUs, live 2026 pricing
+// ════════════════════════════════════════════
 
 const MACHINES = [
-  // ── NANO ──────────────────────────────────
+
+  // ─── FREE ──────────────────────────────────────
   {
-    id: 'nano-spark',
+    id: 'oracle-arm-free',
+    tier: 'free',
+    name: 'Oracle Cloud · Always Free ARM',
+    tagline: 'Permanently free — 4 cores, 24 GB RAM, 200 GB disk, 10 TB/mo bandwidth. Best free server on the internet.',
+    cpu: '4 Ampere A1 (ARM)',
+    ram: '24 GB',
+    disk: '200 GB boot volume',
+    net: '10 TB / mo',
+    recommended: true,
+    providers: [
+      { name: 'Oracle Cloud', sku: 'VM.Standard.A1.Flex', price: '$0 / mo', note: 'Always Free — permanent', url: 'https://cloud.oracle.com/compute/instances/create' }
+    ]
+  },
+  {
+    id: 'oracle-x86-free',
+    tier: 'free',
+    name: 'Oracle Cloud · Always Free x86',
+    tagline: '2× AMD x86 micros, 1 GB RAM each, always free. Good for a lightweight relay or monitoring node.',
+    cpu: '1/8 OCPU ×2 instances',
+    ram: '1 GB × 2',
+    disk: '50 GB × 2',
+    net: '10 TB / mo shared',
+    recommended: false,
+    providers: [
+      { name: 'Oracle Cloud', sku: 'VM.Standard.E2.1.Micro', price: '$0 / mo', note: 'Always Free — 2 instances', url: 'https://cloud.oracle.com/compute/instances/create' }
+    ]
+  },
+
+  // ─── NANO ─────────────────────────────────────
+  {
+    id: 'ionos-vps-xs',
     tier: 'nano',
-    name: 'Nano · Spark',
-    tagline: 'Solo dev, light CI, personal wallet bridge',
-    cpu: '1 vCPU (shared)',
+    name: 'IONOS · VPS XS',
+    tagline: 'Flat $2/mo, no contract required. Unlimited traffic. Good for a persistent lightweight node or wallet bridge.',
+    cpu: '1 vCore',
+    ram: '1 GB',
+    disk: '10 GB SSD',
+    net: 'Unlimited / 400 Mbps',
+    recommended: false,
+    providers: [
+      { name: 'IONOS', sku: 'VPS XS', price: '$2.00 / mo', note: 'Flat rate, no tricks', url: 'https://www.ionos.com/servers/vps' }
+    ]
+  },
+  {
+    id: 'racknerd-kvm-512',
+    tier: 'nano',
+    name: 'RackNerd · KVM 512',
+    tagline: 'Special deal at $26.99/yr ($2.25/mo equiv). Los Angeles or NY. Best annual cost on the market for persistent uptime.',
+    cpu: '1 vCore',
+    ram: '512 MB',
+    disk: '30 GB RAID-10 SSD',
+    net: '500 GB @ 1 Gbps',
+    recommended: false,
+    providers: [
+      { name: 'RackNerd', sku: 'KVM 512MB', price: '$26.99 / yr', note: '~$2.25/mo — annual deal', url: 'https://www.racknerd.com/kvm-vps' }
+    ]
+  },
+  {
+    id: 'vultr-cloud-ipv6',
+    tier: 'nano',
+    name: 'Vultr · Cloud Compute VC2',
+    tagline: 'IPv6-only plan at $2.50/mo for internal/relay use. 25 global regions. Best for geo-distributed stratum entry.',
+    cpu: '1 vCPU',
     ram: '512 MB',
     disk: '10 GB SSD',
-    net: '1 Gbps burst',
-    priceFrom: '$4',
-    priceUnit: '/mo',
-    providers: ['Fly.io','Render','Railway'],
-    flySize: 'shared-cpu-1x',
+    net: '0.5 TB @ 1 Gbps',
     recommended: false,
+    providers: [
+      { name: 'Vultr', sku: 'VC2 IPv6-only', price: '$2.50 / mo', note: 'IPv6 only — 25 regions', url: 'https://www.vultr.com/products/cloud-compute/' }
+    ]
   },
   {
-    id: 'nano-ember',
+    id: 'fly-shared-1x',
     tier: 'nano',
-    name: 'Nano · Ember',
-    tagline: 'Lightweight pool relay or single-coin testnet',
-    cpu: '1 vCPU (shared)',
-    ram: '1 GB',
-    disk: '20 GB SSD',
-    net: '1 Gbps burst',
-    priceFrom: '$7',
-    priceUnit: '/mo',
-    providers: ['Fly.io','Render','Hetzner'],
-    flySize: 'shared-cpu-2x',
+    name: 'Fly.io · shared-cpu-1x',
+    tagline: 'Pay-as-you-go, instant global deploys from Dockerfile. ~$5/mo persistent. Best for git-push workflow from mobile.',
+    cpu: '1 shared vCPU',
+    ram: '256 MB',
+    disk: '1 GB (+ volume)',
+    net: 'Anycast global',
     recommended: false,
+    providers: [
+      { name: 'Fly.io', sku: 'shared-cpu-1x', price: '~$5 / mo', note: 'Pay-as-you-go · anycast', url: 'https://fly.io/docs/about/pricing/' }
+    ]
   },
 
-  // ── MICRO ─────────────────────────────────
+  // ─── MICRO ────────────────────────────────────
   {
-    id: 'micro-vein',
+    id: 'hetzner-cx22',
     tier: 'micro',
-    name: 'Micro · Vein',
-    tagline: 'Small production pool — up to ~50 miners',
+    name: 'Hetzner · CX22',
+    tagline: 'Best €/core in Europe. 20 TB included traffic. NVMe. Ideal permanent pool node — runs 24/7 for under $5.',
+    cpu: '2 vCPU (shared Intel)',
+    ram: '4 GB',
+    disk: '40 GB NVMe',
+    net: '20 TB / mo',
+    recommended: true,
+    providers: [
+      { name: 'Hetzner Cloud', sku: 'CX22', price: '€3.79 / mo', note: 'Helsinki, Frankfurt, Nuremberg, Ashburn, Hillsboro, Singapore', url: 'https://www.hetzner.com/cloud/' }
+    ]
+  },
+  {
+    id: 'ionos-vps-s',
+    tier: 'micro',
+    name: 'IONOS · VPS S',
+    tagline: '$5/mo flat. 2 vCores, 2 GB RAM, 80 GB SSD, unlimited traffic. Strong budget node for a persistent stratum.',
+    cpu: '2 vCore',
+    ram: '2 GB',
+    disk: '80 GB SSD',
+    net: 'Unlimited / 400 Mbps',
+    recommended: false,
+    providers: [
+      { name: 'IONOS', sku: 'VPS S', price: '$5.00 / mo', note: 'Flat rate · unlimited traffic', url: 'https://www.ionos.com/servers/vps' }
+    ]
+  },
+  {
+    id: 'vultr-hf-1gb',
+    tier: 'micro',
+    name: 'Vultr · High Frequency 1 GB',
+    tagline: '$6/mo, 1 vCPU, NVMe storage. 25 regions including Tokyo, Sydney, Seoul. Best option for Asia-Pacific relays.',
+    cpu: '1 vCPU (AMD EPYC)',
+    ram: '1 GB',
+    disk: '32 GB NVMe',
+    net: '1 TB / mo',
+    recommended: false,
+    providers: [
+      { name: 'Vultr', sku: 'High Frequency 1GB', price: '$6.00 / mo', note: '25 regions · NVMe', url: 'https://www.vultr.com/products/cloud-compute/high-frequency/' }
+    ]
+  },
+  {
+    id: 'contabo-vps-s',
+    tier: 'micro',
+    name: 'Contabo · Cloud VPS S',
+    tagline: 'Exceptional RAM and storage per dollar. 6 vCPUs, 12 GB RAM, 100 GB NVMe for ~$8.33/mo on annual plan.',
+    cpu: '6 vCPU (AMD EPYC)',
+    ram: '12 GB',
+    disk: '100 GB NVMe / 200 GB SSD',
+    net: '300 Mbit/s port',
+    recommended: false,
+    providers: [
+      { name: 'Contabo', sku: 'Cloud VPS S', price: '$100 / yr', note: '~$8.33/mo annual · oversold', url: 'https://contabo.com/en/pricing/' }
+    ]
+  },
+
+  // ─── STANDARD ─────────────────────────────────
+  {
+    id: 'hetzner-cx32',
+    tier: 'standard',
+    name: 'Hetzner · CX32',
+    tagline: '4 vCPUs, 8 GB RAM, 80 GB NVMe, 20 TB traffic. Best all-round pool machine. $7.50/mo equivalent.',
+    cpu: '4 vCPU (shared Intel)',
+    ram: '8 GB',
+    disk: '80 GB NVMe',
+    net: '20 TB / mo',
+    recommended: false,
+    providers: [
+      { name: 'Hetzner Cloud', sku: 'CX32', price: '€6.80 / mo', note: 'Helsinki, Frankfurt, Ashburn, Singapore', url: 'https://www.hetzner.com/cloud/' }
+    ]
+  },
+  {
+    id: 'ionos-vps-m',
+    tier: 'standard',
+    name: 'IONOS · VPS M',
+    tagline: '$8/mo flat, 2 vCores, 4 GB RAM, 120 GB SSD, unlimited traffic. Good US/EU coverage with no overage risk.',
+    cpu: '2 vCore',
+    ram: '4 GB',
+    disk: '120 GB SSD',
+    net: 'Unlimited / 400 Mbps',
+    recommended: false,
+    providers: [
+      { name: 'IONOS', sku: 'VPS M', price: '$8.00 / mo', note: 'Flat rate · unlimited traffic', url: 'https://www.ionos.com/servers/vps' }
+    ]
+  },
+  {
+    id: 'fly-perf-1x',
+    tier: 'standard',
+    name: 'Fly.io · performance-1x',
+    tagline: 'Dedicated core, 2 GB RAM. Instant global deploys. ~$14/mo persistent. Ideal mobile command-center primary.',
+    cpu: '1 dedicated vCPU',
+    ram: '2 GB',
+    disk: '1 GB + volume',
+    net: 'Anycast global',
+    recommended: false,
+    providers: [
+      { name: 'Fly.io', sku: 'performance-1x', price: '~$14 / mo', note: 'Dedicated CPU · 30+ regions', url: 'https://fly.io/docs/about/pricing/' }
+    ]
+  },
+  {
+    id: 'do-basic-2gb',
+    tier: 'standard',
+    name: 'DigitalOcean · Basic Droplet 2 GB',
+    tagline: 'Simple UI, great docs, $12/mo. 1 vCPU, 2 GB, 50 GB SSD, 2 TB transfer. Easiest setup for a mobile operator.',
     cpu: '1 vCPU',
     ram: '2 GB',
-    disk: '40 GB SSD',
-    net: '2.5 Gbps',
-    priceFrom: '$14',
-    priceUnit: '/mo',
-    providers: ['Fly.io','DigitalOcean','Hetzner','Vultr'],
-    flySize: 'performance-1x',
+    disk: '50 GB SSD',
+    net: '2 TB / mo',
     recommended: false,
-  },
-  {
-    id: 'micro-lance',
-    tier: 'micro',
-    name: 'Micro · Lance',
-    tagline: 'Mid-size pool — stratum + API on one node',
-    cpu: '2 vCPU',
-    ram: '4 GB',
-    disk: '80 GB SSD',
-    net: '5 Gbps',
-    priceFrom: '$28',
-    priceUnit: '/mo',
-    providers: ['Fly.io','DigitalOcean','Linode','Vultr'],
-    flySize: 'performance-2x',
-    recommended: true,
+    providers: [
+      { name: 'DigitalOcean', sku: 'Basic Droplet s-1vcpu-2gb', price: '$12.00 / mo', note: 'NYC, SFO, AMS, SGP, LON, FRA, TOR, BLR, SYD', url: 'https://www.digitalocean.com/pricing/droplets' }
+    ]
   },
 
-  // ── STANDARD ──────────────────────────────
+  // ─── WORKER ───────────────────────────────────
   {
-    id: 'std-forge',
-    tier: 'standard',
-    name: 'Standard · Forge',
-    tagline: 'Full pool stack — stratum, API, DB, and bridge',
-    cpu: '4 vCPU',
-    ram: '8 GB',
-    disk: '160 GB NVMe',
-    net: '10 Gbps',
-    priceFrom: '$56',
-    priceUnit: '/mo',
-    providers: ['Fly.io','DigitalOcean','Hetzner','AWS'],
-    flySize: 'performance-4x',
-    recommended: false,
-  },
-  {
-    id: 'std-citadel',
-    tier: 'standard',
-    name: 'Standard · Citadel',
-    tagline: 'High-availability pool with redundant stratum',
-    cpu: '8 vCPU',
+    id: 'hetzner-cx42',
+    tier: 'worker',
+    name: 'Hetzner · CX42',
+    tagline: '8 vCPUs, 16 GB RAM, 160 GB NVMe. Handles full pool stack plus share processing at ~$18/mo. Monster value.',
+    cpu: '8 vCPU (shared Intel)',
     ram: '16 GB',
-    disk: '320 GB NVMe',
-    net: '25 Gbps',
-    priceFrom: '$110',
-    priceUnit: '/mo',
-    providers: ['AWS','GCP','DigitalOcean','Hetzner'],
-    flySize: 'performance-8x',
+    disk: '160 GB NVMe',
+    net: '20 TB / mo',
     recommended: false,
+    providers: [
+      { name: 'Hetzner Cloud', sku: 'CX42', price: '€16.40 / mo', note: 'Helsinki, Frankfurt, Ashburn', url: 'https://www.hetzner.com/cloud/' }
+    ]
   },
-
-  // ── WORKER ────────────────────────────────
   {
-    id: 'worker-anvil',
+    id: 'ionos-vps-l',
     tier: 'worker',
-    name: 'Worker · Anvil',
-    tagline: 'Dedicated share processor — offloads stratum host',
-    cpu: '4 vCPU',
+    name: 'IONOS · VPS L',
+    tagline: '$15/mo, 4 vCores, 8 GB RAM, 240 GB SSD, unlimited traffic. Rock-solid flat pricing, no surprises on a year-long deployment.',
+    cpu: '4 vCore',
     ram: '8 GB',
-    disk: '100 GB NVMe',
-    net: '10 Gbps',
-    priceFrom: '$52',
-    priceUnit: '/mo',
-    providers: ['Hetzner','Vultr','DigitalOcean','Linode'],
-    flySize: 'performance-4x',
+    disk: '240 GB SSD',
+    net: 'Unlimited / 400 Mbps',
     recommended: false,
+    providers: [
+      { name: 'IONOS', sku: 'VPS L', price: '$15.00 / mo', note: 'Flat rate · unlimited · US+EU', url: 'https://www.ionos.com/servers/vps' }
+    ]
   },
   {
-    id: 'worker-titan',
+    id: 'vultr-hf-4gb',
     tier: 'worker',
-    name: 'Worker · Titan',
-    tagline: 'Heavy compute — multi-algo job queue + ML scoring',
-    cpu: '16 vCPU',
-    ram: '32 GB',
-    disk: '500 GB NVMe',
-    net: '25 Gbps',
-    priceFrom: '$220',
-    priceUnit: '/mo',
-    providers: ['AWS','GCP','Hetzner Dedicated','OVHcloud'],
-    flySize: null,
-    recommended: false,
-  },
-
-  // ── RELAY ─────────────────────────────────
-  {
-    id: 'relay-herald',
-    tier: 'relay',
-    name: 'Relay · Herald',
-    tagline: 'Geo-distributed stratum entry point — low-latency',
-    cpu: '2 vCPU',
+    name: 'Vultr · High Performance 4 GB',
+    tagline: '2 AMD vCPU, 4 GB RAM, 100 GB NVMe, 5 TB bandwidth. $24/mo. Strong multi-algo job queue machine.',
+    cpu: '2 vCPU (AMD EPYC)',
     ram: '4 GB',
-    disk: '40 GB SSD',
-    net: '10 Gbps',
-    priceFrom: '$30',
-    priceUnit: '/mo',
-    providers: ['Fly.io','Fastly Compute','Cloudflare Workers'],
-    flySize: 'performance-2x',
+    disk: '100 GB NVMe',
+    net: '5 TB / mo',
     recommended: false,
-  },
-  {
-    id: 'relay-vortex',
-    tier: 'relay',
-    name: 'Relay · Vortex',
-    tagline: 'Global anycast relay mesh — 6+ PoPs',
-    cpu: '4 vCPU × 6',
-    ram: '8 GB × 6',
-    disk: '60 GB SSD × 6',
-    net: '25 Gbps per PoP',
-    priceFrom: '$180',
-    priceUnit: '/mo',
-    providers: ['Fly.io Multi-Region','AWS CloudFront','Fastly'],
-    flySize: 'performance-4x',
-    recommended: false,
+    providers: [
+      { name: 'Vultr', sku: 'High Performance 4GB', price: '$24.00 / mo', note: '25 regions · NVMe', url: 'https://www.vultr.com/products/cloud-compute/high-performance/' }
+    ]
   },
 
-  // ── FORGE ─────────────────────────────────
+  // ─── FORGE ────────────────────────────────────
   {
-    id: 'forge-crucible',
+    id: 'hetzner-cx52',
     tier: 'forge',
-    name: 'Forge · Crucible',
-    tagline: 'Full-stack production deployment — all services',
-    cpu: '16 vCPU',
-    ram: '64 GB',
-    disk: '1 TB NVMe RAID',
-    net: '40 Gbps',
-    priceFrom: '$480',
-    priceUnit: '/mo',
-    providers: ['AWS c6i','GCP c2','Hetzner AX162','OVHcloud Advance'],
-    flySize: null,
+    name: 'Hetzner · CX52',
+    tagline: '16 vCPUs, 32 GB RAM, 320 GB NVMe, 20 TB traffic. Full production stack on one node for ~$35/mo. Unmatched value.',
+    cpu: '16 vCPU (shared Intel)',
+    ram: '32 GB',
+    disk: '320 GB NVMe',
+    net: '20 TB / mo',
     recommended: false,
+    providers: [
+      { name: 'Hetzner Cloud', sku: 'CX52', price: '€32.40 / mo', note: 'Helsinki, Frankfurt, Ashburn, Singapore', url: 'https://www.hetzner.com/cloud/' }
+    ]
   },
   {
-    id: 'forge-sovereign',
+    id: 'hetzner-ccx23',
     tier: 'forge',
-    name: 'Forge · Sovereign',
-    tagline: 'Bare-metal sovereignty — zero cloud dependency',
-    cpu: '32 vCPU (bare metal)',
-    ram: '128 GB ECC',
-    disk: '2× 2TB NVMe',
-    net: '10 Gbps dedicated',
-    priceFrom: '$200',
-    priceUnit: '/mo',
-    providers: ['Hetzner Dedicated','OVHcloud Eco','Leaseweb'],
-    flySize: null,
+    name: 'Hetzner · CCX23 Dedicated',
+    tagline: 'Dedicated AMD EPYC vCPUs — no noisy neighbours. 4 dedicated vCPUs, 16 GB RAM. For pool workloads that need guaranteed clock.',
+    cpu: '4 vCPU (dedicated AMD EPYC)',
+    ram: '16 GB',
+    disk: '160 GB NVMe',
+    net: '20 TB / mo',
     recommended: false,
+    providers: [
+      { name: 'Hetzner Cloud', sku: 'CCX23', price: '€23.90 / mo', note: 'Dedicated cores · no oversell', url: 'https://www.hetzner.com/cloud/' }
+    ]
+  },
+  {
+    id: 'do-cpu-opt-4gb',
+    tier: 'forge',
+    name: 'DigitalOcean · CPU-Optimised 4 GB',
+    tagline: 'Dedicated hyper-threads, 4 GB RAM, 25 GB NVMe. $40/mo. Best for sustained share-processing CPU workloads.',
+    cpu: '2 dedicated vCPU',
+    ram: '4 GB',
+    disk: '25 GB NVMe',
+    net: '4 TB / mo',
+    recommended: false,
+    providers: [
+      { name: 'DigitalOcean', sku: 'c-2 CPU-Optimized', price: '$40.00 / mo', note: 'Dedicated hyper-threads · NVMe', url: 'https://www.digitalocean.com/pricing/droplets' }
+    ]
   },
 ];
 
-let _activeMachine = null;
-let _selectedProvider = null;
+let _activeMachine=null, _selectedProviderIdx=0;
 
-// ─ Build machine grid
-function renderMachines(filter) {
-  const grid = document.getElementById('machine-grid');
-  const list = filter === 'all' ? MACHINES : MACHINES.filter(m => m.tier === filter);
-  grid.innerHTML = list.map(m => `
-    <div class="mcard tier-${m.tier}${m.recommended ? ' recommended' : ''}" onclick="openProvision('${m.id}')">
+function renderMachines(filter){
+  const grid=document.getElementById('machine-grid');
+  const list=filter==='all'?MACHINES:MACHINES.filter(m=>m.tier===filter);
+  grid.innerHTML=list.map(m=>{
+    const p=m.providers[0];
+    const recHtml=m.recommended?'<span class="mcard-rec">✦ recommended</span>':'';
+    const priceClass=m.tier==='free'?'mcard-price free-tag':'mcard-price';
+    return`
+    <div class="mcard tier-${m.tier}" onclick="openProvision('${m.id}')">
       <div class="mcard-head">
-        <div class="mcard-name">${escHtml(m.name)}${m.recommended ? ' ✦' : ''}</div>
+        <div class="mcard-name">${escHtml(m.name)}</div>
         <span class="mcard-tier-badge tb-${m.tier}">${m.tier}</span>
       </div>
       <div class="mcard-tagline">${escHtml(m.tagline)}</div>
@@ -965,150 +759,92 @@ function renderMachines(filter) {
         <div class="mcs"><div class="mcs-k">Disk</div><div class="mcs-v">${escHtml(m.disk)}</div></div>
         <div class="mcs"><div class="mcs-k">Network</div><div class="mcs-v">${escHtml(m.net)}</div></div>
       </div>
-      <div class="mcard-providers">${m.providers.map(p => `<span class="prov-chip">${escHtml(p)}</span>`).join('')}</div>
+      <div class="mcard-sku">${escHtml(p.sku)} · ${escHtml(p.name)}</div>
       <div class="mcard-foot">
-        <div class="mcard-price">from ${escHtml(m.priceFrom)}<span>${escHtml(m.priceUnit)}</span></div>
+        <div class="${priceClass}">${escHtml(p.price)}</div>
+        ${recHtml}
         <button class="mcard-cta" onclick="event.stopPropagation();openProvision('${m.id}')">Provision</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
-// ─ Filter buttons
-document.getElementById('pm-filters').addEventListener('click', e => {
-  const btn = e.target.closest('.pm-filter-btn');
-  if (!btn) return;
-  document.querySelectorAll('.pm-filter-btn').forEach(b => b.classList.remove('active'));
+document.getElementById('pm-filters').addEventListener('click',e=>{
+  const btn=e.target.closest('.pm-filter-btn');
+  if(!btn)return;
+  document.querySelectorAll('.pm-filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderMachines(btn.dataset.filter);
 });
 
-// ─ Provision modal
-function openProvision(machineId) {
-  const m = MACHINES.find(x => x.id === machineId);
-  if (!m) return;
-  _activeMachine = m;
-  _selectedProvider = m.providers[0];
+function openProvision(machineId){
+  const m=MACHINES.find(x=>x.id===machineId);
+  if(!m)return;
+  _activeMachine=m;
+  _selectedProviderIdx=0;
 
-  document.getElementById('prov-title').textContent = m.name;
-  document.getElementById('prov-sub').textContent = m.tagline;
+  document.getElementById('prov-title').textContent=m.name;
+  document.getElementById('prov-sub').textContent=m.tagline;
 
-  document.getElementById('prov-specs').innerHTML = `
+  document.getElementById('prov-specs').innerHTML=`
     <div class="pss-item"><div class="pss-k">CPU</div><div class="pss-v">${escHtml(m.cpu)}</div></div>
     <div class="pss-item"><div class="pss-k">RAM</div><div class="pss-v">${escHtml(m.ram)}</div></div>
     <div class="pss-item"><div class="pss-k">Disk</div><div class="pss-v">${escHtml(m.disk)}</div></div>
     <div class="pss-item"><div class="pss-k">Network</div><div class="pss-v">${escHtml(m.net)}</div></div>
-    <div class="pss-item"><div class="pss-k">From</div><div class="pss-v">${escHtml(m.priceFrom + m.priceUnit)}</div></div>
-    ${m.flySize ? `<div class="pss-item"><div class="pss-k">Fly Size</div><div class="pss-v">${escHtml(m.flySize)}</div></div>` : ''}
   `;
 
-  document.getElementById('prov-provider-grid').innerHTML = m.providers.map(p => `
-    <div class="pm-prov-card${p === _selectedProvider ? ' selected' : ''}" onclick="selectProvider('${escHtml(p)}')">
-      <div class="ppc-name">${escHtml(p)}</div>
-      <div class="ppc-detail">${providerDetail(p)}</div>
+  document.getElementById('prov-provider-grid').innerHTML=m.providers.map((p,i)=>`
+    <div class="pm-prov-card${i===0?' selected':''}" onclick="selectProvider(${i})">
+      <div class="ppc-name">${escHtml(p.name)}</div>
+      <div class="ppc-sku">${escHtml(p.sku)}</div>
+      <div class="ppc-price">${escHtml(p.price)}</div>
+      <div class="ppc-note">${escHtml(p.note)}</div>
+      <a class="ppc-link" href="${p.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Open console ↗</a>
     </div>
   `).join('');
 
-  document.getElementById('prov-name').value = m.id + '-01';
-  setMsg('prov-msg', '');
+  document.getElementById('prov-name').value=m.id+'-01';
+  setMsg('prov-msg','');
   document.getElementById('pm-overlay').classList.add('open');
 }
 
-function providerDetail(p) {
-  const map = {
-    'Fly.io':          'anycast · instant',
-    'Render':          'git-deploy · managed',
-    'Railway':         'zero-config · hobby',
-    'DigitalOcean':    'droplets · simple',
-    'Hetzner':         'EU · best €/core',
-    'Hetzner Dedicated': 'bare metal · EU',
-    'Vultr':           '25 regions',
-    'Linode':          'Akamai · reliable',
-    'AWS':             'ec2 · enterprise',
-    'GCP':             'gce · auto-scale',
-    'OVHcloud':        'FR/CA · value',
-    'OVHcloud Eco':    'bare · green',
-    'Leaseweb':        'global · colo',
-    'Fastly Compute':  'edge · wasm',
-    'Cloudflare Workers': 'edge · v8',
-    'Fly.io Multi-Region': 'anycast mesh',
-    'AWS CloudFront':  'CDN + origin',
-    'AWS c6i':         'compute optimised',
-    'GCP c2':          'compute optimised',
-    'Hetzner AX162':   'dedicated x86',
-    'OVHcloud Advance':'ded · NVMe',
-    'Fastly':          'global PoPs',
-  };
-  return map[p] || 'cloud provider';
+function selectProvider(idx){
+  _selectedProviderIdx=idx;
+  document.querySelectorAll('.pm-prov-card').forEach((el,i)=>el.classList.toggle('selected',i===idx));
 }
 
-function selectProvider(name) {
-  _selectedProvider = name;
-  document.querySelectorAll('.pm-prov-card').forEach(el => {
-    el.classList.toggle('selected', el.querySelector('.ppc-name').textContent === name);
-  });
-}
-
-function closeProvision() {
+function closeProvision(){
   document.getElementById('pm-overlay').classList.remove('open');
-  _activeMachine = null;
-  _selectedProvider = null;
+  _activeMachine=null; _selectedProviderIdx=0;
 }
 
-async function submitProvision() {
-  if (!_activeMachine) return;
-  const name    = document.getElementById('prov-name').value.trim();
-  const region  = document.getElementById('prov-region').value;
-  const image   = document.getElementById('prov-image').value.trim() || 'latest';
-  const addr    = document.getElementById('prov-addr').value.trim();
-  const envRaw  = document.getElementById('prov-env').value.trim();
-
-  if (!name) { setMsg('prov-msg', 'Name required.', 'err'); return; }
-  if (!_selectedProvider) { setMsg('prov-msg', 'Select a provider.', 'err'); return; }
-
-  const env = {};
-  if (envRaw) {
-    for (const line of envRaw.split('\n')) {
-      const eq = line.indexOf('=');
-      if (eq > 0) env[line.slice(0,eq).trim()] = line.slice(eq+1).trim();
-    }
-  }
-
-  const body = {
-    name,
-    region,
-    image,
-    machineId: _activeMachine.id,
-    tier:      _activeMachine.tier,
-    provider:  _selectedProvider,
-    size:      _activeMachine.flySize || 'custom',
-    env,
-  };
-  if (addr) body.rewardAddress = addr;
-
-  setMsg('prov-msg', 'Summoning permanent machine…', 'info');
-  log(`Provisioning ${_activeMachine.name} via ${_selectedProvider} in ${region}…`);
-
-  const r = await apiCall('POST', '/lancia/machines', body);
-  if (r.error) {
-    setMsg('prov-msg', 'Provision failed: ' + r.error, 'err');
-    log('Provision failed: ' + r.error, 'err');
-    return;
-  }
-
-  log(`Machine provisioned: ${r.id || name}  ·  ${_selectedProvider}  ·  ${r.status || 'pending'}`, 'ok');
-  setMsg('prov-msg', `✦ ${name} is being forged (${r.id || '…'})`, 'ok');
-  setTimeout(() => { closeProvision(); refresh(); }, 2200);
+async function submitProvision(){
+  if(!_activeMachine)return;
+  const name=document.getElementById('prov-name').value.trim();
+  const region=document.getElementById('prov-region').value;
+  const image=document.getElementById('prov-image').value.trim()||'latest';
+  const addr=document.getElementById('prov-addr').value.trim();
+  const envRaw=document.getElementById('prov-env').value.trim();
+  if(!name){setMsg('prov-msg','Name required.','err');return;}
+  const env={};
+  if(envRaw)for(const line of envRaw.split('\n')){const eq=line.indexOf('=');if(eq>0)env[line.slice(0,eq).trim()]=line.slice(eq+1).trim();}
+  const prov=_activeMachine.providers[_selectedProviderIdx];
+  const body={name,region,image,machineId:_activeMachine.id,tier:_activeMachine.tier,provider:prov.name,sku:prov.sku,env};
+  if(addr)body.rewardAddress=addr;
+  setMsg('prov-msg','Summoning permanent machine…','info');
+  log(`Provisioning ${_activeMachine.name} · ${prov.sku} via ${prov.name} in ${region}…`);
+  const r=await apiCall('POST','/lancia/machines',body);
+  if(r.error){setMsg('prov-msg','Provision failed: '+r.error,'err');log('Provision failed: '+r.error,'err');return;}
+  log(`Machine provisioned: ${r.id||name}  ·  ${prov.name}  ·  ${r.status||'pending'}`,'ok');
+  setMsg('prov-msg',`✦ ${name} is being forged (${r.id||'…'})`,'ok');
+  setTimeout(()=>{closeProvision();refresh();},2200);
 }
 
-// ─ Close modal on overlay click
-document.getElementById('pm-overlay').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeProvision();
-});
+document.getElementById('pm-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeProvision();});
 
 // ─ Boot
 renderMachines('all');
-log('Lancia launch studio initialised', 'ok');
+log('Lancia launch studio initialised','ok');
 refresh();
 </script>
 </body>
