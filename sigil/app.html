@@ -34,6 +34,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
 .btn.danger{border-color:var(--red);color:var(--red)}
 .btn.danger:hover{background:var(--red);color:#fff}
 .badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:bold}
+.badge.owner{background:#c8a84b22;color:var(--gold);border:1px solid var(--gold)}
 .badge.admin{background:#c8a84b22;color:var(--gold);border:1px solid var(--gold)}
 .badge.dev{background:#4e8fe022;color:var(--blue);border:1px solid var(--blue)}
 .badge.operator{background:#4ecfcf22;color:var(--cyan);border:1px solid var(--cyan)}
@@ -41,7 +42,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
 .on{color:var(--green)}.off{color:var(--dim)}
 .err{color:var(--red);font-size:11px;margin-top:4px}
 .ok{color:var(--green);font-size:11px;margin-top:4px}
-
 /* ─ Layout ─────────────────────────────────────────────────────────────── */
 #topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
 #topbar .logo{color:var(--gold);font-size:1rem;font-weight:bold;letter-spacing:1px}
@@ -49,8 +49,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
 #topbar .right{display:flex;align-items:center;gap:12px;font-size:11px}
 #topbar .user-chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;display:flex;align-items:center;gap:6px}
 #layout{display:flex;flex:1;overflow:hidden}
-
-/* ─ Sidebar ─────────────────────────────────────────────────────────── */
+/* ─ Sidebar ─────────────────────────────────────────────────────── */
 #sidebar{width:180px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
 .nav-section{padding:12px 12px 4px;color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:1px}
 .nav-item{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;color:var(--text2);transition:background .1s,color .1s;user-select:none}
@@ -60,7 +59,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
 .nav-item .label{flex:1}
 .nav-item .pill{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1px 6px;font-size:10px;color:var(--dim)}
 .nav-sep{border:none;border-top:1px solid var(--border);margin:6px 0}
-
 /* ─ Main panel ────────────────────────────────────────────────────────── */
 #main{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden}
@@ -74,20 +72,17 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
 .stat-card .value.gold{color:var(--gold)}
 .stat-card .value.green{color:var(--green)}
 .stat-card .value.cyan{color:var(--cyan)}
-
 /* ─ Tables ─────────────────────────────────────────────────────────────── */
 table{width:100%;border-collapse:collapse}
 th{text-align:left;color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:1px;padding:6px 10px;border-bottom:1px solid var(--border)}
 td{padding:8px 10px;border-bottom:1px solid #1a1a24;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--surface2)}
-
 /* ─ Forms ───────────────────────────────────────────────────────────────── */
 .form-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px}
 .form-group{display:flex;flex-direction:column;gap:4px}
 .form-group label{color:var(--dim);font-size:10px}
 .form-group input,.form-group select{min-width:140px}
-
 /* ─ Toggle switch ─────────────────────────────────────────────────────── */
 .toggle{position:relative;display:inline-block;width:34px;height:18px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
@@ -95,7 +90,6 @@ tr:hover td{background:var(--surface2)}
 .slider:before{content:'';position:absolute;height:12px;width:12px;left:3px;bottom:3px;background:#888;border-radius:50%;transition:.2s}
 input:checked+.slider{background:#c8a84b44;border:1px solid var(--gold)}
 input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
-
 /* ─ Monetization grid ───────────────────────────────────────────────── */
 .mon-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
 .mon-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px}
@@ -110,20 +104,17 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
 .mc-config .cfg-row label{color:var(--dim);font-size:10px}
 .mc-config .cfg-row input{width:120px;font-size:11px}
 .cfg-save{margin-top:8px}
-
 /* ─ Log viewer ─────────────────────────────────────────────────────────── */
 #log-box{background:#060608;border:1px solid var(--border);border-radius:4px;height:300px;overflow-y:auto;padding:10px;font-size:11px;line-height:1.5}
 .log-line{white-space:pre-wrap;word-break:break-all}
 .log-line.warn{color:#c8a84b}
 .log-line.error{color:var(--red)}
 .log-line.block{color:var(--green);font-weight:bold}
-
 /* ─ Permission matrix ──────────────────────────────────────────────────── */
 .perm-grid{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .perm-chip{font-size:10px;padding:2px 7px;border-radius:10px;border:1px solid var(--border);color:var(--dim);cursor:pointer;user-select:none;transition:all .1s}
 .perm-chip.granted{border-color:var(--green);color:var(--green);background:#4ec94e11}
 .perm-chip.revoked{border-color:var(--red);color:var(--red);background:#e0505011;text-decoration:line-through}
-
 /* ─ Modal ───────────────────────────────────────────────────────────────── */
 .modal-bg{position:fixed;inset:0;background:#00000099;display:flex;align-items:center;justify-content:center;z-index:100;display:none}
 .modal-bg.open{display:flex}
@@ -132,7 +123,6 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
 .modal .form-group{margin-bottom:12px;width:100%}
 .modal .form-group input,.modal .form-group select{width:100%}
 .modal .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
-
 /* ─ Treasury ────────────────────────────────────────────────────────── */
 .treasury-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:16px}
 .tnet-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px}
@@ -149,7 +139,12 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
 .event-type.lp_fee{color:var(--blue);border:1px solid var(--blue);background:#4e8fe011}
 .event-type.other{color:var(--dim);border:1px solid var(--border)}
 .ledger-pager{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:11px;color:var(--dim)}
-
+/* ─ Cert panel ──────────────────────────────────────────────────────── */
+.cert-info{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:10px 12px;font-size:10px;line-height:1.8;margin-bottom:16px}
+.cert-row{display:flex;gap:8px;justify-content:space-between}
+.cert-row span:first-child{color:var(--dim)}
+.scope-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.scope-chip{font-size:10px;padding:2px 7px;border-radius:10px;border:1px solid var(--border);color:var(--dim)}
 /* ─ Responsive hide ─────────────────────────────────────────────────────── */
 .page{display:none}.page.active{display:contents}
 </style>
@@ -178,39 +173,39 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
 <!-- Sidebar -->
 <div id="sidebar">
   <div class="nav-section">Overview</div>
-  <div class="nav-item active" onclick="nav('dashboard')">
+  <div class="nav-item active" onclick="nav('dashboard')" data-scope="pool:status:read">
     <span class="icon">⛏</span><span class="label">Dashboard</span>
   </div>
-  <div class="nav-item" onclick="nav('pool')">
+  <div class="nav-item" onclick="nav('pool')" data-scope="pool:settings:read">
     <span class="icon">🎰</span><span class="label">Pool</span>
     <span class="pill" id="nav-miners">0</span>
   </div>
-  <div class="nav-item" onclick="nav('monetize')">
+  <div class="nav-item" onclick="nav('monetize')" data-scope="pool:monetization:read">
     <span class="icon">⚡</span><span class="label">Monetize</span>
   </div>
-  <div class="nav-item" onclick="nav('treasury')">
+  <div class="nav-item" onclick="nav('treasury')" data-scope="monetization:read">
     <span class="icon">🏦</span><span class="label">Treasury</span>
   </div>
   <hr class="nav-sep">
   <div class="nav-section">Infrastructure</div>
-  <div class="nav-item" onclick="nav('nodes')">
+  <div class="nav-item" onclick="nav('nodes')" data-scope="node:read">
     <span class="icon">🖥</span><span class="label">Nodes</span>
   </div>
   <div class="nav-item" onclick="nav('logs')">
     <span class="icon">📜</span><span class="label">Logs</span>
   </div>
   <hr class="nav-sep">
-  <div class="nav-section admin-only">Administration</div>
-  <div class="nav-item admin-only" onclick="nav('accounts')">
+  <div class="nav-section" id="nav-admin-section">Administration</div>
+  <div class="nav-item" onclick="nav('accounts')" id="nav-accounts" data-scope="ward:users:read">
     <span class="icon">👤</span><span class="label">Accounts</span>
   </div>
-  <div class="nav-item admin-only" onclick="nav('permissions')">
+  <div class="nav-item" onclick="nav('permissions')" id="nav-permissions" data-scope="ward:permissions:read">
     <span class="icon">🔐</span><span class="label">Permissions</span>
   </div>
   <hr class="nav-sep">
   <div class="nav-section">Settings</div>
-  <div class="nav-item" onclick="nav('settings')">
-    <span class="icon">⚙</span><span class="label">Pool Settings</span>
+  <div class="nav-item" onclick="nav('settings')" data-scope="pool:settings:read">
+    <span class="icon">⚙️</span><span class="label">Pool Settings</span>
   </div>
   <div class="nav-item" onclick="nav('account')">
     <span class="icon">🔑</span><span class="label">My Account</span>
@@ -225,7 +220,7 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
   <div class="panel">
     <div class="panel-header"><h2>⛏ Pool Status</h2>
       <div style="display:flex;gap:8px">
-        <button class="btn" onclick="api('POST','/pool/job/new')" perm="pool:job:new">Force Job</button>
+        <button class="btn" onclick="api('POST','/pool/job/new')" data-scope="pool:job:new">Force Job</button>
       </div>
     </div>
     <div class="panel-body">
@@ -252,11 +247,11 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
 <div class="page" id="page-pool">
   <div class="panel">
     <div class="panel-header"><h2>🎰 Pool Configurations</h2>
-      <button class="btn primary" onclick="showNewPoolModal()" perm="pool:settings:write">+ Add Pool</button>
+      <button class="btn primary" onclick="showNewPoolModal()" data-scope="pool:settings:write">+ Add Pool</button>
     </div>
     <div class="panel-body" style="padding:0">
       <table><thead><tr>
-        <th>ID</th><th>Coin</th><th>Algo</th><th>Port</th><th>Payout</th><th>Active</th><th perm="pool:settings:write">Actions</th>
+        <th>ID</th><th>Coin</th><th>Algo</th><th>Port</th><th>Payout</th><th>Active</th><th>Actions</th>
       </tr></thead><tbody id="pools-table"></tbody></table>
     </div>
   </div>
@@ -277,36 +272,26 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
 
 <!-- ── TREASURY ──────────────────────────────────────────────────────────── -->
 <div class="page" id="page-treasury">
-
-  <!-- Status + sweep -->
   <div class="panel">
     <div class="panel-header">
       <h2>🏦 Treasury Status</h2>
       <div style="display:flex;gap:8px">
-        <button class="btn" onclick="sweepSol()" id="btn-sweep-sol">Sweep SOL</button>
-        <button class="btn" onclick="sweepDgb()" id="btn-sweep-dgb">Sweep DGB</button>
-        <button class="btn" onclick="loadTreasury()">↺ Refresh</button>
+        <button class="btn" onclick="sweepSol()" data-scope="monetization:sweep">Sweep SOL</button>
+        <button class="btn" onclick="sweepDgb()" data-scope="monetization:sweep">Sweep DGB</button>
+        <button class="btn" onclick="loadTreasury()">&#8635; Refresh</button>
       </div>
     </div>
     <div class="panel-body">
-      <div class="treasury-grid" id="treasury-grid">
-        <div style="color:var(--dim);font-size:11px">Loading…</div>
-      </div>
+      <div class="treasury-grid" id="treasury-grid"><div style="color:var(--dim);font-size:11px">Loading…</div></div>
       <div id="treasury-msg" style="font-size:11px;margin-top:4px"></div>
     </div>
   </div>
-
-  <!-- Revenue sources -->
   <div class="panel">
     <div class="panel-header"><h2>📡 Revenue Sources</h2></div>
     <div class="panel-body" style="padding:0">
-      <table><thead><tr>
-        <th>ID</th><th>Name</th><th>Status</th><th>Fee %</th><th>Listening</th>
-      </tr></thead><tbody id="sources-table"></tbody></table>
+      <table><thead><tr><th>ID</th><th>Name</th><th>Status</th><th>Fee %</th><th>Listening</th></tr></thead><tbody id="sources-table"></tbody></table>
     </div>
   </div>
-
-  <!-- Revenue ledger -->
   <div class="panel">
     <div class="panel-header">
       <h2>📒 Revenue Ledger</h2>
@@ -318,13 +303,11 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
           <option value="sweep">sweep</option>
           <option value="lp_fee">lp_fee</option>
         </select>
-        <button class="btn" onclick="loadLedger(0)">↺</button>
+        <button class="btn" onclick="loadLedger(0)">&#8635;</button>
       </div>
     </div>
     <div class="panel-body" style="padding:0">
-      <table><thead><tr>
-        <th>Time</th><th>Source</th><th>Type</th><th>Amount</th><th>Status</th><th>Details</th>
-      </tr></thead><tbody id="ledger-table"></tbody></table>
+      <table><thead><tr><th>Time</th><th>Source</th><th>Type</th><th>Amount</th><th>Status</th><th>Details</th></tr></thead><tbody id="ledger-table"></tbody></table>
       <div class="ledger-pager" style="padding:10px 16px">
         <button class="btn" id="ledger-prev" onclick="ledgerPage(-1)" disabled>‹ Prev</button>
         <span id="ledger-page-info">—</span>
@@ -332,19 +315,16 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
       </div>
     </div>
   </div>
-
 </div>
 
 <!-- ── NODES ─────────────────────────────────────────────────────────────── -->
 <div class="page" id="page-nodes">
   <div class="panel">
     <div class="panel-header"><h2>🖥 Coin Nodes</h2>
-      <button class="btn primary" onclick="showLaunchCoinModal()" perm="node:register">+ Launch Coin</button>
+      <button class="btn primary" onclick="showLaunchCoinModal()" data-scope="node:register">+ Launch Coin</button>
     </div>
     <div class="panel-body" style="padding:0">
-      <table><thead><tr>
-        <th>Coin</th><th>Status</th><th>Height</th><th>PID</th><th>Actions</th>
-      </tr></thead><tbody id="nodes-table"></tbody></table>
+      <table><thead><tr><th>Coin</th><th>Status</th><th>Height</th><th>PID</th><th>Actions</th></tr></thead><tbody id="nodes-table"></tbody></table>
     </div>
   </div>
 </div>
@@ -355,34 +335,29 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
     <div class="panel-header"><h2>📜 Node Logs</h2>
       <button class="btn" onclick="clearLogs()">Clear</button>
     </div>
-    <div class="panel-body">
-      <div id="log-box"></div>
-    </div>
+    <div class="panel-body"><div id="log-box"></div></div>
   </div>
 </div>
 
-<!-- ── ACCOUNTS (admin) ───────────────────────────────────────────────── -->
+<!-- ── ACCOUNTS ───────────────────────────────────────────────── -->
 <div class="page" id="page-accounts">
   <div class="panel">
     <div class="panel-header"><h2>👤 Accounts</h2>
-      <button class="btn primary" onclick="showNewUserModal()">+ New Account</button>
+      <button class="btn primary" onclick="showNewUserModal()" data-scope="ward:users:write">+ New Account</button>
     </div>
     <div class="panel-body" style="padding:0">
-      <table><thead><tr>
-        <th>Username</th><th>Role</th><th>Last Login</th><th>Actions</th>
-      </tr></thead><tbody id="accounts-table"></tbody></table>
+      <table><thead><tr><th>Username</th><th>Role</th><th>Last Login</th><th>Actions</th></tr></thead><tbody id="accounts-table"></tbody></table>
     </div>
   </div>
 </div>
 
-<!-- ── PERMISSIONS (admin) ─────────────────────────────────────────────── -->
+<!-- ── PERMISSIONS ─────────────────────────────────────────────── -->
 <div class="page" id="page-permissions">
   <div class="panel">
     <div class="panel-header"><h2>🔐 Permissions Editor</h2></div>
     <div class="panel-body">
       <div class="form-row" style="margin-bottom:16px">
-        <div class="form-group">
-          <label>Select User</label>
+        <div class="form-group"><label>Select User</label>
           <select id="perm-user-select" onchange="loadUserPerms()"></select>
         </div>
       </div>
@@ -394,10 +369,8 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
 <!-- ── SETTINGS ──────────────────────────────────────────────────────────── -->
 <div class="page" id="page-settings">
   <div class="panel">
-    <div class="panel-header"><h2>⚙ Pool Settings</h2></div>
-    <div class="panel-body">
-      <div id="settings-editor">Select a pool from the Pool page to edit settings.</div>
-    </div>
+    <div class="panel-header"><h2>⚙️ Pool Settings</h2></div>
+    <div class="panel-body"><div id="settings-editor">Select a pool from the Pool page to edit settings.</div></div>
   </div>
 </div>
 
@@ -407,18 +380,29 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
     <div class="panel-header"><h2>🔑 My Account</h2></div>
     <div class="panel-body">
       <div id="account-info" style="margin-bottom:20px"></div>
+
+      <!-- Cert details for lancia -->
+      <h3 style="color:var(--gold);font-size:0.8rem;margin-bottom:10px">📄 Session Cert</h3>
+      <div class="cert-info" id="cert-info-panel">
+        <div class="cert-row"><span>cert_id</span><span id="ci-id">—</span></div>
+        <div class="cert-row"><span>tier</span><span id="ci-tier">—</span></div>
+        <div class="cert-row"><span>expires</span><span id="ci-exp">—</span></div>
+        <div class="cert-row"><span>scope</span></div>
+        <div class="scope-list" id="ci-scope"></div>
+      </div>
+      <button class="btn" onclick="window.location='/sigil/login.html'" style="margin-bottom:20px">
+        Re-provision Cert
+      </button>
+
       <h3 style="color:var(--gold);font-size:0.8rem;margin-bottom:12px">Change Password</h3>
       <div class="form-group" style="max-width:280px;margin-bottom:8px">
-        <label>Current Password</label>
-        <input type="password" id="pw-current" />
+        <label>Current Password</label><input type="password" id="pw-current" />
       </div>
       <div class="form-group" style="max-width:280px;margin-bottom:8px">
-        <label>New Password</label>
-        <input type="password" id="pw-new" />
+        <label>New Password</label><input type="password" id="pw-new" />
       </div>
       <div class="form-group" style="max-width:280px;margin-bottom:12px">
-        <label>Confirm</label>
-        <input type="password" id="pw-confirm" />
+        <label>Confirm</label><input type="password" id="pw-confirm" />
       </div>
       <button class="btn primary" onclick="changePassword()">Update Password</button>
       <div id="pw-msg"></div>
@@ -470,7 +454,7 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
 <div class="modal-bg" id="modal-newpool">
   <div class="modal">
     <h3>Add Pool Configuration</h3>
-    <div class="form-group"><label>Coin ID (must match a coins/*.json)</label><input id="np-coin" placeholder="dgb" /></div>
+    <div class="form-group"><label>Coin ID</label><input id="np-coin" placeholder="dgb" /></div>
     <div class="form-group"><label>Algo</label><input id="np-algo" placeholder="skein" /></div>
     <div class="form-group"><label>Stratum Port</label><input id="np-port" type="number" value="3333" /></div>
     <div class="form-group"><label>Payout Address</label><input id="np-addr" placeholder="D..." /></div>
@@ -486,17 +470,10 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold)}
 </div>
 
 <script>
-// ── State ───────────────────────────────────────────────────────────────
-let ME = null;
-let CURRENT_PAGE = 'dashboard';
-let PERMISSIONS_SCHEMA = null;
-let USERS_CACHE = [];
-let LOGS = [];
-let LEDGER_OFFSET = 0;
-const LEDGER_LIMIT = 25;
-
-// ── Auth ───────────────────────────────────────────────────────────────
-function token() { return localStorage.getItem('mg_token'); }
+// ── Auth (sessionStorage only — cleared on tab close) ──────────────────
+function token()    { return sessionStorage.getItem('mf_token'); }
+function myScope()  { try { return JSON.parse(sessionStorage.getItem('mf_scope') || '[]'); } catch { return []; } }
+function hasScope(s){ const sc = myScope(); return sc.includes('*') || sc.includes(s); }
 
 async function api(method, path, body) {
   const r = await fetch('/api/v1' + path, {
@@ -504,15 +481,48 @@ async function api(method, path, body) {
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() },
     body: body ? JSON.stringify(body) : undefined
   });
-  if (r.status === 401) { window.location = '/sigil/login'; return null; }
+  if (r.status === 401) {
+    sessionStorage.clear();
+    window.location = '/sigil/login.html';
+    return null;
+  }
   return r.json();
 }
 
 async function logout() {
-  await api('POST', '/ward/logout');
-  localStorage.removeItem('mg_token');
-  window.location = '/sigil/login';
+  try { await api('POST', '/ward/logout'); } catch {}
+  sessionStorage.clear();
+  window.location = '/sigil/login.html';
 }
+
+// ── Scope-aware nav gating ───────────────────────────────────────────────
+function applyScope() {
+  // Hide nav items whose data-scope the session cert doesn’t cover
+  document.querySelectorAll('.nav-item[data-scope]').forEach(el => {
+    const required = el.getAttribute('data-scope');
+    if (!hasScope(required)) el.style.display = 'none';
+  });
+  // Hide action buttons whose data-scope is not covered
+  document.querySelectorAll('button[data-scope],a[data-scope]').forEach(el => {
+    const required = el.getAttribute('data-scope');
+    if (!hasScope(required)) el.style.display = 'none';
+  });
+  // Admin nav sections
+  const hasAdminAny = hasScope('ward:users:read') || hasScope('ward:permissions:read');
+  if (!hasAdminAny) {
+    const sec = document.getElementById('nav-admin-section');
+    if (sec) sec.style.display = 'none';
+  }
+}
+
+// ── State ───────────────────────────────────────────────────────────────
+let ME = { username: sessionStorage.getItem('mf_username'), role: sessionStorage.getItem('mf_role') };
+let CURRENT_PAGE = 'dashboard';
+let PERMISSIONS_SCHEMA = null;
+let USERS_CACHE = [];
+let LOGS = [];
+let LEDGER_OFFSET = 0;
+const LEDGER_LIMIT = 25;
 
 // ── Navigation ───────────────────────────────────────────────────────────
 function nav(page) {
@@ -541,31 +551,26 @@ async function loadDashboard() {
     api('GET', '/pool/status'), api('GET', '/pool/payout')
   ]);
   if (!status) return;
-
   document.getElementById('dash-stats').innerHTML = [
-    stat('Coin',         status.coin ?? '—',          'gold'),
-    stat('Height',       status.height ?? '—',         'cyan'),
-    stat('Miners',       status.miners ?? 0,            'green'),
-    stat('Hashrate',     fmtH(status.hashrate ?? 0),   'cyan'),
-    stat('Blocks Found', payout?.blocksFound ?? 0,      'green'),
-    stat('Window Shares',payout?.windowShares ?? 0,    ''),
+    stat('Coin',         status.coin ?? '—',       'gold'),
+    stat('Height',       status.height ?? '—',      'cyan'),
+    stat('Miners',       status.miners ?? 0,         'green'),
+    stat('Hashrate',     fmtH(status.hashrate ?? 0), 'cyan'),
+    stat('Blocks Found', payout?.blocksFound ?? 0,   'green'),
+    stat('Window Shares',payout?.windowShares ?? 0,  ''),
   ].join('');
-
-  document.getElementById('nav-miners').textContent = status.miners ?? 0;
-  document.getElementById('tb-height').textContent  = status.height ? 'h=' + status.height : '';
+  document.getElementById('nav-miners').textContent  = status.miners ?? 0;
+  document.getElementById('tb-height').textContent   = status.height ? 'h=' + status.height : '';
   document.getElementById('tb-hashrate').textContent = fmtH(status.hashrate ?? 0);
-  document.getElementById('tb-coin').textContent = (status.coin ?? '') + ' ' + (status.algo ?? '');
-
+  document.getElementById('tb-coin').textContent     = (status.coin ?? '') + ' ' + (status.algo ?? '');
   document.getElementById('miners-table').innerHTML =
     (status.miners_list || []).map(m =>
       `<tr><td style="color:var(--cyan)">${m.user ?? m.id.slice(0,8)}</td>
        <td>${m.difficulty?.toFixed(4)}</td>
-       <td class="on">${m.accepted}</td>
-       <td class="off">${m.rejected}</td>
+       <td class="on">${m.accepted}</td><td class="off">${m.rejected}</td>
        <td style="color:var(--cyan)">${fmtH(m.hashrate)}</td>
        <td style="color:var(--dim)">${timeSince(m.connectedAt)}</td></tr>`
     ).join('') || '<tr><td colspan="6" style="color:var(--dim);text-align:center">No miners connected</td></tr>';
-
   const earn = payout?.earnings ?? {};
   document.getElementById('payout-body').innerHTML =
     Object.keys(earn).length === 0
@@ -585,32 +590,27 @@ async function loadPools() {
   document.getElementById('pools-table').innerHTML = pools.map(p =>
     `<tr>
       <td style="color:var(--cyan)">${p.id}</td>
-      <td>${p.coin?.toUpperCase()}</td>
-      <td>${p.algo}</td>
-      <td>${p.stratumPort}</td>
-      <td>${p.payoutScheme}</td>
+      <td>${p.coin?.toUpperCase()}</td><td>${p.algo}</td>
+      <td>${p.stratumPort}</td><td>${p.payoutScheme}</td>
       <td>${p.id === activeId ? '<span class="on">● active</span>' : '<span class="off">○ idle</span>'}</td>
-      <td><button class="btn" onclick="setActivePool('${p.id}')" perm="pool:settings:write">Set Active</button>
-          <button class="btn danger" onclick="deletePool('${p.id}')" perm="pool:settings:write">Delete</button></td>
+      <td>
+        ${hasScope('pool:settings:write') ? `<button class="btn" onclick="setActivePool('${p.id}')">Set Active</button>
+        <button class="btn danger" onclick="deletePool('${p.id}')">Delete</button>` : ''}
+      </td>
     </tr>`
   ).join('') || '<tr><td colspan="7" style="color:var(--dim);text-align:center">No pools configured</td></tr>';
 }
-
-async function setActivePool(id) {
-  await api('POST', '/pool/settings/active', { poolId: id });
-  loadPools();
-}
+async function setActivePool(id) { await api('POST', '/pool/settings/active', { poolId: id }); loadPools(); }
 async function deletePool(id) {
   if (!confirm('Delete pool ' + id + '?')) return;
-  await api('DELETE', '/pool/settings/pools/' + id);
-  loadPools();
+  await api('DELETE', '/pool/settings/pools/' + id); loadPools();
 }
 async function createPool() {
   const body = {
-    id:           document.getElementById('np-coin').value,
-    coin:         document.getElementById('np-coin').value,
-    algo:         document.getElementById('np-algo').value,
-    stratumPort:  +document.getElementById('np-port').value,
+    id: document.getElementById('np-coin').value,
+    coin: document.getElementById('np-coin').value,
+    algo: document.getElementById('np-algo').value,
+    stratumPort: +document.getElementById('np-port').value,
     blockRewardAddress: document.getElementById('np-addr').value,
     payoutScheme: document.getElementById('np-scheme').value
   };
@@ -627,7 +627,6 @@ async function loadMonetizationPage() {
   sel.innerHTML = pools.map(p => `<option value="${p.id}">${p.coin?.toUpperCase()} — ${p.id}</option>`).join('');
   loadMonetization();
 }
-
 async function loadMonetization() {
   const poolId = document.getElementById('mon-pool-select').value;
   if (!poolId) return;
@@ -635,34 +634,33 @@ async function loadMonetization() {
   if (!opts) return;
   document.getElementById('mon-grid').innerHTML = opts.map(opt => monCard(poolId, opt)).join('');
 }
-
 function monCard(poolId, opt) {
-  const icons = { mining:'⛏', lightning_routing:'⚡', rpc_endpoint:'🔌', staking:'🥩',
-    channel_leasing:'💧', masternode:'🖥', merge_mining:'⛓', mempool_services:'🔍' };
+  const icons = { mining:'⛏',lightning_routing:'⚡',rpc_endpoint:'🔌',staking:'🥩',
+    channel_leasing:'💧',masternode:'🖥',merge_mining:'⛓',mempool_services:'🔍' };
   const icon = icons[opt.id] || '•';
   const disabled = !opt.available ? 'unavailable' : '';
   const enabled  = opt.enabled ? 'enabled' : '';
+  const canWrite = hasScope('pool:monetization:write');
   const cfgRows  = Object.entries(opt.settings || {}).slice(0, 6).map(([k, s]) =>
     `<div class="cfg-row"><label>${k}</label>
-     <input id="cfg-${poolId}-${opt.id}-${k}" value="${opt.config[k] ?? s.default ?? ''}" /></div>`
+     <input id="cfg-${poolId}-${opt.id}-${k}" value="${opt.config[k] ?? s.default ?? ''}" ${canWrite ? '' : 'disabled'} /></div>`
   ).join('');
-
   return `
   <div class="mon-card ${disabled} ${enabled}" id="mc-${opt.id}">
     <div class="mc-header">
       <div class="mc-title">${icon} ${opt.label}</div>
-      ${opt.available
+      ${opt.available && canWrite
         ? `<label class="toggle"><input type="checkbox" ${opt.enabled ? 'checked' : ''}
              onchange="toggleMon('${poolId}','${opt.id}',this.checked)">
            <span class="slider"></span></label>`
+        : opt.available ? '<span style="color:var(--dim);font-size:10px">read-only</span>'
         : '<span style="color:var(--dim);font-size:10px">unavailable</span>'}
     </div>
     <div class="mc-desc">${opt.description ?? ''}</div>
     ${cfgRows ? `<button class="btn" style="font-size:10px;padding:3px 8px" onclick="this.closest('.mon-card').classList.toggle('expanded')">Config ▾</button>
-    <div class="mc-config">${cfgRows}<button class="btn primary cfg-save" onclick="saveMon('${poolId}','${opt.id}')">Save</button></div>` : ''}
+    <div class="mc-config">${cfgRows}${canWrite ? `<button class="btn primary cfg-save" onclick="saveMon('${poolId}','${opt.id}')">Save</button>` : ''}</div>` : ''}
   </div>`;
 }
-
 async function toggleMon(poolId, typeId, enabled) {
   await api('POST', `/pool/settings/pools/${poolId}/monetization/${typeId}`, { enabled });
   loadMonetization();
@@ -670,9 +668,7 @@ async function toggleMon(poolId, typeId, enabled) {
 async function saveMon(poolId, typeId) {
   const prefix = `cfg-${poolId}-${typeId}-`;
   const config = {};
-  document.querySelectorAll(`[id^="${prefix}"]`).forEach(el => {
-    config[el.id.slice(prefix.length)] = el.value;
-  });
+  document.querySelectorAll(`[id^="${prefix}"]`).forEach(el => { config[el.id.slice(prefix.length)] = el.value; });
   await api('POST', `/pool/settings/pools/${poolId}/monetization/${typeId}`, { enabled: true, config });
   loadMonetization();
 }
@@ -681,306 +677,249 @@ async function saveMon(poolId, typeId) {
 async function loadTreasury() {
   const data = await api('GET', '/monetization/status');
   if (!data) return;
-  const sol = data.solana || {};
-  const dgb = data.dgb || {};
-  const ltc = data.ltc || {};
-  const tw  = data.treasury || {};
-
+  const sol = data.solana || {}; const dgb = data.dgb || {}; const tw = data.treasury || {};
+  const canSweep = hasScope('monetization:sweep');
   const cards = [
-    {
-      label: 'Solana',
-      addr:  tw.solana || '—',
-      pending: sol.pendingSol ? sol.pendingSol + ' SOL' : '0 SOL',
-      sub:   `${sol.pendingEvents ?? 0} pending event(s)  •  threshold ${sol.sweepThresholdSol ?? '—'} SOL`,
-      hasPending: (sol.pendingEvents ?? 0) > 0,
-      sweepId: 'sol',
-    },
-    {
-      label: 'DigiByte',
-      addr:  tw.dgb || '—',
-      pending: dgb.pendingDgb ? dgb.pendingDgb + ' DGB' : '0 DGB',
-      sub:   `${dgb.pendingEvents ?? 0} pending event(s)  •  threshold ${dgb.sweepThresholdDgbSats != null ? (dgb.sweepThresholdDgbSats/1e8).toFixed(2)+' DGB' : '—'}`,
-      hasPending: (dgb.pendingEvents ?? 0) > 0,
-      sweepId: 'dgb',
-    },
-    {
-      label: 'Litecoin',
-      addr:  tw.ltc || '—',
-      pending: '—',
-      sub: 'collector not yet active',
-      hasPending: false,
-      sweepId: null,
-    },
+    { label:'Solana', addr:tw.solana||'—', pending: sol.pendingSol ? sol.pendingSol+' SOL' : '0 SOL',
+      sub:`${sol.pendingEvents??0} event(s) • threshold ${sol.sweepThresholdSol??'—'} SOL`,
+      hasPending:(sol.pendingEvents??0)>0, sweepId:'sol' },
+    { label:'DigiByte', addr:tw.dgb||'—', pending: dgb.pendingDgb ? dgb.pendingDgb+' DGB' : '0 DGB',
+      sub:`${dgb.pendingEvents??0} event(s) • threshold ${dgb.sweepThresholdDgbSats!=null?(dgb.sweepThresholdDgbSats/1e8).toFixed(2)+' DGB':'—'}`,
+      hasPending:(dgb.pendingEvents??0)>0, sweepId:'dgb' },
   ];
-
   document.getElementById('treasury-grid').innerHTML = cards.map(c => `
-    <div class="tnet-card ${c.hasPending ? 'has-pending' : ''}">
+    <div class="tnet-card ${c.hasPending?'has-pending':''}">
       <div class="tnet-label">${c.label}</div>
       <div class="tnet-addr">${c.addr}</div>
       <div class="tnet-pending">${c.pending}</div>
       <div class="tnet-sub">${c.sub}</div>
-      ${c.sweepId ? `<button class="btn" style="font-size:10px;padding:3px 10px" onclick="sweepNetwork('${c.sweepId}')">Sweep ${c.label}</button>` : ''}
+      ${c.sweepId && canSweep ? `<button class="btn" style="font-size:10px;padding:3px 10px" onclick="sweepNetwork('${c.sweepId}')">Sweep ${c.label}</button>` : ''}
     </div>
   `).join('');
-
-  // recent sweeps
   const recent = data.recentSweeps || [];
-  document.getElementById('treasury-msg').innerHTML =
-    recent.length
-      ? '<span style="color:var(--dim)">Last sweep: ' + fmtTs(recent[0]?.created_at) + ' — ' +
-        (recent[0]?.metadata?.trigger || '') + '</span>'
-      : '<span style="color:var(--dim)">No sweeps recorded yet</span>';
+  document.getElementById('treasury-msg').innerHTML = recent.length
+    ? '<span style="color:var(--dim)">Last sweep: ' + fmtTs(recent[0]?.created_at) + '</span>'
+    : '<span style="color:var(--dim)">No sweeps recorded yet</span>';
 }
-
 async function loadSources() {
   const data = await api('GET', '/monetization/sources');
   if (!data?.sources) return;
   document.getElementById('sources-table').innerHTML = data.sources.map(s => `
     <tr>
-      <td style="color:var(--cyan)">${s.id}</td>
-      <td>${s.name}</td>
-      <td>${s.status === 'active'
-        ? '<span class="on">● active</span>'
-        : '<span class="off">○ ' + s.status + '</span>'}</td>
-      <td style="color:var(--gold)">${s.feePct != null ? (s.feePct*100).toFixed(2)+'%' : '—'}</td>
-      <td style="color:var(--dim);font-size:10px">${(s.listening||[]).join(', ') || '—'}</td>
-    </tr>
-  `).join('');
+      <td style="color:var(--cyan)">${s.id}</td><td>${s.name}</td>
+      <td>${s.status==='active'?'<span class="on">● active</span>':'<span class="off">○ '+s.status+'</span>'}</td>
+      <td style="color:var(--gold)">${s.feePct!=null?(s.feePct*100).toFixed(2)+'%':'—'}</td>
+      <td style="color:var(--dim);font-size:10px">${(s.listening||[]).join(', ')||'—'}</td>
+    </tr>`).join('');
 }
-
 let _ledgerTotal = 0;
 async function loadLedger(offset) {
   LEDGER_OFFSET = Math.max(0, offset);
   const filter = document.getElementById('ledger-filter')?.value || '';
-  const qs = `?limit=${LEDGER_LIMIT}&offset=${LEDGER_OFFSET}${filter ? '&type='+filter : ''}`;
+  const qs = `?limit=${LEDGER_LIMIT}&offset=${LEDGER_OFFSET}${filter?'&type='+filter:''}`;
   const rows = await api('GET', '/monetization/ledger' + qs);
   if (!rows) return;
   const arr = Array.isArray(rows) ? rows : (rows.events || []);
   _ledgerTotal = rows.total ?? arr.length;
-
   document.getElementById('ledger-table').innerHTML = arr.length === 0
-    ? '<tr><td colspan="6" style="color:var(--dim);text-align:center;padding:16px">No events recorded yet</td></tr>'
+    ? '<tr><td colspan="6" style="color:var(--dim);text-align:center;padding:16px">No events yet</td></tr>'
     : arr.map(e => {
-        const meta  = e.metadata || {};
-        const amtRaw = Number(e.amount || 0);
-        const amtStr = e.source === 'pool_fees'
-          ? (amtRaw/1e8).toFixed(8) + ' DGB'
-          : (amtRaw/1e9).toFixed(6) + ' SOL';
-        const tclass = ['block_fee','bonus_cut','sweep','lp_fee'].includes(e.type) ? e.type : 'other';
-        const detail = meta.height ? `h=${meta.height}` : (meta.events ? `${meta.events} events` : '');
+        const meta=e.metadata||{};const amtRaw=Number(e.amount||0);
+        const amtStr=e.source==='pool_fees'?(amtRaw/1e8).toFixed(8)+' DGB':(amtRaw/1e9).toFixed(6)+' SOL';
+        const tclass=['block_fee','bonus_cut','sweep','lp_fee'].includes(e.type)?e.type:'other';
+        const detail=meta.height?`h=${meta.height}`:(meta.events?`${meta.events} events`:'');
         return `<tr>
           <td style="color:var(--dim);font-size:10px">${fmtTs(e.created_at)}</td>
-          <td style="color:var(--cyan);font-size:10px">${e.source || '—'}</td>
-          <td><span class="event-type ${tclass}">${e.type || '—'}</span></td>
+          <td style="color:var(--cyan);font-size:10px">${e.source||'—'}</td>
+          <td><span class="event-type ${tclass}">${e.type||'—'}</span></td>
           <td style="color:var(--gold)">${amtStr}</td>
-          <td style="font-size:10px">${e.status === 'swept'
-            ? '<span class="on">swept</span>'
-            : '<span style="color:var(--dim)">' + (e.status||'—') + '</span>'}</td>
-          <td style="color:var(--dim);font-size:10px">${detail}</td>
-        </tr>`;
+          <td style="font-size:10px">${e.status==='swept'?'<span class="on">swept</span>':'<span style="color:var(--dim)">'+(e.status||'—')+'</span>'}</td>
+          <td style="color:var(--dim);font-size:10px">${detail}</td></tr>`;
       }).join('');
-
-  const pageNum = Math.floor(LEDGER_OFFSET / LEDGER_LIMIT) + 1;
-  const pageTotal = Math.max(1, Math.ceil((_ledgerTotal || arr.length + LEDGER_OFFSET) / LEDGER_LIMIT));
-  document.getElementById('ledger-page-info').textContent = `Page ${pageNum} / ${pageTotal}`;
-  document.getElementById('ledger-prev').disabled = LEDGER_OFFSET === 0;
-  document.getElementById('ledger-next').disabled = arr.length < LEDGER_LIMIT;
+  const pageNum=Math.floor(LEDGER_OFFSET/LEDGER_LIMIT)+1;
+  const pageTotal=Math.max(1,Math.ceil((_ledgerTotal||arr.length+LEDGER_OFFSET)/LEDGER_LIMIT));
+  document.getElementById('ledger-page-info').textContent=`Page ${pageNum} / ${pageTotal}`;
+  document.getElementById('ledger-prev').disabled=LEDGER_OFFSET===0;
+  document.getElementById('ledger-next').disabled=arr.length<LEDGER_LIMIT;
 }
-
-function ledgerPage(dir) {
-  loadLedger(LEDGER_OFFSET + dir * LEDGER_LIMIT);
-}
-
-async function sweepSol() {
-  await sweepNetwork('sol');
-}
-async function sweepDgb() {
-  await sweepNetwork('dgb');
-}
-async function sweepNetwork(network) {
-  const msg = document.getElementById('treasury-msg');
-  msg.innerHTML = '<span style="color:var(--gold)">Sweeping…</span>';
-  const path = network === 'dgb' ? '/monetization/sweep-dgb' : '/monetization/sweep';
-  const r = await api('POST', path);
-  if (!r) return;
-  if (r.error) {
-    msg.innerHTML = `<span class="err">${r.error}</span>`;
-  } else {
-    msg.innerHTML = `<span class="ok">✓ Swept ${r.swept} event(s) → ${r.treasury ?? ''} (${network.toUpperCase()})</span>`;
-    loadTreasury();
-    loadLedger(0);
-  }
+function ledgerPage(dir){loadLedger(LEDGER_OFFSET+dir*LEDGER_LIMIT);}
+async function sweepSol(){await sweepNetwork('sol');}
+async function sweepDgb(){await sweepNetwork('dgb');}
+async function sweepNetwork(network){
+  const msg=document.getElementById('treasury-msg');
+  msg.innerHTML='<span style="color:var(--gold)">Sweeping…</span>';
+  const path=network==='dgb'?'/monetization/sweep-dgb':'/monetization/sweep';
+  const r=await api('POST',path);
+  if(!r)return;
+  if(r.error){msg.innerHTML=`<span class="err">${r.error}</span>`;}
+  else{msg.innerHTML=`<span class="ok">✓ Swept ${r.swept} event(s) (${network.toUpperCase()})</span>`;loadTreasury();loadLedger(0);}
 }
 
 // ── Nodes ────────────────────────────────────────────────────────────────
-async function loadNodes() {
-  const data = await api('GET', '/node/list');
-  if (!data) return;
-  const nodes = Array.isArray(data) ? data : Object.values(data);
-  document.getElementById('nodes-table').innerHTML = nodes.map(n =>
-    `<tr>
-      <td style="color:var(--gold)">${n.coin?.toUpperCase?.() ?? n.coin ?? '—'}</td>
-      <td>${n.status === 'ready' ? '<span class="on">● ready</span>' : '<span class="off">○ ' + (n.status||'—') + '</span>'}</td>
-      <td style="color:var(--cyan)">${n.height ?? '—'}</td>
-      <td style="color:var(--dim)">${n.pid ?? '—'}</td>
-      <td><button class="btn danger" onclick="stopNode('${n.coin}')" perm="node:stop">Stop</button></td>
-    </tr>`
-  ).join('') || '<tr><td colspan="5" style="color:var(--dim);text-align:center">No nodes running</td></tr>';
+async function loadNodes(){
+  const data=await api('GET','/node/list');
+  if(!data)return;
+  const nodes=Array.isArray(data)?data:Object.values(data);
+  document.getElementById('nodes-table').innerHTML=nodes.map(n=>
+    `<tr><td style="color:var(--gold)">${n.coin?.toUpperCase?.()??n.coin??'—'}</td>
+     <td>${n.status==='ready'?'<span class="on">● ready</span>':'<span class="off">○ '+(n.status||'—')+'</span>'}</td>
+     <td style="color:var(--cyan)">${n.height??'—'}</td><td style="color:var(--dim)">${n.pid??'—'}</td>
+     <td>${hasScope('node:stop')?`<button class="btn danger" onclick="stopNode('${n.coin}')">Stop</button>`:''}</td></tr>`
+  ).join('')||'<tr><td colspan="5" style="color:var(--dim);text-align:center">No nodes running</td></tr>';
 }
-async function stopNode(coin) {
-  if (!confirm('Stop ' + coin + ' node?')) return;
-  await api('POST', '/node/stop', { coin });
-  loadNodes();
+async function stopNode(coin){
+  if(!confirm('Stop '+coin+' node?'))return;
+  await api('POST','/node/stop',{coin});loadNodes();
 }
-async function launchCoin() {
+async function launchCoin(){
   let def;
-  try { def = JSON.parse(document.getElementById('lc-json').value); }
-  catch { document.getElementById('lc-err').textContent = 'Invalid JSON'; return; }
-  const r = await api('POST', '/node/launch', {
-    coin: def,
-    rpcuser: document.getElementById('lc-rpcuser').value,
-    rpcpass: document.getElementById('lc-rpcpass').value
-  });
-  if (r?.ok) { closeModal('modal-launchcoin'); loadNodes(); }
-  else document.getElementById('lc-err').textContent = r?.error || 'Failed';
+  try{def=JSON.parse(document.getElementById('lc-json').value);}catch{document.getElementById('lc-err').textContent='Invalid JSON';return;}
+  const r=await api('POST','/node/launch',{coin:def,rpcuser:document.getElementById('lc-rpcuser').value,rpcpass:document.getElementById('lc-rpcpass').value});
+  if(r?.ok){closeModal('modal-launchcoin');loadNodes();}
+  else document.getElementById('lc-err').textContent=r?.error||'Failed';
 }
 
 // ── Accounts ─────────────────────────────────────────────────────────────
-async function loadAccounts() {
-  const users = await api('GET', '/ward/users');
-  if (!users) return;
-  USERS_CACHE = users;
-  document.getElementById('accounts-table').innerHTML = users.map(u =>
-    `<tr>
-      <td style="color:var(--cyan)">${u.username}</td>
-      <td><span class="badge ${u.role}">${u.role}</span></td>
-      <td style="color:var(--dim)">${u.lastLogin ? fmtTs(u.lastLogin) : 'Never'}</td>
-      <td><button class="btn danger" onclick="deleteUser('${u.id}')" perm="ward:users:delete">Delete</button></td>
-    </tr>`
+async function loadAccounts(){
+  const users=await api('GET','/ward/users');
+  if(!users)return;
+  USERS_CACHE=users;
+  document.getElementById('accounts-table').innerHTML=users.map(u=>
+    `<tr><td style="color:var(--cyan)">${u.username}</td>
+     <td><span class="badge ${u.role}">${u.role}</span></td>
+     <td style="color:var(--dim)">${u.lastLogin?fmtTs(u.lastLogin):'Never'}</td>
+     <td>${hasScope('ward:users:delete')?`<button class="btn danger" onclick="deleteUser('${u.id}')">Delete</button>`:''}</td></tr>`
   ).join('');
 }
-async function createUser() {
-  const r = await api('POST', '/ward/users', {
-    username: document.getElementById('nu-username').value,
-    password: document.getElementById('nu-password').value,
-    role:     document.getElementById('nu-role').value
-  });
-  if (r?.id) { closeModal('modal-newuser'); loadAccounts(); }
-  else document.getElementById('nu-err').textContent = r?.error || 'Failed';
+async function createUser(){
+  const r=await api('POST','/ward/users',{username:document.getElementById('nu-username').value,password:document.getElementById('nu-password').value,role:document.getElementById('nu-role').value});
+  if(r?.id){closeModal('modal-newuser');loadAccounts();}
+  else document.getElementById('nu-err').textContent=r?.error||'Failed';
 }
-async function deleteUser(id) {
-  if (!confirm('Delete user?')) return;
-  await api('DELETE', '/ward/users/' + id);
-  loadAccounts();
+async function deleteUser(id){
+  if(!confirm('Delete user?'))return;
+  await api('DELETE','/ward/users/'+id);loadAccounts();
 }
 
 // ── Permissions ──────────────────────────────────────────────────────────
-async function loadPermissionsPage() {
-  const [schema, users] = await Promise.all([
-    api('GET', '/ward/permissions/schema'),
-    api('GET', '/ward/users')
-  ]);
-  PERMISSIONS_SCHEMA = schema;
-  USERS_CACHE = users || [];
-  const sel = document.getElementById('perm-user-select');
-  sel.innerHTML = USERS_CACHE.map(u => `<option value="${u.id}">${u.username} (${u.role})</option>`).join('');
+async function loadPermissionsPage(){
+  const[schema,users]=await Promise.all([api('GET','/ward/permissions/schema'),api('GET','/ward/users')]);
+  PERMISSIONS_SCHEMA=schema;USERS_CACHE=users||[];
+  const sel=document.getElementById('perm-user-select');
+  sel.innerHTML=USERS_CACHE.map(u=>`<option value="${u.id}">${u.username} (${u.role})</option>`).join('');
   loadUserPerms();
 }
-async function loadUserPerms() {
-  const userId = document.getElementById('perm-user-select').value;
-  if (!userId) return;
-  const perms = await api('GET', '/ward/users/' + userId + '/permissions');
-  if (!perms || !PERMISSIONS_SCHEMA) return;
-  const granted = new Set(Array.isArray(perms) ? perms : perms.permissions || []);
-  const allPerms = PERMISSIONS_SCHEMA.permissions || [];
-  document.getElementById('perm-editor').innerHTML =
-    '<div class="perm-grid">' +
-    allPerms.map(p => `
-      <span class="perm-chip ${granted.has(p) ? 'granted' : 'revoked'}" onclick="togglePerm('${userId}','${p}',this)">${p}</span>
-    `).join('') + '</div>';
+async function loadUserPerms(){
+  const userId=document.getElementById('perm-user-select').value;
+  if(!userId)return;
+  const perms=await api('GET','/ward/users/'+userId+'/permissions');
+  if(!perms||!PERMISSIONS_SCHEMA)return;
+  const granted=new Set(Array.isArray(perms)?perms:(perms.permissions||[]));
+  const allPerms=PERMISSIONS_SCHEMA.permissions||[];
+  document.getElementById('perm-editor').innerHTML=
+    '<div class="perm-grid">'+
+    allPerms.map(p=>`<span class="perm-chip ${granted.has(p)?'granted':'revoked'}" onclick="togglePerm('${userId}','${p}',this)">${p}</span>`).join('')+'</div>';
 }
-async function togglePerm(userId, perm, el) {
-  const isGranted = el.classList.contains('granted');
-  await api('POST', '/ward/users/' + userId + '/permissions', {
-    action: isGranted ? 'revoke' : 'grant', permission: perm
-  });
-  el.classList.toggle('granted', !isGranted);
-  el.classList.toggle('revoked', isGranted);
+async function togglePerm(userId,perm,el){
+  const isGranted=el.classList.contains('granted');
+  await api('POST','/ward/users/'+userId+'/permissions',{action:isGranted?'revoke':'grant',permission:perm});
+  el.classList.toggle('granted',!isGranted);el.classList.toggle('revoked',isGranted);
 }
 
 // ── My Account ───────────────────────────────────────────────────────────
-async function loadMyAccount() {
-  if (!ME) return;
-  document.getElementById('account-info').innerHTML =
-    `<div style="margin-bottom:6px"><span style="color:var(--dim)">Username: </span><span style="color:var(--cyan)">${ME.username}</span></div>` +
+function loadMyAccount(){
+  if(!ME)return;
+  document.getElementById('account-info').innerHTML=
+    `<div style="margin-bottom:6px"><span style="color:var(--dim)">Username: </span><span style="color:var(--cyan)">${ME.username}</span></div>`+
     `<div><span style="color:var(--dim)">Role: </span><span class="badge ${ME.role}">${ME.role}</span></div>`;
+  // Populate cert info from sessionStorage
+  const certRaw = sessionStorage.getItem('mf_cert');
+  if (certRaw) {
+    try {
+      const cert = JSON.parse(certRaw);
+      document.getElementById('ci-id').textContent   = cert.cert_id || '—';
+      document.getElementById('ci-tier').textContent = cert.env?.tier || '—';
+      document.getElementById('ci-exp').textContent  = cert.exp ? new Date(cert.exp*1000).toLocaleDateString() : '—';
+      document.getElementById('ci-scope').innerHTML  = (cert.scope||[]).map(s=>`<span class="scope-chip">${s}</span>`).join(' ');
+    } catch {}
+  }
 }
-async function changePassword() {
-  const cur  = document.getElementById('pw-current').value;
-  const nw   = document.getElementById('pw-new').value;
-  const conf = document.getElementById('pw-confirm').value;
-  const msg  = document.getElementById('pw-msg');
-  if (nw !== conf) { msg.innerHTML = '<span class="err">Passwords do not match</span>'; return; }
-  const r = await api('POST', '/ward/change-password', { currentPassword: cur, newPassword: nw });
-  msg.innerHTML = r?.ok ? '<span class="ok">✓ Password updated</span>' : `<span class="err">${r?.error || 'Failed'}</span>`;
+async function changePassword(){
+  const cur=document.getElementById('pw-current').value;
+  const nw=document.getElementById('pw-new').value;
+  const conf=document.getElementById('pw-confirm').value;
+  const msg=document.getElementById('pw-msg');
+  if(nw!==conf){msg.innerHTML='<span class="err">Passwords do not match</span>';return;}
+  const r=await api('POST','/ward/change-password',{currentPassword:cur,newPassword:nw});
+  msg.innerHTML=r?.ok?'<span class="ok">✓ Password updated</span>':`<span class="err">${r?.error||'Failed'}</span>`;
 }
 
 // ── Logs ─────────────────────────────────────────────────────────────────
-function renderLogs() {
-  const box = document.getElementById('log-box');
-  box.innerHTML = LOGS.map(l => {
-    const cls = l.includes('[WARN]') ? 'warn' : l.includes('[ERROR]') ? 'error' : l.includes('BLOCK') ? 'block' : '';
+function renderLogs(){
+  const box=document.getElementById('log-box');
+  box.innerHTML=LOGS.map(l=>{
+    const cls=l.includes('[WARN]')?'warn':l.includes('[ERROR]')?'error':l.includes('BLOCK')?'block':'';
     return `<div class="log-line ${cls}">${escHtml(l)}</div>`;
-  }).join('') || '<span style="color:var(--dim)">No logs yet</span>';
-  box.scrollTop = box.scrollHeight;
+  }).join('')||'<span style="color:var(--dim)">No logs yet</span>';
+  box.scrollTop=box.scrollHeight;
 }
-function clearLogs() { LOGS = []; renderLogs(); }
+function clearLogs(){LOGS=[];renderLogs();}
 
 // ── Modals ────────────────────────────────────────────────────────────────
-function showNewUserModal()   { openModal('modal-newuser'); }
-function showNewPoolModal()   { openModal('modal-newpool'); }
-function showLaunchCoinModal(){ openModal('modal-launchcoin'); }
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function showNewUserModal(){openModal('modal-newuser');}
+function showNewPoolModal(){openModal('modal-newpool');}
+function showLaunchCoinModal(){openModal('modal-launchcoin');}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
 
 // ── Utils ─────────────────────────────────────────────────────────────────
-function stat(label, value, color='') {
+function stat(label,value,color=''){
   return `<div class="stat-card"><div class="label">${label}</div><div class="value ${color}">${value}</div></div>`;
 }
-function fmtH(h) {
-  if (h >= 1e12) return (h/1e12).toFixed(2)+'TH/s';
-  if (h >= 1e9)  return (h/1e9).toFixed(2)+'GH/s';
-  if (h >= 1e6)  return (h/1e6).toFixed(2)+'MH/s';
-  if (h >= 1e3)  return (h/1e3).toFixed(2)+'KH/s';
+function fmtH(h){
+  if(h>=1e12)return(h/1e12).toFixed(2)+'TH/s';
+  if(h>=1e9)return(h/1e9).toFixed(2)+'GH/s';
+  if(h>=1e6)return(h/1e6).toFixed(2)+'MH/s';
+  if(h>=1e3)return(h/1e3).toFixed(2)+'KH/s';
   return Math.round(h)+'H/s';
 }
-function fmtTs(ts) {
-  if (!ts) return '—';
-  const d = new Date(ts);
-  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+function fmtTs(ts){
+  if(!ts)return '—';
+  const d=new Date(ts);
+  return d.toLocaleDateString()+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 }
-function timeSince(ms) {
-  const s = Math.floor((Date.now()-ms)/1000);
-  if (s < 60) return s + 's';
-  if (s < 3600) return Math.floor(s/60) + 'm';
-  return Math.floor(s/3600) + 'h';
+function timeSince(ms){
+  const s=Math.floor((Date.now()-ms)/1000);
+  if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';return Math.floor(s/3600)+'h';
 }
-function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 // ── Boot ──────────────────────────────────────────────────────────────────
 (async () => {
+  // Guard: redirect to login if no session token
+  if (!token()) {
+    window.location = '/sigil/login.html';
+    return;
+  }
+
+  // Verify session is still valid server-side
   const me = await api('GET', '/ward/me');
-  if (!me) return;
+  if (!me) return;  // api() redirects on 401
+
   ME = me;
+  sessionStorage.setItem('mf_username', me.username);
+  sessionStorage.setItem('mf_role',     me.role);
+  // Merge server-confirmed scope into sessionStorage
+  if (me.scope) sessionStorage.setItem('mf_scope', JSON.stringify(me.scope));
+
   document.getElementById('tb-user').textContent = me.username;
   const rb = document.getElementById('tb-role');
   rb.textContent = me.role; rb.className = 'badge ' + me.role;
-  if (me.role !== 'admin') {
-    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-  }
+
+  applyScope();
   loadDashboard();
 
-  // Websocket for live logs + events
+  // WebSocket — token from sessionStorage
   try {
     const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const ws = new WebSocket(`${wsProto}//${location.host}/ws?token=${token()}`);

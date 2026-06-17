@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MagoFonte — Sign In</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#111118;--surface2:#181825;--border:#2a2a3a;
+  --gold:#c8a84b;--gold2:#e0c060;--green:#4ec94e;--red:#e05050;
+  --cyan:#4ecfcf;--dim:#555;--text:#e0e0e0;--text2:#aaa;
+}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Courier New',monospace;font-size:13px;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:100vh;padding:24px;
+}
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:32px;width:100%;max-width:440px;
+}
+.logo{color:var(--gold);font-size:1.3rem;font-weight:bold;
+  letter-spacing:2px;text-align:center;margin-bottom:4px;}
+.tagline{color:var(--dim);font-size:10px;text-align:center;
+  letter-spacing:1px;margin-bottom:28px;}
+h2{color:var(--gold);font-size:0.85rem;margin-bottom:16px;}
+.step-desc{color:var(--text2);font-size:11px;line-height:1.6;margin-bottom:20px;}
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+label{color:var(--dim);font-size:10px;}
+input,select{
+  font-family:inherit;font-size:12px;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);border-radius:4px;padding:7px 10px;outline:none;
+}
+input:focus{border-color:var(--gold);}
+.btn{
+  font-family:inherit;cursor:pointer;font-size:12px;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);padding:8px 16px;border-radius:4px;
+  transition:border-color .15s;width:100%;margin-top:4px;
+}
+.btn:hover{border-color:var(--gold);color:var(--gold);}
+.btn.primary{
+  background:var(--gold);color:#0a0a0f;
+  border-color:var(--gold);font-weight:bold;
+}
+.btn.primary:hover{background:var(--gold2);}
+.btn.secondary{width:auto;margin-top:0;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.msg{font-size:11px;margin-top:10px;min-height:16px;}
+.err{color:var(--red);}.ok{color:var(--green);}.info{color:var(--dim);}
+.sep{border:none;border-top:1px solid var(--border);margin:20px 0;}
+.screen{display:none;}
+.screen.active{display:block;}
+.keypair-status{
+  font-size:10px;padding:6px 10px;
+  border:1px solid var(--border);border-radius:4px;
+  color:var(--dim);margin-bottom:16px;display:flex;
+  align-items:center;gap:8px;
+}
+.keypair-status.has-key{border-color:var(--green);color:var(--green);}
+.cert-drop{
+  border:1px dashed var(--border);border-radius:4px;
+  padding:20px;text-align:center;color:var(--dim);
+  font-size:11px;cursor:pointer;transition:border-color .15s;
+  margin-bottom:12px;
+}
+.cert-drop:hover,.cert-drop.dragover{border-color:var(--gold);color:var(--gold);}
+.cert-drop.loaded{border-color:var(--green);color:var(--green);}
+.step-tabs{
+  display:flex;gap:0;margin-bottom:24px;
+  border:1px solid var(--border);border-radius:4px;overflow:hidden;
+}
+.step-tab{
+  flex:1;padding:7px;text-align:center;font-size:11px;
+  color:var(--dim);cursor:pointer;background:var(--surface2);
+  border:none;font-family:inherit;transition:all .15s;
+}
+.step-tab.active{background:var(--gold);color:#0a0a0f;font-weight:bold;}
+.scope-list{
+  display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;
+}
+.scope-chip{
+  font-size:10px;padding:2px 7px;border-radius:10px;
+  border:1px solid var(--border);color:var(--dim);
+}
+.cert-summary{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:4px;padding:10px 12px;margin-top:12px;
+  font-size:10px;line-height:1.8;display:none;
+}
+.cert-summary.visible{display:block;}
+.cert-row{display:flex;gap:8px;justify-content:space-between;}
+.cert-row span:first-child{color:var(--dim);}
+.cert-row span:last-child{color:var(--text);}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">MagoFonte</div>
+  <div class="tagline">lancia — cert auth</div>
+
+  <!-- Tab switcher -->
+  <div class="step-tabs">
+    <button class="step-tab active" onclick="showTab('login')" id="tab-login">🔑 Sign In</button>
+    <button class="step-tab" onclick="showTab('provision')" id="tab-provision">⚙️ Provision</button>
+  </div>
+
+  <!-- ── LOGIN SCREEN ──────────────────────────────────────────────── -->
+  <div class="screen active" id="screen-login">
+    <h2>Cert-based Login</h2>
+    <p class="step-desc">
+      Upload your <code>.lancia</code> cert file. Your Ed25519 private key
+      (stored in this browser’s IndexedDB) signs a server challenge to
+      authenticate. The private key never leaves the browser.
+    </p>
+
+    <div class="keypair-status" id="kp-status-login">
+      <span id="kp-icon-login">●</span>
+      <span id="kp-label-login">Checking for keypair…</span>
+    </div>
+
+    <div class="cert-drop" id="cert-drop"
+         onclick="document.getElementById('cert-file-input').click()"
+         ondragover="onDragOver(event)" ondragleave="onDragLeave(event)"
+         ondrop="onDrop(event)">
+      <span id="cert-drop-label">📄 Drop .lancia cert here or click to browse</span>
+    </div>
+    <input type="file" id="cert-file-input" accept=".lancia,.json"
+           style="display:none" onchange="onCertFileSelect(event)" />
+
+    <div class="cert-summary" id="cert-summary">
+      <div class="cert-row"><span>cert_id</span><span id="cs-id">—</span></div>
+      <div class="cert-row"><span>sub</span><span id="cs-sub">—</span></div>
+      <div class="cert-row"><span>role</span><span id="cs-role">—</span></div>
+      <div class="cert-row"><span>tier</span><span id="cs-tier">—</span></div>
+      <div class="cert-row"><span>expires</span><span id="cs-exp">—</span></div>
+      <div class="cert-row"><span>scope</span><span id="cs-scope"></span></div>
+    </div>
+
+    <button class="btn primary" id="btn-certlogin" onclick="doCertLogin()" disabled>
+      Sign In with Cert
+    </button>
+    <div class="msg" id="login-msg"></div>
+
+    <hr class="sep">
+    <p style="font-size:10px;color:var(--dim);text-align:center">
+      No cert yet?
+      <a href="#" onclick="showTab('provision');return false"
+         style="color:var(--gold)">Provision one →</a>
+    </p>
+  </div>
+
+  <!-- ── PROVISION SCREEN ─────────────────────────────────────────── -->
+  <div class="screen" id="screen-provision">
+    <h2>Provision Owner Cert</h2>
+    <p class="step-desc">
+      This generates an Ed25519 keypair in your browser (private key stored
+      in IndexedDB, <em>never extractable</em>) and provisions a signed
+      <code>.lancia</code> cert file. You must be authenticated as the owner
+      to provision. If you already have a cert and key, signing in first will
+      allow you to re-provision.
+    </p>
+
+    <div class="keypair-status" id="kp-status-prov">
+      <span id="kp-icon-prov">●</span>
+      <span id="kp-label-prov">Checking for keypair…</span>
+    </div>
+
+    <!-- Step 1: Password login (setup token to authorize provision) -->
+    <div id="prov-step1">
+      <h3 style="color:var(--gold);font-size:0.75rem;margin-bottom:10px">Step 1 — Authenticate</h3>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="prov-username" autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="prov-password" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter')doProvAuth()" />
+      </div>
+      <button class="btn primary" onclick="doProvAuth()">Authenticate</button>
+      <div class="msg" id="prov-auth-msg"></div>
+    </div>
+
+    <!-- Step 2: Configure and provision cert (visible after auth) -->
+    <div id="prov-step2" style="display:none">
+      <div class="ok" style="font-size:11px;margin-bottom:16px">✓ Authenticated</div>
+      <h3 style="color:var(--gold);font-size:0.75rem;margin-bottom:10px">Step 2 — Generate & Download Cert</h3>
+      <div class="form-group">
+        <label>Tier</label>
+        <select id="prov-tier">
+          <option value="hearth">hearth</option>
+          <option value="forge" selected>forge</option>
+          <option value="foundry">foundry</option>
+          <option value="citadel">citadel</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Term (months)</label>
+        <select id="prov-term">
+          <option value="1">1 month</option>
+          <option value="6">6 months</option>
+          <option value="12" selected>12 months</option>
+          <option value="24">24 months</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Instance ID (optional)</label>
+        <input type="text" id="prov-instance" placeholder="e.g. prod-01" />
+      </div>
+      <button class="btn primary" id="btn-provision" onclick="doProvision()">
+        ⚙️ Generate Keypair &amp; Download Cert
+      </button>
+      <div class="msg" id="prov-cert-msg"></div>
+    </div>
+  </div>
+
+</div><!-- .card -->
+
+<script type="module">
+import {
+  generateKeypair, hasKeypair, signChallenge, signCert, downloadCert,
+  parseCertFile, certLogin, provisionCert, exportPublicKey
+} from '/ward/certEngine.browser.js';
+
+// ── State ──────────────────────────────────────────────────────────────
+let _loadedCert    = null;   // parsed cert object from file
+let _provAuthToken = null;   // short-lived token from password login
+
+// ── Tab switching ─────────────────────────────────────────────────────
+window.showTab = function(tab) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + tab).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+};
+
+// ── Keypair status badges ─────────────────────────────────────────────
+async function refreshKeypairStatus() {
+  const has = await hasKeypair();
+  ['login', 'prov'].forEach(id => {
+    const el    = document.getElementById(`kp-status-${id}`);
+    const icon  = document.getElementById(`kp-icon-${id}`);
+    const label = document.getElementById(`kp-label-${id}`);
+    if (has) {
+      el.classList.add('has-key');
+      icon.textContent  = '✓';
+      label.textContent = 'Ed25519 keypair found in this browser (IndexedDB)';
+    } else {
+      el.classList.remove('has-key');
+      icon.textContent  = '●';
+      label.textContent = 'No keypair in this browser — provision to generate one';
+    }
+  });
+}
+
+// ── Cert file drag/drop ─────────────────────────────────────────────
+window.onDragOver = function(e) {
+  e.preventDefault();
+  document.getElementById('cert-drop').classList.add('dragover');
+};
+window.onDragLeave = function() {
+  document.getElementById('cert-drop').classList.remove('dragover');
+};
+window.onDrop = async function(e) {
+  e.preventDefault();
+  document.getElementById('cert-drop').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) await loadCertFile(file);
+};
+window.onCertFileSelect = async function(e) {
+  const file = e.target.files[0];
+  if (file) await loadCertFile(file);
+};
+
+async function loadCertFile(file) {
+  const msg = document.getElementById('login-msg');
+  try {
+    _loadedCert = await parseCertFile(file);
+    const drop = document.getElementById('cert-drop');
+    drop.classList.add('loaded');
+    document.getElementById('cert-drop-label').textContent = `✓ ${file.name}`;
+
+    // Populate cert summary
+    document.getElementById('cs-id').textContent    = _loadedCert.cert_id || '—';
+    document.getElementById('cs-sub').textContent   = _loadedCert.sub     || '—';
+    document.getElementById('cs-role').textContent  = _loadedCert.role    || '—';
+    document.getElementById('cs-tier').textContent  = _loadedCert.env?.tier || '—';
+    const exp = _loadedCert.exp
+      ? new Date(_loadedCert.exp * 1000).toLocaleDateString()
+      : '—';
+    document.getElementById('cs-exp').textContent = exp;
+    document.getElementById('cs-scope').innerHTML =
+      (_loadedCert.scope || []).map(s =>
+        `<span class="scope-chip">${s}</span>`
+      ).join(' ');
+    document.getElementById('cert-summary').classList.add('visible');
+
+    document.getElementById('btn-certlogin').disabled = false;
+    msg.className = 'msg ok';
+    msg.textContent = 'Cert loaded — click Sign In with Cert to authenticate';
+  } catch (err) {
+    _loadedCert = null;
+    document.getElementById('btn-certlogin').disabled = true;
+    document.getElementById('cert-drop').classList.remove('loaded');
+    document.getElementById('cert-summary').classList.remove('visible');
+    msg.className = 'msg err';
+    msg.textContent = err.message;
+  }
+}
+
+// ── Cert login ─────────────────────────────────────────────────────────
+window.doCertLogin = async function() {
+  const btn = document.getElementById('btn-certlogin');
+  const msg = document.getElementById('login-msg');
+  if (!_loadedCert) return;
+
+  btn.disabled = true;
+  msg.className = 'msg info';
+  msg.textContent = 'Signing challenge…';
+
+  try {
+    const result = await certLogin(_loadedCert);
+    // Store in sessionStorage only — cleared on tab close
+    sessionStorage.setItem('mf_token',    result.token);
+    sessionStorage.setItem('mf_username', result.username);
+    sessionStorage.setItem('mf_role',     result.role);
+    sessionStorage.setItem('mf_scope',    JSON.stringify(result.scope || []));
+    msg.className = 'msg ok';
+    msg.textContent = `✓ Authenticated as ${result.username} (${result.role})`;
+    setTimeout(() => { window.location.href = '/sigil/app.html'; }, 600);
+  } catch (err) {
+    btn.disabled = false;
+    msg.className = 'msg err';
+    msg.textContent = err.message;
+  }
+};
+
+// ── Provision: Step 1 password auth ───────────────────────────────────
+window.doProvAuth = async function() {
+  const username = document.getElementById('prov-username').value.trim();
+  const password = document.getElementById('prov-password').value;
+  const msg      = document.getElementById('prov-auth-msg');
+
+  if (!username || !password) {
+    msg.className = 'msg err';
+    msg.textContent = 'Username and password required';
+    return;
+  }
+  msg.className = 'msg info';
+  msg.textContent = 'Authenticating…';
+
+  try {
+    const res = await fetch('/api/v1/ward/login', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.token) {
+      msg.className = 'msg err';
+      msg.textContent = data.error || 'Login failed';
+      return;
+    }
+    _provAuthToken = data.token;
+    msg.className = 'msg ok';
+    msg.textContent = '✓ Authenticated';
+    document.getElementById('prov-step1').style.display = 'none';
+    document.getElementById('prov-step2').style.display = 'block';
+  } catch (err) {
+    msg.className = 'msg err';
+    msg.textContent = err.message;
+  }
+};
+
+// ── Provision: Step 2 generate + download ─────────────────────────────
+window.doProvision = async function() {
+  const btn = document.getElementById('btn-provision');
+  const msg = document.getElementById('prov-cert-msg');
+  if (!_provAuthToken) {
+    msg.className = 'msg err';
+    msg.textContent = 'Not authenticated — complete Step 1 first';
+    return;
+  }
+  btn.disabled = true;
+  msg.className = 'msg info';
+  msg.textContent = 'Generating keypair…';
+
+  try {
+    const tier        = document.getElementById('prov-tier').value;
+    const termMonths  = parseInt(document.getElementById('prov-term').value, 10);
+    const instanceId  = document.getElementById('prov-instance').value.trim() || undefined;
+
+    msg.textContent = 'Requesting cert from server…';
+    const cert = await provisionCert(_provAuthToken, { tier, termMonths, instanceId });
+    // provisionCert triggers download automatically
+    msg.className = 'msg ok';
+    msg.textContent = `✓ Cert provisioned: ${cert.cert_id} (${tier}, ${termMonths}mo). File downloaded.`;
+    await refreshKeypairStatus();
+    setTimeout(() => showTab('login'), 1800);
+  } catch (err) {
+    btn.disabled = false;
+    msg.className = 'msg err';
+    msg.textContent = err.message;
+  }
+};
+
+// ── Boot ─────────────────────────────────────────────────────────────
+(async () => {
+  // If already authenticated, skip straight to the app
+  const existing = sessionStorage.getItem('mf_token');
+  if (existing) {
+    window.location.href = '/sigil/app.html';
+    return;
+  }
+  await refreshKeypairStatus();
+})();
+</script>
+</body>
+</html>
