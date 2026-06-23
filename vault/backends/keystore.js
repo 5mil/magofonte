@@ -1,26 +1,6 @@
-'use strict';
-/**
- * vault/backends/keystore.js
- * Keystore backend — AES-256-GCM encrypted key file.
- *
- * The keystore file is NEVER committed to the repo.
- * Path is set via VAULT_KEYSTORE_PATH env var.
- * Password is set via VAULT_KEYSTORE_PASS env var (or prompted at runtime).
- *
- * File format (JSON):
- * {
- *   "version": 1,
- *   "networks": {
- *     "solana": { "iv": "hex", "tag": "hex", "data": "hex" },
- *     "dgb":    { "iv": "hex", "tag": "hex", "data": "hex" },
- *     "ltc":    { "iv": "hex", "tag": "hex", "data": "hex" }
- *   }
- * }
- */
-
-const crypto = require('crypto');
-const fs     = require('fs');
-const path   = require('path');
+import crypto from 'node:crypto';
+import fs     from 'node:fs';
+import path   from 'node:path';
 
 let _keys = {};
 
@@ -34,32 +14,23 @@ function decrypt(entry, password) {
   return Buffer.concat([dec.update(enc), dec.final()]).toString('utf8');
 }
 
-module.exports = {
+export default {
   async init() {
     const ksPath = process.env.VAULT_KEYSTORE_PATH;
     const ksPass = process.env.VAULT_KEYSTORE_PASS;
-    if (!ksPath || !ksPass) {
-      throw new Error('[vault/keystore] VAULT_KEYSTORE_PATH and VAULT_KEYSTORE_PASS must be set');
-    }
-    const raw  = JSON.parse(fs.readFileSync(path.resolve(ksPath), 'utf8'));
-    for (const [net, entry] of Object.entries(raw.networks || {})) {
-      _keys[net] = decrypt(entry, ksPass);
-    }
-    console.log('[vault/keystore] Keystore loaded for networks:', Object.keys(_keys).join(', '));
+    if (!ksPath || !ksPass) throw new Error('[vault/keystore] VAULT_KEYSTORE_PATH + VAULT_KEYSTORE_PASS required');
+    const raw = JSON.parse(fs.readFileSync(path.resolve(ksPath), 'utf8'));
+    for (const [net, entry] of Object.entries(raw.networks || {})) _keys[net] = decrypt(entry, ksPass);
+    console.log('[vault/keystore] loaded:', Object.keys(_keys).join(', '));
   },
-
   async signTransaction(network, txData) {
     const privKey = _keys[network];
-    if (!privKey) throw new Error(`[vault/keystore] No key for network: ${network}`);
-    // Actual signing logic is network-specific — wire in @solana/web3.js or dgb lib here
-    // This stub returns the key reference for downstream signers
+    if (!privKey) throw new Error(`[vault/keystore] no key for ${network}`);
     return { signedTx: null, txid: null, privKey, needsSigning: true };
   },
-
   async getPublicKey(network) {
-    const privKey = _keys[network];
-    if (!privKey) throw new Error(`[vault/keystore] No key for network: ${network}`);
-    // Return the treasury address from env — public key derivation is network-specific
-    return process.env[`TREASURY_${network.toUpperCase()}_ADDRESS`] || privKey.slice(0, 44);
+    const key = _keys[network];
+    if (!key) throw new Error(`[vault/keystore] no key for ${network}`);
+    return process.env[`TREASURY_${network.toUpperCase()}_ADDRESS`] || key.slice(0, 44);
   }
 };

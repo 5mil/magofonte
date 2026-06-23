@@ -1,44 +1,32 @@
-'use strict';
 /**
- * bridge/index.js
- * Cross-chain bridge fee capture module.
- * Monitors cross-chain swap events and records operator fees.
- *
- * Supported routes (read-only monitoring, no custody):
- *   DGB ↔ SOL   (via wrapped tokens / DEX)
- *   LTC ↔ SOL   (via wrapped tokens / DEX)
- *   DGB ↔ LTC   (atomic swap ready)
- *
- * Revenue: operator captures a configurable fee % on each observed swap.
+ * bridge/index.js — ESM core module
+ * Cross-chain swap fee capture. Writes to revenue_ledger.
  */
+import { createClient } from '@supabase/supabase-js';
 
-const { createClient } = require('@supabase/supabase-js');
-
-const DEFAULT_FEE_PCT = 0.005; // 0.5%
-
+const DEFAULT_FEE_PCT = 0.005;
 const ROUTES = [
-  { id: 'dgb-sol', from: 'DGB', to: 'SOL',  active: true  },
-  { id: 'ltc-sol', from: 'LTC', to: 'SOL',  active: true  },
-  { id: 'dgb-ltc', from: 'DGB', to: 'LTC',  active: false }, // atomic swap, future
+  { id: 'dgb-sol', from: 'DGB', to: 'SOL', active: true  },
+  { id: 'ltc-sol', from: 'LTC', to: 'SOL', active: true  },
+  { id: 'dgb-ltc', from: 'DGB', to: 'LTC', active: false },
 ];
 
 class Bridge {
-  constructor(config = {}) {
-    this.feePct   = config.feePct || DEFAULT_FEE_PCT;
-    this.supabase = null;
-    this.routes   = ROUTES;
-  }
+  constructor() { this.supabase = null; this.feePct = DEFAULT_FEE_PCT; }
+  get name() { return 'bridge'; }
 
-  async init() {
+  async init(config = {}) {
+    this.feePct = config.feePct || DEFAULT_FEE_PCT;
     if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
       this.supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
     }
-    console.log('[bridge] Initialized — monitoring swap routes:', this.routes.filter(r => r.active).map(r => r.id).join(', '));
+    console.log('[bridge] swap routes:', ROUTES.filter(r => r.active).map(r => r.id).join(', '));
+    return this;
   }
 
   async recordSwap({ routeId, amountIn, amountOut, txid, timestamp }) {
-    const route = this.routes.find(r => r.id === routeId);
-    if (!route) throw new Error(`[bridge] Unknown route: ${routeId}`);
+    const route = ROUTES.find(r => r.id === routeId);
+    if (!route) throw new Error(`unknown route: ${routeId}`);
     const fee = amountOut * this.feePct;
     if (this.supabase) {
       await this.supabase.from('revenue_ledger').insert({
@@ -51,15 +39,20 @@ class Bridge {
     return { fee, route, txid };
   }
 
-  listRoutes() { return this.routes; }
-
-  registerRoutes(app, ward) {
-    app.get('/bridge/routes', (req, res) => res.json(this.listRoutes()));
-    app.post('/bridge/swap', ward.require('owner'), async (req, res) => {
-      try { res.json(await this.recordSwap(req.body)); }
-      catch (e) { res.status(400).json({ error: e.message }); }
-    });
+  get routes() {
+    const self = this;
+    function json(res, code, body) { res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); }
+    return [
+      ['GET',  '/routes', (req, res) => json(res, 200, ROUTES), { public: true }],
+      ['POST', '/swap',   async (req, res) => {
+        let body = ''; req.on('data', d => body += d);
+        req.on('end', async () => {
+          try { json(res, 200, await self.recordSwap(JSON.parse(body))); }
+          catch (e) { json(res, 400, { error: e.message }); }
+        });
+      }, { minRole: 'owner' }],
+    ];
   }
 }
 
-module.exports = new Bridge();
+export default new Bridge();

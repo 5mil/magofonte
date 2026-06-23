@@ -1,48 +1,35 @@
-'use strict';
 /**
- * mesh/index.js
- * Distributed compute task reward module.
- * Coordinates off-chain compute tasks distributed across Lancia instances.
- * Workers complete tasks and earn compute rewards logged to revenue_ledger.
- *
- * Task types:
- *   - hash_benchmark  — performance profiling
- *   - algo_validation — validate a hash result from a remote worker
- *   - data_index      — index/process external data
+ * mesh/index.js — ESM core module
+ * Distributed compute task queue. Writes to revenue_ledger.
  */
+import crypto from 'node:crypto';
+import { createClient } from '@supabase/supabase-js';
 
-const { createClient } = require('@supabase/supabase-js');
-const crypto = require('crypto');
-
-const REWARD_PER_TASK_SOL = 0.001; // 0.001 SOL per completed task
+const REWARD_PER_TASK = 0.001;
 
 class Mesh {
-  constructor(config = {}) {
-    this.supabase    = null;
-    this._tasks      = new Map(); // taskId → task
-    this._workers    = new Map(); // workerId → { lastSeen, completed }
-  }
+  constructor() { this.supabase = null; this._tasks = new Map(); this._workers = new Map(); }
+  get name() { return 'mesh'; }
 
-  async init() {
+  async init(config = {}) {
     if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
       this.supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
     }
-    console.log('[mesh] Initialized — distributed compute mesh active');
+    console.log('[mesh] compute mesh active');
+    return this;
   }
 
   createTask(type, payload) {
-    const id = crypto.randomBytes(16).toString('hex');
+    const id   = crypto.randomBytes(16).toString('hex');
     const task = { id, type, payload, status: 'pending', created_at: new Date().toISOString() };
     this._tasks.set(id, task);
     return task;
   }
 
   async claimTask(workerId) {
-    for (const [id, task] of this._tasks) {
+    for (const [, task] of this._tasks) {
       if (task.status === 'pending') {
-        task.status = 'claimed';
-        task.claimed_by = workerId;
-        task.claimed_at = new Date().toISOString();
+        task.status = 'claimed'; task.claimed_by = workerId; task.claimed_at = new Date().toISOString();
         this._workers.set(workerId, { lastSeen: Date.now(), completed: 0 });
         return task;
       }
@@ -52,48 +39,49 @@ class Mesh {
 
   async completeTask(taskId, workerId, result) {
     const task = this._tasks.get(taskId);
-    if (!task) throw new Error(`[mesh] Unknown task: ${taskId}`);
-    if (task.claimed_by !== workerId) throw new Error('[mesh] Task claimed by different worker');
-    task.status = 'done';
-    task.result = result;
-    task.completed_at = new Date().toISOString();
-    const worker = this._workers.get(workerId) || { completed: 0 };
-    worker.completed = (worker.completed || 0) + 1;
-    worker.lastSeen = Date.now();
-    this._workers.set(workerId, worker);
+    if (!task) throw new Error(`unknown task: ${taskId}`);
+    if (task.claimed_by !== workerId) throw new Error('wrong worker');
+    task.status = 'done'; task.result = result; task.completed_at = new Date().toISOString();
+    const w = this._workers.get(workerId) || { completed: 0 };
+    w.completed = (w.completed || 0) + 1; w.lastSeen = Date.now();
+    this._workers.set(workerId, w);
     if (this.supabase) {
       await this.supabase.from('revenue_ledger').insert({
-        source: 'mesh', type: 'compute_reward', amount: REWARD_PER_TASK_SOL,
-        network: 'solana',
-        metadata: JSON.stringify({ taskId, workerId, type: task.type }),
+        source: 'mesh', type: 'compute_reward', amount: REWARD_PER_TASK,
+        network: 'solana', metadata: JSON.stringify({ taskId, workerId, type: task.type }),
         created_at: new Date().toISOString()
       });
     }
-    return { reward: REWARD_PER_TASK_SOL, task };
+    return { reward: REWARD_PER_TASK, task };
   }
 
   stats() {
-    const tasks = Array.from(this._tasks.values());
-    return {
-      pending:   tasks.filter(t => t.status === 'pending').length,
-      claimed:   tasks.filter(t => t.status === 'claimed').length,
-      done:      tasks.filter(t => t.status === 'done').length,
-      workers:   this._workers.size,
-    };
+    const t = Array.from(this._tasks.values());
+    return { pending: t.filter(x => x.status==='pending').length, claimed: t.filter(x => x.status==='claimed').length, done: t.filter(x => x.status==='done').length, workers: this._workers.size };
   }
 
-  registerRoutes(app, ward) {
-    app.get('/mesh/stats', ward.require('owner'), (req, res) => res.json(this.stats()));
-    app.post('/mesh/task/claim', async (req, res) => {
-      const task = await this.claimTask(req.body.workerId);
-      res.json(task || { status: 'no_tasks' });
-    });
-    app.post('/mesh/task/complete', async (req, res) => {
-      try {
-        res.json(await this.completeTask(req.body.taskId, req.body.workerId, req.body.result));
-      } catch (e) { res.status(400).json({ error: e.message }); }
-    });
+  get routes() {
+    const self = this;
+    function json(res, code, body) { res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); }
+    return [
+      ['GET',  '/stats',          (req, res) => json(res, 200, self.stats()), { minRole: 'owner' }],
+      ['POST', '/task/claim',     async (req, res) => {
+        let body = ''; req.on('data', d => body += d);
+        req.on('end', async () => {
+          const { workerId } = JSON.parse(body);
+          const task = await self.claimTask(workerId);
+          json(res, 200, task || { status: 'no_tasks' });
+        });
+      }, { public: true }],
+      ['POST', '/task/complete',  async (req, res) => {
+        let body = ''; req.on('data', d => body += d);
+        req.on('end', async () => {
+          try { const b = JSON.parse(body); json(res, 200, await self.completeTask(b.taskId, b.workerId, b.result)); }
+          catch (e) { json(res, 400, { error: e.message }); }
+        });
+      }, { public: true }],
+    ];
   }
 }
 
-module.exports = new Mesh();
+export default new Mesh();

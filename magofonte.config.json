@@ -8,11 +8,12 @@
     "pool":         { "enabled": true,  "stratumPort": 3333 },
     "console":      { "enabled": true },
     "monetization": { "enabled": true },
-    "bridge":       { "enabled": false },
-    "forge":        { "enabled": false },
-    "stream":       { "enabled": false },
-    "vault":        { "enabled": false },
-    "mesh":         { "enabled": false },
+    "vault":        { "enabled": true },
+    "forge":        { "enabled": true },
+    "bridge":       { "enabled": true },
+    "stream":       { "enabled": true },
+    "mesh":         { "enabled": true },
+    "lancia":       { "enabled": true },
     "ward":         { "enabled": false },
     "sigil":        { "enabled": false }
   },
@@ -53,5 +54,19 @@
     "sweepThresholdDgbSats":   100000000,
     "minClaimThreshold":       1000,
     "operatorFeePct":          0.01
+  },
+  "vault": {
+    "backend": "mock"
+  },
+  "forge": {},
+  "bridge": {
+    "feePct": 0.005
+  },
+  "stream": {},
+  "mesh": {
+    "rewardPerTask": 0.001
+  },
+  "lancia": {
+    "backend": "mock"
   }
 }

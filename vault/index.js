@@ -1,62 +1,61 @@
 'use strict';
 /**
- * vault/index.js
- * External signing vault — treasury transaction signing layer.
- *
- * DESIGN PRINCIPLE: Private keys NEVER live in this repo or any env var.
- * This module provides the interface that connects to an external signer:
- *   - Hardware wallet (Ledger/Trezor via USB)
- *   - Remote signing service (e.g. Fireblocks, self-hosted)
- *   - Local keystore file (encrypted, password-unlocked at runtime)
- *
- * The vault exposes a single async signTransaction(network, txData) method.
- * The actual signing backend is selected via VAULT_BACKEND env var.
+ * vault/index.js  — core-compatible ESM module
+ * External signing vault. Private keys never in repo.
+ * Backends: mock | keystore | remote  (VAULT_BACKEND env)
  */
 
-const backends = {
-  ledger:   () => require('./backends/ledger'),
-  remote:   () => require('./backends/remote'),
-  keystore: () => require('./backends/keystore'),
-  mock:     () => require('./backends/mock'),
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const crypto  = require('crypto');
+
+// ─── backends ───────────────────────────────────────────────────────────────
+const BACKENDS = {
+  mock:     () => import('./backends/mock.js'),
+  keystore: () => import('./backends/keystore.js'),
+  remote:   () => import('./backends/remote.js'),
 };
 
 class Vault {
-  constructor(config = {}) {
-    this.backend = process.env.VAULT_BACKEND || config.backend || 'mock';
-    this.ready = false;
-    this._signer = null;
-  }
+  constructor() { this._signer = null; this.ready = false; this.backend = 'mock'; }
 
-  async init() {
-    const loader = backends[this.backend];
+  async init(config = {}) {
+    this.backend = process.env.VAULT_BACKEND || config.backend || 'mock';
+    const loader = BACKENDS[this.backend];
     if (!loader) throw new Error(`Unknown vault backend: ${this.backend}`);
-    this._signer = loader();
+    const mod = await loader();
+    this._signer = mod.default;
     await this._signer.init();
     this.ready = true;
-    console.log(`[vault] Initialized with backend: ${this.backend}`);
+    console.log(`[vault] backend: ${this.backend}`);
+    return this;
   }
 
-  /**
-   * signTransaction(network, txData) → { signedTx, txid }
-   * network: 'solana' | 'dgb' | 'ltc'
-   * txData: network-specific raw transaction object
-   */
   async signTransaction(network, txData) {
-    if (!this.ready) throw new Error('[vault] Not initialized — call vault.init() first');
+    if (!this.ready) throw new Error('[vault] call init() first');
     return this._signer.signTransaction(network, txData);
   }
 
-  /**
-   * getPublicKey(network) → string (address or pubkey)
-   */
   async getPublicKey(network) {
-    if (!this.ready) throw new Error('[vault] Not initialized');
+    if (!this.ready) throw new Error('[vault] not ready');
     return this._signer.getPublicKey(network);
   }
 
-  status() {
-    return { backend: this.backend, ready: this.ready };
+  status() { return { backend: this.backend, ready: this.ready }; }
+
+  get name() { return 'vault'; }
+
+  // core module protocol — expose status route
+  get routes() {
+    const self = this;
+    return [
+      ['GET', '/status', (req, res) => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(self.status()));
+      }, { minRole: 'owner' }],
+    ];
   }
 }
 
-module.exports = new Vault();
+const vault = new Vault();
+export default vault;
