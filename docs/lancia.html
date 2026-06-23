@@ -80,6 +80,9 @@ body{min-height:100vh;background:var(--ink);}
 .ll.info{color:rgba(201,168,76,.6)}.ll.ok{color:var(--green)}.ll.warn{color:var(--gold)}.ll.err{color:var(--red)}.ll.dim{color:rgba(201,168,76,.25)}
 .msg{font-size:.65rem;letter-spacing:.1em;font-style:italic;min-height:1.1em;margin-top:.5rem}
 .msg.ok{color:rgba(94,207,122,.85)}.msg.err{color:rgba(240,120,120,.85)}.msg.info{color:rgba(201,168,76,.7)}
+.api-cfg{font-size:.6rem;letter-spacing:.1em;color:var(--dim);font-family:'Courier New',monospace;margin-top:.35rem;display:flex;align-items:center;gap:.5rem;}
+.api-cfg input{background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);border-radius:4px;color:var(--gold2);font-family:'Courier New',monospace;font-size:.65rem;padding:.2rem .5rem;outline:none;width:280px;}
+.api-cfg input:focus{border-color:rgba(201,168,76,.4)}
 </style>
 </head>
 <body>
@@ -104,33 +107,243 @@ body{min-height:100vh;background:var(--ink);}
 </div>
 
 <div id="app">
+
+  <!-- API Base config strip -->
+  <div class="panel"><div class="panel-label">&#10097; API Connection &#10096;</div><div class="panel-body" style="padding:.9rem 1.8rem">
+    <div class="api-cfg">
+      <span>API Base:</span>
+      <input id="api-base-input" value="" placeholder="https://your-server.fly.dev" />
+      <button class="ibtn ghost" onclick="saveApiBase()">Save</button>
+      <span id="api-conn-status" style="margin-left:.4rem"></span>
+    </div>
+    <div class="lf-hint" style="margin-top:.35rem">Leave blank to use same-origin (<code>/api/v1</code>). Set to your Fly.io app URL for remote control.</div>
+  </div></div>
+
   <div class="panel"><div class="panel-label">&#10097; Fleet Status &#10096;</div><div class="panel-body"><div class="stat-row" id="stat-row"><div class="stat-card"><div class="sc-label">Instances</div><div class="sc-value dim" id="s-total">&mdash;</div></div><div class="stat-card"><div class="sc-label">Running</div><div class="sc-value green" id="s-running">&mdash;</div></div><div class="stat-card"><div class="sc-label">Stopped</div><div class="sc-value red" id="s-stopped">&mdash;</div></div><div class="stat-card"><div class="sc-label">Pending</div><div class="sc-value gold" id="s-pending">&mdash;</div></div><div class="stat-card"><div class="sc-label">Region</div><div class="sc-value cyan" id="s-region">&mdash;</div></div></div></div></div>
+
   <div class="panel"><div class="panel-label">&#10097; Active Instances &#10096;</div><div class="panel-body"><div class="instance-list" id="instance-list"><div class="ll dim" style="padding:.5rem 0;font-family:'Courier New',monospace;font-size:.7rem">Querying the ether&hellip;</div></div><div class="action-bar"><button class="ibtn primary" onclick="refresh()">&#8635; Refresh</button><button class="ibtn" onclick="startAll()">&#9654; Start All</button><button class="ibtn danger" onclick="stopAll()">&#9632; Stop All</button></div></div></div>
-  <div class="panel"><div class="panel-label">&#10097; Launch New Instance &#10096;</div><div class="panel-body"><div class="launch-form"><div class="lf-group"><label class="lf-label">Instance Name</label><input class="lf-input" id="lf-name" placeholder="my-lancia-01" /></div><div class="lf-group"><label class="lf-label">Region</label><select class="lf-input" id="lf-region"><option value="us-east-1">us-east-1 (N. Virginia)</option><option value="us-west-1">us-west-1 (N. California)</option><option value="eu-west-1">eu-west-1 (Ireland)</option><option value="eu-central-1">eu-central-1 (Frankfurt)</option><option value="ap-southeast-1">ap-southeast-1 (Singapore)</option><option value="ap-northeast-1">ap-northeast-1 (Tokyo)</option><option value="sa-east-1">sa-east-1 (São Paulo)</option></select></div><div class="lf-group"><label class="lf-label">Image / Version</label><input class="lf-input" id="lf-image" placeholder="latest" value="latest" /></div><div class="lf-group"><label class="lf-label">Instance Size</label><select class="lf-input" id="lf-size"><option value="shared-cpu-1x">shared-cpu-1x &mdash; dev</option><option value="shared-cpu-2x">shared-cpu-2x</option><option value="performance-1x" selected>performance-1x &mdash; prod</option><option value="performance-2x">performance-2x</option><option value="performance-4x">performance-4x &mdash; heavy</option></select></div><div class="lf-group"><label class="lf-label">Stratum Port</label><input class="lf-input" id="lf-stratum" type="number" value="3333" /></div><div class="lf-group"><label class="lf-label">API Port</label><input class="lf-input" id="lf-apiport" type="number" value="3000" /></div><div class="lf-group span2"><label class="lf-label">Coinbase Reward Address</label><input class="lf-input" id="lf-addr" placeholder="DGB / BTC / LTC address&hellip;" /><span class="lf-hint">Leave blank to inherit from active wallet</span></div><div class="lf-group span2"><label class="lf-label">Environment Overrides <span style="font-weight:400;font-style:italic">(KEY=VALUE, one per line)</span></label><textarea class="lf-input" id="lf-env" rows="3" placeholder="POOL_ALGO=skein&#10;PPLNS_WINDOW=2048"></textarea></div></div><div class="action-bar"><button class="ibtn primary" onclick="launchInstance()">&#10022; Launch Instance</button><button class="ibtn ghost" onclick="clearForm()">Clear</button></div><div class="msg" id="launch-msg"></div></div></div>
+
+  <div class="panel"><div class="panel-label">&#10097; Launch New Instance &#10096;</div><div class="panel-body">
+    <div class="launch-form">
+      <div class="lf-group"><label class="lf-label">Instance Name</label><input class="lf-input" id="lf-name" placeholder="my-lancia-01" /></div>
+      <div class="lf-group"><label class="lf-label">Region</label>
+        <select class="lf-input" id="lf-region">
+          <!-- Fly.io region codes -->
+          <option value="ord">ord — Chicago</option>
+          <option value="iad">iad — Washington DC</option>
+          <option value="lax">lax — Los Angeles</option>
+          <option value="sea">sea — Seattle</option>
+          <option value="ewr">ewr — New Jersey</option>
+          <option value="fra">fra — Frankfurt</option>
+          <option value="ams">ams — Amsterdam</option>
+          <option value="lhr">lhr — London</option>
+          <option value="sin">sin — Singapore</option>
+          <option value="nrt">nrt — Tokyo</option>
+          <option value="syd">syd — Sydney</option>
+          <option value="gru">gru — São Paulo</option>
+        </select>
+      </div>
+      <div class="lf-group"><label class="lf-label">Image / Version</label><input class="lf-input" id="lf-image" placeholder="latest" value="latest" /></div>
+      <div class="lf-group"><label class="lf-label">Instance Size</label>
+        <select class="lf-input" id="lf-size">
+          <option value="dev">dev — shared-cpu-1x</option>
+          <option value="light">light — shared-cpu-2x</option>
+          <option value="standard" selected>standard — performance-1x</option>
+          <option value="performance">performance — performance-2x</option>
+          <option value="heavy">heavy — performance-4x</option>
+        </select>
+      </div>
+      <div class="lf-group"><label class="lf-label">Stratum Port</label><input class="lf-input" id="lf-stratum" type="number" value="3333" /></div>
+      <div class="lf-group"><label class="lf-label">API Port</label><input class="lf-input" id="lf-apiport" type="number" value="3000" /></div>
+      <div class="lf-group span2"><label class="lf-label">Coinbase Reward Address</label><input class="lf-input" id="lf-addr" placeholder="DGB / BTC / LTC address&hellip;" /><span class="lf-hint">Leave blank to inherit from active wallet</span></div>
+      <div class="lf-group span2"><label class="lf-label">Environment Overrides <span style="font-weight:400;font-style:italic">(KEY=VALUE, one per line)</span></label><textarea class="lf-input" id="lf-env" rows="3" placeholder="POOL_ALGO=skein&#10;PPLNS_WINDOW=2048"></textarea></div>
+    </div>
+    <div class="action-bar">
+      <button class="ibtn primary" onclick="launchInstance()">&#10022; Launch Instance</button>
+      <button class="ibtn ghost" onclick="clearForm()">Clear</button>
+    </div>
+    <div class="msg" id="launch-msg"></div>
+  </div></div>
+
   <div class="panel"><div class="panel-label">&#10097; Launch Log &#10096;</div><div class="panel-body" style="padding-top:1.2rem"><div class="log-box" id="log-box"></div><div style="display:flex;gap:.5rem;margin-top:.7rem"><button class="ibtn ghost" onclick="clearLog()">Clear log</button></div></div></div>
+
 </div>
 
 <script>
+// ── Stars ─────────────────────────────────────────────────────────
 const starsEl=document.getElementById('stars');
 for(let i=0;i<140;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*2.1+0.35;s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*5+3).toFixed(1)}s;--delay:${(Math.random()*7).toFixed(1)}s;--bright:${(Math.random()*.5+.25).toFixed(2)}`;starsEl.appendChild(s);}
-const BASE='/api/v1';
-async function apiCall(method,path,body){try{const r=await fetch(BASE+path,{method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const text=await r.text();try{return JSON.parse(text);}catch{return{error:text};}}catch(e){return{error:e.message};}}
-const logBox=document.getElementById('log-box');let logLines=[];
-function log(text,cls='info'){const ts=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});logLines.push({ts,text,cls});if(logLines.length>300)logLines.shift();renderLog();}
-function renderLog(){logBox.innerHTML=logLines.map(l=>`<div class="ll ${l.cls}">[${l.ts}] ${escHtml(l.text)}</div>`).join('');logBox.scrollTop=logBox.scrollHeight;}
-function clearLog(){logLines=[];renderLog();}
-function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function setMsg(id,text,cls=''){const el=document.getElementById(id);el.textContent=text;el.className='msg '+cls;}
-function instanceRow(inst){const st=inst.status||'unknown';const dotCls=st==='running'?'on':st==='stopped'||st==='destroyed'?'off':'pending';const badgeCls=['running','stopped','pending'].includes(st)?st:'unknown';return `<div class="instance-row ${dotCls==='on'?'running':''}"><div class="inst-dot ${dotCls}"></div><div class="inst-meta"><div class="inst-name">${escHtml(inst.name||inst.id)}</div><div class="inst-detail">${escHtml(inst.region||'')}${inst.image?'  ·  '+inst.image:''}${inst.url?'  ·  '+inst.url:''}</div></div><span class="inst-badge ${badgeCls}">${st}</span><button class="ibtn" onclick="openShell('${inst.id}')">&#9741; Sigil</button><button class="ibtn" onclick="restartInst('${inst.id}')">&#8635;</button><button class="ibtn danger" onclick="destroyInst('${inst.id}')">&#9632;</button></div>`;}
-async function refresh(){log('Fetching instance fleet…');const data=await apiCall('GET','/lancia/instances');if(data.error){log('Fleet fetch failed: '+data.error,'err');document.getElementById('instance-list').innerHTML='<div class="ll err" style="padding:.5rem 0">Could not reach Lancia API — '+escHtml(data.error)+'</div>';return;}const instances=Array.isArray(data)?data:(data.instances||[]);const running=instances.filter(i=>i.status==='running').length,stopped=instances.filter(i=>['stopped','destroyed'].includes(i.status)).length,pending=instances.filter(i=>!['running','stopped','destroyed'].includes(i.status)).length;const regions=[...new Set(instances.map(i=>i.region).filter(Boolean))];document.getElementById('s-total').textContent=instances.length;document.getElementById('s-running').textContent=running;document.getElementById('s-stopped').textContent=stopped;document.getElementById('s-pending').textContent=pending;document.getElementById('s-region').textContent=regions.join(', ')||'—';document.getElementById('instance-list').innerHTML=instances.length===0?'<div class="ll dim" style="padding:.5rem 0">No instances found.</div>':instances.map(instanceRow).join('');log(`Fleet: ${instances.length} instance(s) — ${running} running, ${stopped} stopped, ${pending} pending`,'ok');}
-async function launchInstance(){const name=document.getElementById('lf-name').value.trim(),region=document.getElementById('lf-region').value,image=document.getElementById('lf-image').value.trim()||'latest',size=document.getElementById('lf-size').value,stratum=parseInt(document.getElementById('lf-stratum').value)||3333,apiPort=parseInt(document.getElementById('lf-apiport').value)||3000,addr=document.getElementById('lf-addr').value.trim(),envRaw=document.getElementById('lf-env').value.trim();if(!name){setMsg('launch-msg','Name the instance first.','err');return;}const env={};if(envRaw){for(const line of envRaw.split('\n')){const eq=line.indexOf('=');if(eq>0)env[line.slice(0,eq).trim()]=line.slice(eq+1).trim();}}const body={name,region,image,size,stratumPort:stratum,apiPort,env};if(addr)body.rewardAddress=addr;setMsg('launch-msg','Casting the spell…','info');log(`Launching "${name}" in ${region} (${size} · ${image})…`);const r=await apiCall('POST','/lancia/instances',body);if(r.error){setMsg('launch-msg','Launch failed: '+r.error,'err');log('Launch failed: '+r.error,'err');return;}setMsg('launch-msg',`✦ Instance "${r.name||name}" is being summoned (${r.id||'…'})`,'ok');log(`Summoned: ${r.id||name}  ·  status: ${r.status||'pending'}`,'ok');setTimeout(refresh,1800);}
-async function restartInst(id){log(`Restarting ${id}…`);const r=await apiCall('POST',`/lancia/instances/${id}/restart`);if(r.error){log('Restart failed: '+r.error,'err');return;}log(`Restarted: ${id}`,'ok');setTimeout(refresh,2000);}
-async function destroyInst(id){if(!confirm(`Destroy instance ${id}? This is irreversible.`))return;log(`Destroying ${id}…`,'warn');const r=await apiCall('DELETE',`/lancia/instances/${id}`);if(r.error){log('Destroy failed: '+r.error,'err');return;}log(`Destroyed: ${id}`,'warn');setTimeout(refresh,1500);}
-async function startAll(){log('Starting all stopped instances…');const r=await apiCall('POST','/lancia/instances/start-all');if(r.error){log('Start-all failed: '+r.error,'err');return;}log(`Started ${r.started??'?'} instance(s)`,'ok');setTimeout(refresh,2200);}
-async function stopAll(){if(!confirm('Stop all running instances?'))return;log('Stopping all instances…','warn');const r=await apiCall('POST','/lancia/instances/stop-all');if(r.error){log('Stop-all failed: '+r.error,'err');return;}log(`Stopped ${r.stopped??'?'} instance(s)`,'warn');setTimeout(refresh,2200);}
-function openShell(id){log(`Opening sigil for ${id}…`);window.open(`/sigil?instance=${encodeURIComponent(id)}`, '_blank');}
-function clearForm(){['lf-name','lf-image','lf-addr','lf-env'].forEach(id=>{const el=document.getElementById(id);if(el.tagName==='TEXTAREA')el.value='';else el.value=id==='lf-image'?'latest':'';});document.getElementById('lf-stratum').value='3333';document.getElementById('lf-apiport').value='3000';setMsg('launch-msg','');}
-log('Lancia launch studio initialised','ok');refresh();
+
+// ── API base — configurable at runtime ───────────────────────────
+// Allows the page (served from GitHub Pages) to point at any server.
+// Stored in localStorage so it survives refreshes.
+const LS_KEY = 'magofonte_api_base';
+function getApiBase() {
+  const stored = localStorage.getItem(LS_KEY);
+  return stored ? stored.replace(/\/$/, '') + '/api/v1' : '/api/v1';
+}
+function saveApiBase() {
+  const val = document.getElementById('api-base-input').value.trim();
+  if (val) localStorage.setItem(LS_KEY, val);
+  else     localStorage.removeItem(LS_KEY);
+  log('API base set to: ' + getApiBase(), 'ok');
+  refresh();
+}
+// Restore input on load
+(function() {
+  const stored = localStorage.getItem(LS_KEY);
+  if (stored) document.getElementById('api-base-input').value = stored;
+})();
+
+async function apiCall(method, path, body) {
+  const base = getApiBase();
+  try {
+    const r = await fetch(base + path, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const text = await r.text();
+    try { return JSON.parse(text); } catch { return { error: text }; }
+  } catch(e) { return { error: e.message }; }
+}
+
+// ── Log ───────────────────────────────────────────────────────────
+const logBox = document.getElementById('log-box');
+let logLines = [];
+function log(text, cls='info') {
+  const ts = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  logLines.push({ts, text, cls});
+  if (logLines.length > 300) logLines.shift();
+  renderLog();
+}
+function renderLog() {
+  logBox.innerHTML = logLines.map(l =>
+    `<div class="ll ${l.cls}">[${l.ts}] ${escHtml(l.text)}</div>`
+  ).join('');
+  logBox.scrollTop = logBox.scrollHeight;
+}
+function clearLog()  { logLines = []; renderLog(); }
+function escHtml(s)  { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function setMsg(id, text, cls='') { const el=document.getElementById(id); el.textContent=text; el.className='msg '+cls; }
+
+// ── Render instance row ───────────────────────────────────────────
+function instanceRow(inst) {
+  const st      = inst.status || 'unknown';
+  const dotCls  = st==='running' ? 'on' : (st==='stopped'||st==='destroyed') ? 'off' : 'pending';
+  const badgeCls = ['running','stopped','pending'].includes(st) ? st : 'unknown';
+  const detail  = [inst.region, inst.size, inst.url].filter(Boolean).join('  ·  ');
+  return `<div class="instance-row ${dotCls==='on'?'running':''}"><div class="inst-dot ${dotCls}"></div><div class="inst-meta"><div class="inst-name">${escHtml(inst.name||inst.id)}</div><div class="inst-detail">${escHtml(detail)}</div></div><span class="inst-badge ${badgeCls}">${st}</span><button class="ibtn" onclick="openShell('${inst.id}')">&#9741; Sigil</button><button class="ibtn" onclick="restartInst('${inst.id}')">&#8635;</button><button class="ibtn danger" onclick="destroyInst('${inst.id}')">&#9632;</button></div>`;
+}
+
+// ── Fleet actions ─────────────────────────────────────────────────
+async function refresh() {
+  log('Fetching instance fleet…');
+  const data = await apiCall('GET', '/lancia/instances');
+  if (data.error) {
+    log('Fleet fetch failed: ' + data.error, 'err');
+    document.getElementById('instance-list').innerHTML =
+      '<div class="ll err" style="padding:.5rem 0">Could not reach Lancia API — ' + escHtml(data.error) + '</div>';
+    document.getElementById('api-conn-status').innerHTML = '<span style="color:var(--red)">✕ offline</span>';
+    return;
+  }
+  document.getElementById('api-conn-status').innerHTML = '<span style="color:var(--green)">✓ connected</span>';
+  const instances = Array.isArray(data) ? data : (data.instances || []);
+  const running = instances.filter(i=>i.status==='running').length;
+  const stopped = instances.filter(i=>['stopped','destroyed'].includes(i.status)).length;
+  const pending = instances.filter(i=>!['running','stopped','destroyed'].includes(i.status)).length;
+  const regions = [...new Set(instances.map(i=>i.region).filter(Boolean))];
+  document.getElementById('s-total').textContent   = instances.length;
+  document.getElementById('s-running').textContent = running;
+  document.getElementById('s-stopped').textContent = stopped;
+  document.getElementById('s-pending').textContent = pending;
+  document.getElementById('s-region').textContent  = regions.join(', ') || '—';
+  document.getElementById('instance-list').innerHTML = instances.length === 0
+    ? '<div class="ll dim" style="padding:.5rem 0">No instances found.</div>'
+    : instances.map(instanceRow).join('');
+  log(`Fleet: ${instances.length} instance(s) — ${running} running, ${stopped} stopped, ${pending} pending`, 'ok');
+}
+
+async function launchInstance() {
+  const name     = document.getElementById('lf-name').value.trim();
+  const region   = document.getElementById('lf-region').value;
+  const image    = document.getElementById('lf-image').value.trim() || 'latest';
+  const size     = document.getElementById('lf-size').value;
+  const stratum  = parseInt(document.getElementById('lf-stratum').value) || 3333;
+  const apiPort  = parseInt(document.getElementById('lf-apiport').value) || 3000;
+  const addr     = document.getElementById('lf-addr').value.trim();
+  const envRaw   = document.getElementById('lf-env').value.trim();
+  if (!name) { setMsg('launch-msg', 'Name the instance first.', 'err'); return; }
+  const env = {};
+  if (envRaw) {
+    for (const line of envRaw.split('\n')) {
+      const eq = line.indexOf('=');
+      if (eq > 0) env[line.slice(0, eq).trim()] = line.slice(eq+1).trim();
+    }
+  }
+  const body = { name, region, image, size, stratumPort: stratum, apiPort, env };
+  if (addr) body.rewardAddress = addr;
+  setMsg('launch-msg', 'Casting the spell…', 'info');
+  log(`Launching "${name}" in ${region} (${size} · ${image})…`);
+  const r = await apiCall('POST', '/lancia/instances', body);
+  if (r.error) { setMsg('launch-msg', 'Launch failed: ' + r.error, 'err'); log('Launch failed: ' + r.error, 'err'); return; }
+  setMsg('launch-msg', `✦ Instance "${r.name||name}" summoned (${r.id||'…'})`, 'ok');
+  log(`Summoned: ${r.id||name}  ·  status: ${r.status||'pending'}`, 'ok');
+  setTimeout(refresh, 1800);
+}
+
+async function restartInst(id) {
+  log(`Restarting ${id}…`);
+  const r = await apiCall('POST', `/lancia/instances/${id}/restart`);
+  if (r.error) { log('Restart failed: ' + r.error, 'err'); return; }
+  log(`Restarted: ${id}`, 'ok');
+  setTimeout(refresh, 2000);
+}
+
+async function destroyInst(id) {
+  if (!confirm(`Destroy instance ${id}? This is irreversible.`)) return;
+  log(`Destroying ${id}…`, 'warn');
+  const r = await apiCall('DELETE', `/lancia/instances/${id}`);
+  if (r.error) { log('Destroy failed: ' + r.error, 'err'); return; }
+  log(`Destroyed: ${id}`, 'warn');
+  setTimeout(refresh, 1500);
+}
+
+async function startAll() {
+  log('Starting all stopped instances…');
+  const r = await apiCall('POST', '/lancia/instances/start-all');
+  if (r.error) { log('Start-all failed: ' + r.error, 'err'); return; }
+  log(`Started ${r.started??'?'} instance(s)`, 'ok');
+  setTimeout(refresh, 2200);
+}
+
+async function stopAll() {
+  if (!confirm('Stop all running instances?')) return;
+  log('Stopping all instances…', 'warn');
+  const r = await apiCall('POST', '/lancia/instances/stop-all');
+  if (r.error) { log('Stop-all failed: ' + r.error, 'err'); return; }
+  log(`Stopped ${r.stopped??'?'} instance(s)`, 'warn');
+  setTimeout(refresh, 2200);
+}
+
+function openShell(id) {
+  log(`Opening sigil for ${id}…`);
+  window.open(`/sigil?instance=${encodeURIComponent(id)}`, '_blank');
+}
+
+function clearForm() {
+  ['lf-name','lf-image','lf-addr','lf-env'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el.tagName==='TEXTAREA') el.value='';
+    else el.value = id==='lf-image'?'latest':'';
+  });
+  document.getElementById('lf-stratum').value = '3333';
+  document.getElementById('lf-apiport').value = '3000';
+  setMsg('launch-msg', '');
+}
+
+log('Lancia launch studio initialised', 'ok');
+refresh();
 </script>
 </body>
 </html>

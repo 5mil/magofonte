@@ -1,45 +1,90 @@
-# MagoFonte — lancia branch — Fly.io config
-# Free tier: shared-cpu-1x, 256 MB RAM
-# Deploy: fly launch --no-deploy  then  fly secrets set ...  then  fly deploy
+# fly.toml — MagoFonte on Fly.io
+# Deploy: fly deploy
+# Secrets (never commit values): fly secrets set KEY=VALUE
 
-app            = 'magofonte'
-primary_region = 'iad'
+app = 'magofonte'
+primary_region = 'ord'
 
 [build]
-  # Uses repo Dockerfile automatically
+  dockerfile = 'Dockerfile'
 
 [env]
-  NODE_ENV = 'production'
-  PORT     = '8080'
-  # Do NOT put API_KEY or any secret here — use: fly secrets set API_KEY=...
+  # ── Server ──────────────────────────────────────────────────────
+  PORT                = '8080'
+  HOST                = '0.0.0.0'
+  NODE_ENV            = 'production'
 
-[http_service]
-  internal_port        = 8080
-  force_https          = true
-  auto_stop_machines   = false
-  auto_start_machines  = true
-  min_machines_running = 1
+  # ── Pool ────────────────────────────────────────────────────────
+  POOL_ALGO           = 'skein'
+  # DGB_RPC_HOST      → fly secrets set DGB_RPC_HOST=...
+  # DGB_RPC_USER      → fly secrets set DGB_RPC_USER=...
+  # DGB_RPC_PASS      → fly secrets set DGB_RPC_PASS=...
+  # DGB_REWARD_ADDRESS→ fly secrets set DGB_REWARD_ADDRESS=...
 
-  [http_service.concurrency]
+  # ── Treasury ────────────────────────────────────────────────────
+  # TREASURY_WALLET_ADDRESS → fly secrets set TREASURY_WALLET_ADDRESS=Fz8zVrdkXS3kDZzjkpogB9KmR9DHaJPUPGbjrqm8824J
+  # TREASURY_DGB_ADDRESS    → fly secrets set TREASURY_DGB_ADDRESS=DLbr1DaJs8bAU7BJfW92rLheVZHzDmR5KJ
+  # TREASURY_LTC_ADDRESS    → fly secrets set TREASURY_LTC_ADDRESS=LcqqWQscuYtGVsRwbarnqVu7Y9tF3XXqjG
+
+  # ── Vault ───────────────────────────────────────────────────────
+  VAULT_BACKEND       = 'mock'
+  # For keystore backend:
+  # VAULT_BACKEND           → fly secrets set VAULT_BACKEND=keystore
+  # VAULT_KEYSTORE_PATH     → fly secrets set VAULT_KEYSTORE_PATH=/app/secrets/keystore.json
+  # VAULT_KEYSTORE_PASS     → fly secrets set VAULT_KEYSTORE_PASS=...
+  # For remote backend:
+  # VAULT_BACKEND           → fly secrets set VAULT_BACKEND=remote
+  # VAULT_REMOTE_URL        → fly secrets set VAULT_REMOTE_URL=https://signer.yourserver.com
+  # VAULT_REMOTE_TOKEN      → fly secrets set VAULT_REMOTE_TOKEN=...
+
+  # ── Lancia ──────────────────────────────────────────────────────
+  LANCIA_BACKEND      = 'fly'
+  # FLY_API_TOKEN    → fly secrets set FLY_API_TOKEN=...
+  FLY_APP_NAME        = 'magofonte'
+
+  # ── Supabase ────────────────────────────────────────────────────
+  # SUPABASE_URL         → fly secrets set SUPABASE_URL=...
+  # SUPABASE_SERVICE_KEY → fly secrets set SUPABASE_SERVICE_KEY=...
+
+  # ── Helius (Solana RPC) ─────────────────────────────────────────
+  # HELIUS_API_KEY → fly secrets set HELIUS_API_KEY=...
+
+  # ── CORS ────────────────────────────────────────────────────────
+  CORS_ORIGINS        = 'https://5mil.github.io,https://magofonte.fly.dev'
+
+[[services]]
+  protocol    = 'tcp'
+  internal_port = 8080
+
+  [[services.ports]]
+    handlers = ['http']
+    port     = 80
+    force_https = true
+
+  [[services.ports]]
+    handlers = ['tls', 'http']
+    port     = 443
+
+  [services.concurrency]
     type       = 'connections'
-    hard_limit = 500
-    soft_limit = 400
+    hard_limit = 200
+    soft_limit = 150
 
-[[vm]]
-  size   = 'shared-cpu-1x'
-  memory = '256mb'
+  [[services.tcp_checks]]
+    interval      = '10s'
+    timeout       = '2s'
+    grace_period  = '5s'
+    restart_limit = 3
 
-# Stratum TCP (miners) — Fly supports raw TCP, free tier included
 [[services]]
   protocol      = 'tcp'
   internal_port = 3333
 
   [[services.ports]]
-    port = 3333
+    port     = 3333
+    handlers = ['tcp']
 
-[[checks]]
-  name     = 'health'
-  type     = 'http'
-  path     = '/health'
-  interval = '30s'
-  timeout  = '5s'
+[mounts]
+  # Uncomment to mount a volume for the keystore file:
+  # source      = 'magofonte_secrets'
+  # destination = '/app/secrets'

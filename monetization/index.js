@@ -2,14 +2,14 @@
  * MagoFonte — monetization module
  *
  * Collects revenue from all registered sources and sweeps
- * normalized amounts to the owner-controlled treasury wallet.
+ * normalised amounts to the owner-controlled treasury wallet.
  *
  * Active collectors:
  *   • LpCollector   — Meteora/Raydium LP fees → Solana treasury
  *   • PoolCollector  — DGB block operator fee + CPU bonus cut → DGB treasury
  *
  * Routes (all owner-gated):
- *   GET  /status    — pending balances, treasury addresses
+ *   GET  /status    — pending balances, treasury addresses, vault state
  *   GET  /ledger    — paginated revenue event log
  *   POST /sweep     — manual sweep (Solana)
  *   POST /sweep-dgb — manual sweep (DGB)
@@ -35,6 +35,21 @@ const Monetization = {
     this.lpCollector   = new LpCollector(config, this.sweeper, this.ledger);
     this.poolCollector = new PoolCollector(config, this.sweeper, this.ledger, registry);
 
+    // Inject vault into sweeper once the registry is populated.
+    // vault loads before monetization in core's ordered list,
+    // so registry.get('vault') is already available here.
+    const vault = registry?.get?.('vault');
+    if (vault) {
+      this.sweeper.setVault(vault);
+    } else {
+      // Fallback: retry after a short delay in case of load-order variance
+      setTimeout(() => {
+        const v = registry?.get?.('vault');
+        if (v) { this.sweeper.setVault(v); }
+        else   { console.warn('[monetization] vault not found in registry — sweeper running unsigned'); }
+      }, 3000);
+    }
+
     // Start automated LP collection loop
     this._startLoop();
 
@@ -49,7 +64,7 @@ const Monetization = {
     };
     run();
     setInterval(run, intervalMs);
-    console.log(`[monetization] LP collector loop started — every ${this.config.collectIntervalMinutes || 30} min`);
+    console.log(`[monetization] LP collector loop — every ${this.config.collectIntervalMinutes || 30} min`);
   },
 
   get routes() {
@@ -88,13 +103,19 @@ const Monetization = {
 
       ['GET', '/sources', async (req, res) => {
         if (!self._ownerGuard(req, res)) return;
+        const forge  = self.registry?.get?.('forge');
+        const bridge = self.registry?.get?.('bridge');
+        const mesh   = self.registry?.get?.('mesh');
+        const stream = self.registry?.get?.('stream');
+        const vault  = self.registry?.get?.('vault');
         const sources = [
-          { id: 'lp_fees',   name: 'LP Fee Collector (Solana)',  status: 'active',   online: true,  ...{} },
-          { id: 'pool_fees', name: 'Pool Fee Collector (DGB)',   status: 'active',   online: true,  ...self.poolCollector.stats() },
-          { id: 'forge',     name: 'Premium Access',             status: 'disabled', online: true  },
-          { id: 'bridge',    name: 'Bridge Fees',                status: 'disabled', online: true  },
-          { id: 'sigil',     name: 'Affiliate Rewards',          status: 'disabled', online: true  },
-          { id: 'mesh',      name: 'Compute Rewards',            status: 'disabled', online: true  },
+          { id: 'lp_fees',   name: 'LP Fee Collector (Solana)',  status: 'active',  online: true,  ...{} },
+          { id: 'pool_fees', name: 'Pool Fee Collector (DGB)',   status: 'active',  online: true,  ...self.poolCollector.stats() },
+          { id: 'forge',     name: 'Premium Access (Forge)',     status: forge  ? 'active' : 'offline', online: !!forge,  features: forge  ? Object.keys(forge.listFeatures?.() || {}).length : 0 },
+          { id: 'bridge',    name: 'Bridge Swap Fees',           status: bridge ? 'active' : 'offline', online: !!bridge, routes:   bridge ? bridge.listRoutes?.().filter(r=>r.active).length : 0 },
+          { id: 'stream',    name: 'API Subscriptions (Stream)', status: stream ? 'active' : 'offline', online: !!stream },
+          { id: 'mesh',      name: 'Compute Rewards (Mesh)',     status: mesh   ? 'active' : 'offline', online: !!mesh,   stats:    mesh   ? mesh.stats?.() : null },
+          { id: 'vault',     name: 'Signing Vault',              status: vault?.ready ? 'active' : 'standby', online: !!vault, ...vault?.status?.() },
         ];
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ sources }));
